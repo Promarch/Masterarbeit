@@ -29,15 +29,91 @@ RUN rosdep init && rosdep update
 #-----------------docker-ros-frank2 is compiled until here
 
     # Build libfranka from source
-# Delete existing libfranka packages
+# Delete existing libfranka packages and install necessary packages for the installation
 RUN apt remove "*libfranka"
 RUN apt -y install build-essential cmake git libpoco-dev libeigen3-dev iputils-ping
+# Download and build libranka version 0.10.0
 RUN git clone --recursive https://github.com/frankaemika/libfranka --branch 0.10.0
 WORKDIR /libfranka
 RUN mkdir build
 WORKDIR /libfranka/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF ..
 RUN cmake --build .
+
+WORKDIR /
+RUN mkdir -p /code
+WORKDIR /code
+
+# Install necessary packages
+
+RUN apt-get update && apt-get install -y \
+    wget \
+    python3-dev \
+    python3-pip \
+    python3-setuptools \
+    nano \
+    # Clear cache
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install numpy
+
+# -------------- #
+# Install Eigen3 #
+# -------------- #
+
+RUN git clone https://gitlab.com/libeigen/eigen.git \
+    && cd eigen \
+    && git checkout 3.4.0 \
+    && mkdir build && cd build \
+    && cmake .. \
+    && make install
+
+# ---------------- #
+# Install PyBind11 #
+# ---------------- #
+
+RUN git clone https://github.com/pybind/pybind11.git \
+    && cd pybind11 \
+    && git checkout v2.10 \
+    && mkdir build && cd build \
+    && cmake -DPYBIND11_TEST=OFF .. \
+    && make -j$(nproc) \
+    && make install
+
+# ---------------- #
+# Install Catch2   #
+# ---------------- #
+
+RUN git clone https://github.com/catchorg/Catch2.git \
+    && cd Catch2 \
+    && git checkout v2.5.0 \
+    && mkdir build && cd build \
+    && cmake -DCATCH_BUILD_TESTING=OFF -DCATCH_ENABLE_WERROR=OFF -DCATCH_INSTALL_DOCS=OFF -DCATCH_INSTALL_HELPERS=OFF .. \
+    && make install
+
+# ---------------- #
+# Build franky     #
+# ---------------- #
+
+
+RUN wget https://github.com/TimSchneider42/franky/releases/latest/download/libfranka_0-10-0_wheels.zip
+RUN unzip libfranka_0-10-0_wheels.zip
+RUN pip install --no-index --find-links=./dist franky-panda
+
+#RUN git clone --recursive https://github.com/timschneider42/franky.git
+#RUN mkdir -p franky/build && cd franky/build \
+#    && cmake .. 
+#  && make -j$(nproc) \
+#  && make install \
+#  && ./unit-test
+
+#ENV PYTHONPATH=$PYTHONPATH:/code/franky/build/
+
+
+# Docker has to be run with the following command/flags: 
+# docker run -it --rm --network host --cap-add=sys_nice --ulimit rtprio=99 docker-ros-franka2
+
+# example code: ./examples/communication_test 192.168.1.11
 
 
 # Install libfranka and franka_ros
