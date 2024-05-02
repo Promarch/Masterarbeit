@@ -1,6 +1,5 @@
-import mujoco_py
 import mujoco
-import os
+import mujoco.viewer
 
 # Path to the Mujoco XML model file
 xml = """
@@ -18,13 +17,11 @@ xml = """
 
 # Load the Mujoco model
 model = mujoco.MjModel.from_xml_string(xml)
+data = mujoco.MjData(model)
 
-# Create a simulation environment
-sim = mujoco_py.MjSim(model)
+# Look here for viewer stuff https://mujoco.readthedocs.io/en/stable/python.html
 
-# Run simulation steps
-for _ in range(1000):
-    sim.step()
+# Launch the viewer
+mujoco.viewer.launch(model)
+# mujoco.viewer.user_scn.flags[mujoco.mjtVisFlag.mjVIS_JOINT] = True
 
-# Close the simulation environment
-sim.close()
