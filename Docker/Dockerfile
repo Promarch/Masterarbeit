@@ -26,8 +26,6 @@ RUN apt install -y python3-rosdep python3-rosinstall python3-rosinstall-generato
 # Initialize rosdep
 RUN rosdep init && rosdep update
 
-#-----------------docker-ros-frank2 is compiled until here
-
     # Build libfranka from source
 # Delete existing libfranka packages and install necessary packages for the installation
 RUN apt remove "*libfranka"
@@ -92,84 +90,23 @@ RUN git clone https://github.com/catchorg/Catch2.git \
     && make install
 
 # ---------------- #
-# Build franky     #
+#  Install franky  #
 # ---------------- #
 
+RUN wget https://github.com/TimSchneider42/franky/releases/latest/download/libfranka_0-10-0_wheels.zip \
+    && unzip libfranka_0-10-0_wheels.zip \
+    && pip install --no-index --find-links=./dist franky-panda
 
-RUN wget https://github.com/TimSchneider42/franky/releases/latest/download/libfranka_0-10-0_wheels.zip
-RUN unzip libfranka_0-10-0_wheels.zip
-RUN pip install --no-index --find-links=./dist franky-panda
-
-#RUN git clone --recursive https://github.com/timschneider42/franky.git
-#RUN mkdir -p franky/build && cd franky/build \
-#    && cmake .. 
-#  && make -j$(nproc) \
-#  && make install \
-#  && ./unit-test
-
-#ENV PYTHONPATH=$PYTHONPATH:/code/franky/build/
-
+WORKDIR /home
 
 # Docker has to be run with the following command/flags: 
-# docker run -it --rm --network host --cap-add=sys_nice --ulimit rtprio=99 docker-ros-franka2
+# docker run -it -v ${PWD}:/home --rm --network host --cap-add=sys_nice --ulimit rtprio=99 docker-franky
 
 # example code: ./examples/communication_test 192.168.1.11
 
-
-# Install libfranka and franka_ros
-#RUN apt install -y ros-noetic-libfranka ros-noetic-franka-ros
-
-# Install git
-#RUN apt install git
-# Install pip and other python tools (python is already installed)
-#RUN apt install python3-pip \
-#    python3-dev \
-#    python3-setuptools
-
-    # Setting up the real time kernel
-# install necessary dependencies
-#RUN apt -y install build-essential bc curl ca-certificates gnupg2 libssl-dev lsb-release libelf-dev bison flex dwarves zstd libncurses-dev
-# Download the kernel
-#RUN curl -SLO https://www.kernel.org/pub/linux/kernel/v5.x/linux-5.4.19.tar.xz
-#RUN curl -SLO https://www.kernel.org/pub/linux/kernel/v5.x/linux-5.4.19.tar.sign
-#RUN curl -SLO https://www.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-5.4.19-rt10.patch.xz
-#RUN curl -SLO https://www.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-5.4.19-rt10.patch.sign
-# Extract the files
-#RUN xz -d *.xz
 
 # Install keys to verify the files
 #RUN gpg2 --locate-keys gregkh@kernel.org sebastian@breakpoint.cc bigeasy@linutronix.de 
 # Verify the files
 #RUN gpg2 --verify linux-*.tar.sign
 #RUN gpg2 --verify patch-*.patch.sign
-
-# compiling the kernel
-#RUN tar xf linux-*.tar
-#WORKDIR /linux-5.4.19/
-#RUN patch -p1 < ../patch-5.4.19-rt10.patch
-
-# Install ping
-#RUN apt -y install iputils-ping
-#-----------------docker-ros-frank3 is compiled until here
-
-# Creating config file
-#RUN make olddefconfig
-# Set configuration options, since make menuconfig does't work
-#RUN sed -i '/CONFIG_PREEMPT=/s/=.*/=y/' .config && \
-#    sed -i '/CONFIG_DEBUG_PREEMPT=y/s/=y/=n/' .config && \
-#    sed -i '/CONFIG_PREEMPT_VOLUNTARY=n/s/=.*/=y/' .config && \
-#    sed -i '/CONFIG_PREEMPT_COUNT=y/s/=.*/=y/' .config && \
-#    sed -i '/CONFIG_KEYS=/s/=.*/=y/' .config && \
-#    sed -i '/CONFIG_TRUSTED_KEYS=/s/=.*/=y/' .config && \
-#    sed -i '/CONFIG_SYSTEM_TRUSTED_KEYRING=/s/=.*/=y/' .config
-
-# install packages necessary to compile the kernel
-#RUN apt update && apt install rsync cpio
-# Compile the kernel
-#RUN make -j$(nproc) deb-pkg
-# install newly created packages
-#RUN dpkg -i ../linux-headers-*.deb ../linux-image-*.deb
-
-
-
-
