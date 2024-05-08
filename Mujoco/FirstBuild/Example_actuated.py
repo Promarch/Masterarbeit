@@ -25,6 +25,13 @@ MJCF = """
        size=".04" rgba="0 0 1 1"/>
     </body>
 
+    <geom name="pole2" type="cylinder" fromto="-.3 0 -.5 -.3 0 -.1" size=".04"/>
+    <body name="bat2" pos="-.3 0 -.1">
+      <joint name="swing2" type="hinge" damping="1" axis="0 0 1"/>
+      <geom name="bat2" type="capsule" fromto="0 0 .04 0 .3 .04"
+       size=".04" rgba="0 0 1 1"/>
+    </body>
+
     <body name="box_and_sphere" pos="0 0 0">
       <joint name="free" type="free"/>
       <geom name="red_box" type="box" size=".1 .1 .1" rgba="1 0 0 1"/>
@@ -42,7 +49,8 @@ MJCF = """
   </tendon>
 
   <actuator>
-    <motor name="my_motor" joint="swing" gear="1"/>
+    <motor name="my_motor1" joint="swing" gear="1"/>
+    <motor name="my_motor2" joint="swing2" gear="1"/>
   </actuator>
 
   <sensor>
@@ -56,7 +64,7 @@ d = mujoco.MjData(m)
 
 # constant actuator signal
 mujoco.mj_resetData(m, d)
-d.ctrl = 20
+d.ctrl = [20, -20]
 
 with mujoco.viewer.launch_passive(m, d) as viewer:
   # Close the viewer automatically after 30 wall-seconds.
