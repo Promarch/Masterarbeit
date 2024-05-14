@@ -4,12 +4,13 @@
 #include <cmath>
 #include <functional>
 #include <iostream>
-#include <Eigen/Dense>
 #include <franka/duration.h>
 #include <franka/exception.h>
 #include <franka/model.h>
 #include <franka/robot.h>
 #include "examples_common.h"
+#include <Eigen/Dense>
+
 int main(int argc, char** argv) {
   // Check whether the required arguments were passed
   if (argc != 2) {

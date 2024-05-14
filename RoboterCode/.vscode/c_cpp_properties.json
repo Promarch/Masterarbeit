@@ -5,13 +5,12 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/usr/include/eigen3",
-                "/libfranka/include",
-                "/libfranka/examples"
+                "/home/alexandergerard/libfranka/include",
+                "/home/alexandergerard/libfranka/examples"
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
-            "cppStandard": "gnu++14",
+            "cppStandard": "gnu++17",
             "intelliSenseMode": "linux-gcc-x64"
         }
     ],

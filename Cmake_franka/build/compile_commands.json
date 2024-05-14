@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/alexandergerard/Documents/Cmake_franka/build",
+  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointPositions.dir/JointPositions.cpp.o -c /home/alexandergerard/Documents/Cmake_franka/JointPositions.cpp",
+  "file": "/home/alexandergerard/Documents/Cmake_franka/JointPositions.cpp"
+}
+]

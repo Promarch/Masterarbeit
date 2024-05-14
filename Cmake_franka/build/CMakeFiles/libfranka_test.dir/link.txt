@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/libfranka_test.dir/libfranka_test.cpp.o -o libfranka_test  /usr/lib/libfranka.so.0.10.0 
