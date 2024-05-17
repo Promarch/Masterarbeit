@@ -23,7 +23,7 @@ void setDefaultBehavior(franka::Robot& robot) {
 
 int main(int argc, char** argv) {
 
-  std::vector<std::array<double, 7>> jointTorque_measured;
+  std::vector<std::array<double, 7>> dq;
   std::vector<std::array<double, 7>> jointTorque_desired;
   std::vector<std::array<double, 7>> jointTorque_filtered;
 
@@ -41,6 +41,9 @@ int main(int argc, char** argv) {
     double time = 0.0;
     double sampling_interval = 0.05;
     double next_sampling_time = sampling_interval;
+    // Debug stuff
+    std::array<double, 7> help = robot.readOnce().tau_ext_hat_filtered; 
+
 
     auto force_control_callback = [&](const franka::RobotState& robot_state,
                                       franka::Duration period) -> franka::Torques {
@@ -49,16 +52,22 @@ int main(int argc, char** argv) {
         initial_position = robot_state.q_d;
       }
 
-      // Check if it's time to sample the force/torque values
+      // Take a sample of the measured torques
       if (time >= next_sampling_time) {
         jointTorque_desired.push_back(robot_state.tau_J_d);
-        jointTorque_measured.push_back(robot_state.tau_J);
+        dq.push_back(robot_state.dq);
         jointTorque_filtered.push_back(robot_state.tau_ext_hat_filtered);
         next_sampling_time += 0.05;
       }
 
       double factor = (1 - std::cos(M_PI * time/1.5))/2;
+      for (size_t i =0; i<7; i++) {
+        torque[i] = 1.01*(-robot_state.tau_ext_hat_filtered[i]);
+//        std::cout << std::endl << "pos i = " << i << std::endl;
+      }
       torque[3] = factor * 3;
+
+
 
       franka::Torques output = torque; 
 
@@ -67,7 +76,7 @@ int main(int argc, char** argv) {
         return franka::MotionFinished(output);
       }
       
-      return output; 
+      return torque; 
 
     };
 
@@ -79,7 +88,7 @@ int main(int argc, char** argv) {
     std::cout << ex.what() << std::endl;
   }
 
-    // Write the collected force/torque data to a text file
+  // Write the collected force/torque data to a text file
   std::ofstream data_file("jointTorque_desired.txt");
   if (data_file.is_open()) {
     data_file << std::fixed << std::setprecision(2);
@@ -97,10 +106,10 @@ int main(int argc, char** argv) {
     std::cerr << "Unable to open file for writing" << std::endl;
   }
 
-  std::ofstream measured_data_file("jointTorque_measured.txt");
+  std::ofstream measured_data_file("dq.txt");
   if (measured_data_file.is_open()) {
     measured_data_file << std::fixed << std::setprecision(2);
-    for (const auto& sample : jointTorque_measured) {
+    for (const auto& sample : dq) {
       for (size_t i = 0; i < sample.size(); ++i) {
         measured_data_file << sample[i];
         if (i < sample.size() - 1) {

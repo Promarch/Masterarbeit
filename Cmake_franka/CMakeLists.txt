@@ -22,7 +22,6 @@ add_library(examples_common STATIC
 target_link_libraries(examples_common PUBLIC Franka::Franka Eigen3::Eigen3)
 
 SET(PROGRAM_files
-  JointPositions
   JointVelocity
   JointPositions2
   Waypoints

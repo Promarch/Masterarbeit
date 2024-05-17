@@ -175,19 +175,6 @@ examples_common/fast:
 .PHONY : examples_common/fast
 
 #=============================================================================
-# Target rules for targets named JointPositions
-
-# Build rule for target.
-JointPositions: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 JointPositions
-.PHONY : JointPositions
-
-# fast build rule for target.
-JointPositions/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions.dir/build.make CMakeFiles/JointPositions.dir/build
-.PHONY : JointPositions/fast
-
-#=============================================================================
 # Target rules for targets named JointVelocity
 
 # Build rule for target.
@@ -300,30 +287,6 @@ JointImpedanceControl_example.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl_example.dir/build.make CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.s
 .PHONY : JointImpedanceControl_example.cpp.s
 
-JointPositions.o: JointPositions.cpp.o
-.PHONY : JointPositions.o
-
-# target to build an object file
-JointPositions.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions.dir/build.make CMakeFiles/JointPositions.dir/JointPositions.cpp.o
-.PHONY : JointPositions.cpp.o
-
-JointPositions.i: JointPositions.cpp.i
-.PHONY : JointPositions.i
-
-# target to preprocess a source file
-JointPositions.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions.dir/build.make CMakeFiles/JointPositions.dir/JointPositions.cpp.i
-.PHONY : JointPositions.cpp.i
-
-JointPositions.s: JointPositions.cpp.s
-.PHONY : JointPositions.s
-
-# target to generate assembly for a file
-JointPositions.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions.dir/build.make CMakeFiles/JointPositions.dir/JointPositions.cpp.s
-.PHONY : JointPositions.cpp.s
-
 JointPositions2.o: JointPositions2.cpp.o
 .PHONY : JointPositions2.o
 
@@ -434,7 +397,6 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... JointImpedanceControl"
 	@echo "... JointImpedanceControl_example"
-	@echo "... JointPositions"
 	@echo "... JointPositions2"
 	@echo "... JointVelocity"
 	@echo "... Waypoints"
@@ -445,9 +407,6 @@ help:
 	@echo "... JointImpedanceControl_example.o"
 	@echo "... JointImpedanceControl_example.i"
 	@echo "... JointImpedanceControl_example.s"
-	@echo "... JointPositions.o"
-	@echo "... JointPositions.i"
-	@echo "... JointPositions.s"
 	@echo "... JointPositions2.o"
 	@echo "... JointPositions2.i"
 	@echo "... JointPositions2.s"
