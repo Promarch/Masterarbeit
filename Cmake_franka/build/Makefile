@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/alexandergerard/Documents/Cmake_franka
+CMAKE_SOURCE_DIR = /home/alexandergerard/Masterarbeit/Cmake_franka
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/alexandergerard/Documents/Cmake_franka/build
+CMAKE_BINARY_DIR = /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,7 +87,7 @@ rebuild_cache/fast: rebuild_cache
 
 # Special rule for the target list_install_components
 list_install_components:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Only default component available"
 .PHONY : list_install_components
 
 # Special rule for the target list_install_components
@@ -132,9 +132,9 @@ install/strip/fast: preinstall/fast
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Documents/Cmake_franka/build/CMakeFiles /home/alexandergerard/Documents/Cmake_franka/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles /home/alexandergerard/Masterarbeit/Cmake_franka/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Documents/Cmake_franka/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -162,6 +162,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named examples_common
+
+# Build rule for target.
+examples_common: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 examples_common
+.PHONY : examples_common
+
+# fast build rule for target.
+examples_common/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/examples_common.dir/build.make CMakeFiles/examples_common.dir/build
+.PHONY : examples_common/fast
+
+#=============================================================================
 # Target rules for targets named JointPositions
 
 # Build rule for target.
@@ -173,6 +186,119 @@ JointPositions: cmake_check_build_system
 JointPositions/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions.dir/build.make CMakeFiles/JointPositions.dir/build
 .PHONY : JointPositions/fast
+
+#=============================================================================
+# Target rules for targets named JointVelocity
+
+# Build rule for target.
+JointVelocity: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 JointVelocity
+.PHONY : JointVelocity
+
+# fast build rule for target.
+JointVelocity/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointVelocity.dir/build.make CMakeFiles/JointVelocity.dir/build
+.PHONY : JointVelocity/fast
+
+#=============================================================================
+# Target rules for targets named JointPositions2
+
+# Build rule for target.
+JointPositions2: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 JointPositions2
+.PHONY : JointPositions2
+
+# fast build rule for target.
+JointPositions2/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions2.dir/build.make CMakeFiles/JointPositions2.dir/build
+.PHONY : JointPositions2/fast
+
+#=============================================================================
+# Target rules for targets named Waypoints
+
+# Build rule for target.
+Waypoints: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Waypoints
+.PHONY : Waypoints
+
+# fast build rule for target.
+Waypoints/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Waypoints.dir/build.make CMakeFiles/Waypoints.dir/build
+.PHONY : Waypoints/fast
+
+#=============================================================================
+# Target rules for targets named JointImpedanceControl
+
+# Build rule for target.
+JointImpedanceControl: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 JointImpedanceControl
+.PHONY : JointImpedanceControl
+
+# fast build rule for target.
+JointImpedanceControl/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl.dir/build.make CMakeFiles/JointImpedanceControl.dir/build
+.PHONY : JointImpedanceControl/fast
+
+#=============================================================================
+# Target rules for targets named JointImpedanceControl_example
+
+# Build rule for target.
+JointImpedanceControl_example: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 JointImpedanceControl_example
+.PHONY : JointImpedanceControl_example
+
+# fast build rule for target.
+JointImpedanceControl_example/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl_example.dir/build.make CMakeFiles/JointImpedanceControl_example.dir/build
+.PHONY : JointImpedanceControl_example/fast
+
+JointImpedanceControl.o: JointImpedanceControl.cpp.o
+.PHONY : JointImpedanceControl.o
+
+# target to build an object file
+JointImpedanceControl.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl.dir/build.make CMakeFiles/JointImpedanceControl.dir/JointImpedanceControl.cpp.o
+.PHONY : JointImpedanceControl.cpp.o
+
+JointImpedanceControl.i: JointImpedanceControl.cpp.i
+.PHONY : JointImpedanceControl.i
+
+# target to preprocess a source file
+JointImpedanceControl.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl.dir/build.make CMakeFiles/JointImpedanceControl.dir/JointImpedanceControl.cpp.i
+.PHONY : JointImpedanceControl.cpp.i
+
+JointImpedanceControl.s: JointImpedanceControl.cpp.s
+.PHONY : JointImpedanceControl.s
+
+# target to generate assembly for a file
+JointImpedanceControl.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl.dir/build.make CMakeFiles/JointImpedanceControl.dir/JointImpedanceControl.cpp.s
+.PHONY : JointImpedanceControl.cpp.s
+
+JointImpedanceControl_example.o: JointImpedanceControl_example.cpp.o
+.PHONY : JointImpedanceControl_example.o
+
+# target to build an object file
+JointImpedanceControl_example.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl_example.dir/build.make CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.o
+.PHONY : JointImpedanceControl_example.cpp.o
+
+JointImpedanceControl_example.i: JointImpedanceControl_example.cpp.i
+.PHONY : JointImpedanceControl_example.i
+
+# target to preprocess a source file
+JointImpedanceControl_example.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl_example.dir/build.make CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.i
+.PHONY : JointImpedanceControl_example.cpp.i
+
+JointImpedanceControl_example.s: JointImpedanceControl_example.cpp.s
+.PHONY : JointImpedanceControl_example.s
+
+# target to generate assembly for a file
+JointImpedanceControl_example.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl_example.dir/build.make CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.s
+.PHONY : JointImpedanceControl_example.cpp.s
 
 JointPositions.o: JointPositions.cpp.o
 .PHONY : JointPositions.o
@@ -198,6 +324,102 @@ JointPositions.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions.dir/build.make CMakeFiles/JointPositions.dir/JointPositions.cpp.s
 .PHONY : JointPositions.cpp.s
 
+JointPositions2.o: JointPositions2.cpp.o
+.PHONY : JointPositions2.o
+
+# target to build an object file
+JointPositions2.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions2.dir/build.make CMakeFiles/JointPositions2.dir/JointPositions2.cpp.o
+.PHONY : JointPositions2.cpp.o
+
+JointPositions2.i: JointPositions2.cpp.i
+.PHONY : JointPositions2.i
+
+# target to preprocess a source file
+JointPositions2.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions2.dir/build.make CMakeFiles/JointPositions2.dir/JointPositions2.cpp.i
+.PHONY : JointPositions2.cpp.i
+
+JointPositions2.s: JointPositions2.cpp.s
+.PHONY : JointPositions2.s
+
+# target to generate assembly for a file
+JointPositions2.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions2.dir/build.make CMakeFiles/JointPositions2.dir/JointPositions2.cpp.s
+.PHONY : JointPositions2.cpp.s
+
+JointVelocity.o: JointVelocity.cpp.o
+.PHONY : JointVelocity.o
+
+# target to build an object file
+JointVelocity.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointVelocity.dir/build.make CMakeFiles/JointVelocity.dir/JointVelocity.cpp.o
+.PHONY : JointVelocity.cpp.o
+
+JointVelocity.i: JointVelocity.cpp.i
+.PHONY : JointVelocity.i
+
+# target to preprocess a source file
+JointVelocity.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointVelocity.dir/build.make CMakeFiles/JointVelocity.dir/JointVelocity.cpp.i
+.PHONY : JointVelocity.cpp.i
+
+JointVelocity.s: JointVelocity.cpp.s
+.PHONY : JointVelocity.s
+
+# target to generate assembly for a file
+JointVelocity.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointVelocity.dir/build.make CMakeFiles/JointVelocity.dir/JointVelocity.cpp.s
+.PHONY : JointVelocity.cpp.s
+
+Waypoints.o: Waypoints.cpp.o
+.PHONY : Waypoints.o
+
+# target to build an object file
+Waypoints.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Waypoints.dir/build.make CMakeFiles/Waypoints.dir/Waypoints.cpp.o
+.PHONY : Waypoints.cpp.o
+
+Waypoints.i: Waypoints.cpp.i
+.PHONY : Waypoints.i
+
+# target to preprocess a source file
+Waypoints.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Waypoints.dir/build.make CMakeFiles/Waypoints.dir/Waypoints.cpp.i
+.PHONY : Waypoints.cpp.i
+
+Waypoints.s: Waypoints.cpp.s
+.PHONY : Waypoints.s
+
+# target to generate assembly for a file
+Waypoints.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Waypoints.dir/build.make CMakeFiles/Waypoints.dir/Waypoints.cpp.s
+.PHONY : Waypoints.cpp.s
+
+cmake/examples_common.o: cmake/examples_common.cpp.o
+.PHONY : cmake/examples_common.o
+
+# target to build an object file
+cmake/examples_common.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/examples_common.dir/build.make CMakeFiles/examples_common.dir/cmake/examples_common.cpp.o
+.PHONY : cmake/examples_common.cpp.o
+
+cmake/examples_common.i: cmake/examples_common.cpp.i
+.PHONY : cmake/examples_common.i
+
+# target to preprocess a source file
+cmake/examples_common.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/examples_common.dir/build.make CMakeFiles/examples_common.dir/cmake/examples_common.cpp.i
+.PHONY : cmake/examples_common.cpp.i
+
+cmake/examples_common.s: cmake/examples_common.cpp.s
+.PHONY : cmake/examples_common.s
+
+# target to generate assembly for a file
+cmake/examples_common.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/examples_common.dir/build.make CMakeFiles/examples_common.dir/cmake/examples_common.cpp.s
+.PHONY : cmake/examples_common.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -210,10 +432,34 @@ help:
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
+	@echo "... JointImpedanceControl"
+	@echo "... JointImpedanceControl_example"
 	@echo "... JointPositions"
+	@echo "... JointPositions2"
+	@echo "... JointVelocity"
+	@echo "... Waypoints"
+	@echo "... examples_common"
+	@echo "... JointImpedanceControl.o"
+	@echo "... JointImpedanceControl.i"
+	@echo "... JointImpedanceControl.s"
+	@echo "... JointImpedanceControl_example.o"
+	@echo "... JointImpedanceControl_example.i"
+	@echo "... JointImpedanceControl_example.s"
 	@echo "... JointPositions.o"
 	@echo "... JointPositions.i"
 	@echo "... JointPositions.s"
+	@echo "... JointPositions2.o"
+	@echo "... JointPositions2.i"
+	@echo "... JointPositions2.s"
+	@echo "... JointVelocity.o"
+	@echo "... JointVelocity.i"
+	@echo "... JointVelocity.s"
+	@echo "... Waypoints.o"
+	@echo "... Waypoints.i"
+	@echo "... Waypoints.s"
+	@echo "... cmake/examples_common.o"
+	@echo "... cmake/examples_common.i"
+	@echo "... cmake/examples_common.s"
 .PHONY : help
 
 

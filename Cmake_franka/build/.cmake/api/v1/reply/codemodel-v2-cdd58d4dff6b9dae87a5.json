@@ -1,0 +1,114 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "FrankaCmake",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "JointImpedanceControl::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-JointImpedanceControl-Debug-a5e866d221c2c034f23b.json",
+					"name" : "JointImpedanceControl",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "JointImpedanceControl_example::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-JointImpedanceControl_example-Debug-04b28e2dc64de4250f89.json",
+					"name" : "JointImpedanceControl_example",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "JointPositions::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-JointPositions-Debug-9cd9c035fcb03a88aa0a.json",
+					"name" : "JointPositions",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "JointPositions2::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-JointPositions2-Debug-afee3ff528db46b564c5.json",
+					"name" : "JointPositions2",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "JointVelocity::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-JointVelocity-Debug-3e8ed06d1ad012b792f6.json",
+					"name" : "JointVelocity",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "Waypoints::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-Waypoints-Debug-7657d1d1823642333162.json",
+					"name" : "Waypoints",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "examples_common::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-examples_common-Debug-4dbcd87dd7d9e3e335b7.json",
+					"name" : "examples_common",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+		"source" : "/home/alexandergerard/Masterarbeit/Cmake_franka"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

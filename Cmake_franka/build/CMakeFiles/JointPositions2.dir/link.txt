@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/JointPositions2.dir/JointPositions2.cpp.o -o JointPositions2  libexamples_common.a /usr/lib/libfranka.so.0.10.0 
