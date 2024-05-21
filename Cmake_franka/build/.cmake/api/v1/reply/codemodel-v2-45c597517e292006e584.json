@@ -1,0 +1,123 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "FrankaCmake",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "CartesianImpedance_example::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-CartesianImpedance_example-Debug-12cb17d3f3ea9a0ac1b0.json",
+					"name" : "CartesianImpedance_example",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "FirstImpedanceControl::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-FirstImpedanceControl-Debug-4c6b07f3af54bbde00e1.json",
+					"name" : "FirstImpedanceControl",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "JointImpedanceControl::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-JointImpedanceControl-Debug-2316e144ec6346d881f6.json",
+					"name" : "JointImpedanceControl",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "JointImpedanceControl_example::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-JointImpedanceControl_example-Debug-e143c0c401e7062ae651.json",
+					"name" : "JointImpedanceControl_example",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "JointPositions2::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-JointPositions2-Debug-ee2d43e41ac492ee108f.json",
+					"name" : "JointPositions2",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "JointVelocity::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-JointVelocity-Debug-19b4d45be518f6e38ff8.json",
+					"name" : "JointVelocity",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "Waypoints::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-Waypoints-Debug-29039e829ece8750bcf0.json",
+					"name" : "Waypoints",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "examples_common::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-examples_common-Debug-4dbcd87dd7d9e3e335b7.json",
+					"name" : "examples_common",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+		"source" : "/home/alexandergerard/Masterarbeit/Cmake_franka"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

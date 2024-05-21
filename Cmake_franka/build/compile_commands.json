@@ -26,7 +26,17 @@
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/FirstImpedanceControl.dir/FirstImpedanceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/FirstImpedanceControl.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/FirstImpedanceControl.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl_example.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl_example.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/CartesianImpedance_example.dir/CartesianImpedance_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/CartesianImpedance_example.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/CartesianImpedance_example.cpp"
 }
 ]

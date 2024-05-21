@@ -26,7 +26,9 @@ SET(PROGRAM_files
   JointPositions2
   Waypoints
   JointImpedanceControl
+  FirstImpedanceControl
   JointImpedanceControl_example
+  CartesianImpedance_example
 )
 
 foreach(singleFile ${PROGRAM_files})

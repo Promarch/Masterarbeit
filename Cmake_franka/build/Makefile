@@ -227,6 +227,19 @@ JointImpedanceControl/fast:
 .PHONY : JointImpedanceControl/fast
 
 #=============================================================================
+# Target rules for targets named FirstImpedanceControl
+
+# Build rule for target.
+FirstImpedanceControl: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 FirstImpedanceControl
+.PHONY : FirstImpedanceControl
+
+# fast build rule for target.
+FirstImpedanceControl/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FirstImpedanceControl.dir/build.make CMakeFiles/FirstImpedanceControl.dir/build
+.PHONY : FirstImpedanceControl/fast
+
+#=============================================================================
 # Target rules for targets named JointImpedanceControl_example
 
 # Build rule for target.
@@ -238,6 +251,67 @@ JointImpedanceControl_example: cmake_check_build_system
 JointImpedanceControl_example/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl_example.dir/build.make CMakeFiles/JointImpedanceControl_example.dir/build
 .PHONY : JointImpedanceControl_example/fast
+
+#=============================================================================
+# Target rules for targets named CartesianImpedance_example
+
+# Build rule for target.
+CartesianImpedance_example: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CartesianImpedance_example
+.PHONY : CartesianImpedance_example
+
+# fast build rule for target.
+CartesianImpedance_example/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CartesianImpedance_example.dir/build.make CMakeFiles/CartesianImpedance_example.dir/build
+.PHONY : CartesianImpedance_example/fast
+
+CartesianImpedance_example.o: CartesianImpedance_example.cpp.o
+.PHONY : CartesianImpedance_example.o
+
+# target to build an object file
+CartesianImpedance_example.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CartesianImpedance_example.dir/build.make CMakeFiles/CartesianImpedance_example.dir/CartesianImpedance_example.cpp.o
+.PHONY : CartesianImpedance_example.cpp.o
+
+CartesianImpedance_example.i: CartesianImpedance_example.cpp.i
+.PHONY : CartesianImpedance_example.i
+
+# target to preprocess a source file
+CartesianImpedance_example.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CartesianImpedance_example.dir/build.make CMakeFiles/CartesianImpedance_example.dir/CartesianImpedance_example.cpp.i
+.PHONY : CartesianImpedance_example.cpp.i
+
+CartesianImpedance_example.s: CartesianImpedance_example.cpp.s
+.PHONY : CartesianImpedance_example.s
+
+# target to generate assembly for a file
+CartesianImpedance_example.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CartesianImpedance_example.dir/build.make CMakeFiles/CartesianImpedance_example.dir/CartesianImpedance_example.cpp.s
+.PHONY : CartesianImpedance_example.cpp.s
+
+FirstImpedanceControl.o: FirstImpedanceControl.cpp.o
+.PHONY : FirstImpedanceControl.o
+
+# target to build an object file
+FirstImpedanceControl.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FirstImpedanceControl.dir/build.make CMakeFiles/FirstImpedanceControl.dir/FirstImpedanceControl.cpp.o
+.PHONY : FirstImpedanceControl.cpp.o
+
+FirstImpedanceControl.i: FirstImpedanceControl.cpp.i
+.PHONY : FirstImpedanceControl.i
+
+# target to preprocess a source file
+FirstImpedanceControl.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FirstImpedanceControl.dir/build.make CMakeFiles/FirstImpedanceControl.dir/FirstImpedanceControl.cpp.i
+.PHONY : FirstImpedanceControl.cpp.i
+
+FirstImpedanceControl.s: FirstImpedanceControl.cpp.s
+.PHONY : FirstImpedanceControl.s
+
+# target to generate assembly for a file
+FirstImpedanceControl.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/FirstImpedanceControl.dir/build.make CMakeFiles/FirstImpedanceControl.dir/FirstImpedanceControl.cpp.s
+.PHONY : FirstImpedanceControl.cpp.s
 
 JointImpedanceControl.o: JointImpedanceControl.cpp.o
 .PHONY : JointImpedanceControl.o
@@ -395,12 +469,20 @@ help:
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
+	@echo "... CartesianImpedance_example"
+	@echo "... FirstImpedanceControl"
 	@echo "... JointImpedanceControl"
 	@echo "... JointImpedanceControl_example"
 	@echo "... JointPositions2"
 	@echo "... JointVelocity"
 	@echo "... Waypoints"
 	@echo "... examples_common"
+	@echo "... CartesianImpedance_example.o"
+	@echo "... CartesianImpedance_example.i"
+	@echo "... CartesianImpedance_example.s"
+	@echo "... FirstImpedanceControl.o"
+	@echo "... FirstImpedanceControl.i"
+	@echo "... FirstImpedanceControl.s"
 	@echo "... JointImpedanceControl.o"
 	@echo "... JointImpedanceControl.i"
 	@echo "... JointImpedanceControl.s"

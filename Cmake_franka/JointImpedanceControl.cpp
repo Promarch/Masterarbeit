@@ -23,71 +23,70 @@ void setDefaultBehavior(franka::Robot& robot) {
 
 int main(int argc, char** argv) {
 
+  // variables to store force/Joint Torque
   std::vector<std::array<double, 7>> dq;
   std::vector<std::array<double, 7>> jointTorque_desired;
   std::vector<std::array<double, 7>> jointTorque_filtered;
+
+    // Compliance parameters
+  const std::array<double, 7> k_gains_array{600.0, 600.0, 600.0, 600.0, 250.0, 150.0, 50.0};
+  const std::array<double, 7> d_gains_array{50.0, 50.0, 50.0, 50.0, 30.0, 25.0, 15.0};
+  // Map to Eigen
+  Eigen::Map<const Eigen::VectorXd> k_gains(k_gains_array.data(), k_gains_array.size());
+  Eigen::Map<const Eigen::VectorXd> d_gains(d_gains_array.data(), d_gains_array.size());
 
   try {
     // connect to robot
     franka::Robot robot("192.168.1.11");
     setDefaultBehavior(robot);
 
-      // Variables
-    // Positions
-    std::array<double, 7> initial_position;
-    std::array<double, 7> torque = {0,0,0,0,0,0,0}; 
-    
-    // Time 
-    double time = 0.0;
-    double sampling_interval = 0.05;
-    double next_sampling_time = sampling_interval;
-    // Debug stuff
-    std::array<double, 7> help = robot.readOnce().tau_ext_hat_filtered; 
+    // Load the kinematics and dynamics model
+    franka::Model model = robot.loadModel();
+
+    // Set starting variables
+    double time{0.0};
+    franka::RobotState initial_state = robot.readOnce();
+    Eigen::Map<Eigen::VectorXd> initial_position(initial_state.q.data(), initial_state.q.size());
 
 
-    auto force_control_callback = [&](const franka::RobotState& robot_state,
-                                      franka::Duration period) -> franka::Torques {
+    // Define callback function to set the desired joint position
+    auto joint_pose_callback = [&] (const franka::RobotState& robot_state, franka::Duration period) -> franka::JointPositions {
+      
+      
       time += period.toSec();
-      if (time == 0.0) {
-        initial_position = robot_state.q_d;
-      }
+      double delta_angle = M_PI / 10.0 * (1 - std::cos(M_PI * time/2.5))/2;
+      franka::JointPositions output = {{initial_position[0], initial_position[1],
+                                        initial_position[2], initial_position[3]+delta_angle,
+                                        initial_position[4], initial_position[5],
+                                        initial_position[6]}};
 
-      // Take a sample of the measured torques
-      if (time >= next_sampling_time) {
-        jointTorque_desired.push_back(robot_state.tau_J_d);
-        dq.push_back(robot_state.dq);
-        jointTorque_filtered.push_back(robot_state.tau_ext_hat_filtered);
-        next_sampling_time += 0.05;
-      }
-
-      double factor = (1 - std::cos(M_PI * time/1.5))/2;
-      for (size_t i =0; i<7; i++) {
-        torque[i] = 1.01*(-robot_state.tau_ext_hat_filtered[i]);
-//        std::cout << std::endl << "pos i = " << i << std::endl;
-      }
-      torque[3] = factor * 3;
-
-
-
-      franka::Torques output = torque; 
-
-      if (time >= 3.0) {
+      if (time >= 5.0) {
         std::cout << std::endl << "Finished motion, shutting down example" << std::endl;
         return franka::MotionFinished(output);
       }
-      
-      return torque; 
+      return output;
 
     };
 
+    // Define callback function for the joint torque loop
+    std::function<franka::Torques(const franka::RobotState&, franka::Duration)>
+      impedance_control_callback = [&model, k_gains, d_gains](const franka::RobotState& robor_state, franka::Duration /*period*/) -> franka::Torques {
+
+        // Get state variables
+        std::array<double, 7> coriolis_array = model.coriolis(robor_state);
+        Eigen::Map<const Eigen::VectorXd> coriolis(coriolis_array.data(), coriolis_array.size());
+
+      };
+
     // start real-time control loop
-    robot.control(force_control_callback);
+    robot.control(joint_pose_callback);
 
   } catch (const std::exception& ex) {
     // print exception
     std::cout << ex.what() << std::endl;
   }
 
+/*
   // Write the collected force/torque data to a text file
   std::ofstream data_file("jointTorque_desired.txt");
   if (data_file.is_open()) {
@@ -139,6 +138,6 @@ int main(int argc, char** argv) {
   } else {
     std::cerr << "Unable to open file for writing" << std::endl;
   }
-
+*/
   return 0;
 }
