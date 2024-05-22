@@ -42,7 +42,8 @@ int main(int argc, char** argv) {
     // Positions
     std::array<double, 7> initial_position;
     std::array<double, 7> start_position = robot.readOnce().q_d;
-    std::array<double, 7> pos1 = {0.23, -0.75, 0.72, -2.63, 0, 1.86, 1.21};
+    // std::array<double, 7> pos1 = {0.23, -0.75, 0.72, -2.63, 0, 1.86, 1.21}; // Pos for waypoints
+    std::array<double, 7> pos1 = {1.42, 0.15, -0.15, -2.87, 0.21, 2.64, 0.69};  // Pos for rubber band tests
     std::array<double, 7> pos2 = {-0.32, -0.23, -0.33, -2.68, 0.09, 2.27, 0.43};
     std::array<double, 7> deltaPos;
     // Substract the initial position from the second position
@@ -69,7 +70,7 @@ int main(int argc, char** argv) {
       }
 
       std::array<double, 7> target_position;
-      double factor = (1 - std::cos(M_PI * time/2.5 )) / 2.0;
+      double factor = (1 - std::cos(M_PI * time/5 )) / 2.0;
       for (size_t i = 0; i<7; i++) {
         target_position[i] = initial_position[i] + deltaPos[i]*factor;
       }

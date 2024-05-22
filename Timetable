@@ -4,4 +4,5 @@ Previously:
 - Following week more advanced movement, like Multiple Waypoints or different cartesion coordinates
 - Following week trying out impedance control on python, realising it might be impossible/very difficult, switching to c++
 21.05.2024
-
+Wrote a bit of code, mainly copying existing examples. 
+Not really much output codewise, but I think I was able to understand quite a lot concerning the example codes. I should hopefully be able to finish my first own code tomorrow. 
