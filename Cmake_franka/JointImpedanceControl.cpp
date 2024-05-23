@@ -72,15 +72,15 @@ int main(int argc, char** argv) {
     // Define callback function for the joint torque loop
     std::function<franka::Torques(const franka::RobotState&, franka::Duration)>
       impedance_control_callback = [&model, &timer, &sampling_interval, &next_sampling_time, &tau_ext_print, &tau_d_print, k_gains, d_gains]
-        (const franka::RobotState& robot_state, franka::Duration period) -> franka::Torques {
+          (const franka::RobotState& robot_state, franka::Duration period) -> franka::Torques {
 
-      // Check if it's time to sample the force/torque values
-      timer += period.toSec();
-      if (timer >= next_sampling_time) {
-        tau_ext_print.push_back(robot_state.tau_ext_hat_filtered);
-        tau_d_print.push_back(robot_state.tau_J_d);
-        next_sampling_time += 0.1;
-      }
+        // Check if it's time to sample the force/torque values
+        timer += period.toSec();
+        if (timer >= next_sampling_time) {
+          tau_ext_print.push_back(robot_state.tau_ext_hat_filtered);
+          tau_d_print.push_back(robot_state.tau_J_d);
+          next_sampling_time += 0.1;
+        }
         
         // Get state variables
         std::array<double, 7> coriolis_array = model.coriolis(robot_state);

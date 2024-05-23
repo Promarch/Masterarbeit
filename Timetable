@@ -1,8 +1,18 @@
 Previously: 
 - First two and a half weeks mainly network set-up und installing kernel
 - Following week mainly first basic movement with python
+- Some time was spent to set up the dockerfile
 - Following week more advanced movement, like Multiple Waypoints or different cartesion coordinates
 - Following week trying out impedance control on python, realising it might be impossible/very difficult, switching to c++
 21.05.2024
 Wrote a bit of code, mainly copying existing examples. 
 Not really much output codewise, but I think I was able to understand quite a lot concerning the example codes. I should hopefully be able to finish my first own code tomorrow. 
+22.05.2024
+Modified existing code, setting a specific torque to a joint while having the others not move is working. 
+Will look at quaternion video, hopefully I can start setting new trajectories tomorrow
+23.05. 
+Unsurprisingly, I did not look at the quaternion video.
+Gutes Gespräch mit Niko, Idee ist, dass man quasi einen controller schreibt der von selbst den Workspace entdeckt. 
+Die Terme von Niko waren mehr oder weniger, dass man im Joint Space die Kräfte vorgibt, und da durch die Kinematik einige Redundanzen gegeben sind man im Nullspace Bewegungen vorgeben kann. 
+Alternatives Vorgehen ist, dass man einfach eine Viertelkugel abfährt und bei Widerstand einfach die nächste Bahn ansteuert und die gewollte Position abbricht. 
+Rest des Tages wurde damit benutzt einen Halbkreis in python zu diskretisieren, damit man diesen morgen in den Roboter einprogrammiert. 
