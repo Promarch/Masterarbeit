@@ -22,7 +22,8 @@
 						4,
 						5,
 						6,
-						7
+						7,
+						8
 					]
 				}
 			],
@@ -44,7 +45,8 @@
 						4,
 						5,
 						6,
-						7
+						7,
+						8
 					]
 				}
 			],
@@ -53,49 +55,56 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "CartesianImpedance_example::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-CartesianImpedance_example-Debug-12cb17d3f3ea9a0ac1b0.json",
+					"jsonFile" : "target-CartesianImpedance_example-Debug-e4049bda8bcd5fa2af35.json",
 					"name" : "CartesianImpedance_example",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "FirstImpedanceControl::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-FirstImpedanceControl-Debug-4c6b07f3af54bbde00e1.json",
+					"jsonFile" : "target-FirstImpedanceControl-Debug-28737fa12bbbe481d1b5.json",
 					"name" : "FirstImpedanceControl",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
+					"id" : "HalfCircle::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-HalfCircle-Debug-0354c87a88c7a93361eb.json",
+					"name" : "HalfCircle",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
 					"id" : "JointImpedanceControl::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-JointImpedanceControl-Debug-2316e144ec6346d881f6.json",
+					"jsonFile" : "target-JointImpedanceControl-Debug-2a0d3c76d1369ee02f9a.json",
 					"name" : "JointImpedanceControl",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "JointImpedanceControl_example::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-JointImpedanceControl_example-Debug-e143c0c401e7062ae651.json",
+					"jsonFile" : "target-JointImpedanceControl_example-Debug-c32752ee57b1da43665a.json",
 					"name" : "JointImpedanceControl_example",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "JointPositions2::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-JointPositions2-Debug-ee2d43e41ac492ee108f.json",
+					"jsonFile" : "target-JointPositions2-Debug-115f8b0d5ca3b411b2e8.json",
 					"name" : "JointPositions2",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "JointVelocity::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-JointVelocity-Debug-19b4d45be518f6e38ff8.json",
+					"jsonFile" : "target-JointVelocity-Debug-3228246900fc39b3af2b.json",
 					"name" : "JointVelocity",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "Waypoints::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-Waypoints-Debug-29039e829ece8750bcf0.json",
+					"jsonFile" : "target-Waypoints-Debug-76d99a3d6dc69cf0bb9a.json",
 					"name" : "Waypoints",
 					"projectIndex" : 0
 				},

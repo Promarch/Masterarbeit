@@ -10,7 +10,7 @@ x = [0] * r
 y = [1] * r
 alpha = np.pi/12
 # Runtime paramters
-t = 1   # time
+t = 0   # time
 stepsize = 0.1
 n_points = 10   # number of intervalls
 n = 1   #  counter for the angles
@@ -22,9 +22,23 @@ def plot_xy (x,y) :
     plt.axis('equal')
     plt.show()
 
+# %% 
+
+# Normal half circle
+t = np.linspace(0, 5, 50)
+r = 3
+
+x = r * np.cos(np.pi/2 + t* np.pi/5)
+y = r * np.sin(np.pi/2 + t* np.pi/5) - r
+
+plot_xy(x,y)
+
+
+# %%
+
+# Half circle with lines every 15°
 while y[-1]>-0.1 : 
     t = t+1
-    print(np.rad2deg(np.arctan(x[-1]/y[-1])), "\n")
     if np.abs(np.arctan(x[-1]/y[-1]))<=np.abs(n*alpha) and (((x[-1]**2+y[-1]**2)*1.01)>=r**2): 
         x = np.append(x, r * np.cos(np.pi/2 + alpha*(n-np.sign(n)) + alpha*np.sign(n) * (t*stepsize)))
         y = np.append(y, r * np.sin(np.pi/2 + alpha*(n-np.sign(n)) + alpha*np.sign(n) * (t*stepsize)))

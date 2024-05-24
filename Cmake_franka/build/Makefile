@@ -240,6 +240,19 @@ FirstImpedanceControl/fast:
 .PHONY : FirstImpedanceControl/fast
 
 #=============================================================================
+# Target rules for targets named HalfCircle
+
+# Build rule for target.
+HalfCircle: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 HalfCircle
+.PHONY : HalfCircle
+
+# fast build rule for target.
+HalfCircle/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HalfCircle.dir/build.make CMakeFiles/HalfCircle.dir/build
+.PHONY : HalfCircle/fast
+
+#=============================================================================
 # Target rules for targets named JointImpedanceControl_example
 
 # Build rule for target.
@@ -312,6 +325,30 @@ FirstImpedanceControl.s: FirstImpedanceControl.cpp.s
 FirstImpedanceControl.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/FirstImpedanceControl.dir/build.make CMakeFiles/FirstImpedanceControl.dir/FirstImpedanceControl.cpp.s
 .PHONY : FirstImpedanceControl.cpp.s
+
+HalfCircle.o: HalfCircle.cpp.o
+.PHONY : HalfCircle.o
+
+# target to build an object file
+HalfCircle.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HalfCircle.dir/build.make CMakeFiles/HalfCircle.dir/HalfCircle.cpp.o
+.PHONY : HalfCircle.cpp.o
+
+HalfCircle.i: HalfCircle.cpp.i
+.PHONY : HalfCircle.i
+
+# target to preprocess a source file
+HalfCircle.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HalfCircle.dir/build.make CMakeFiles/HalfCircle.dir/HalfCircle.cpp.i
+.PHONY : HalfCircle.cpp.i
+
+HalfCircle.s: HalfCircle.cpp.s
+.PHONY : HalfCircle.s
+
+# target to generate assembly for a file
+HalfCircle.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HalfCircle.dir/build.make CMakeFiles/HalfCircle.dir/HalfCircle.cpp.s
+.PHONY : HalfCircle.cpp.s
 
 JointImpedanceControl.o: JointImpedanceControl.cpp.o
 .PHONY : JointImpedanceControl.o
@@ -471,6 +508,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... CartesianImpedance_example"
 	@echo "... FirstImpedanceControl"
+	@echo "... HalfCircle"
 	@echo "... JointImpedanceControl"
 	@echo "... JointImpedanceControl_example"
 	@echo "... JointPositions2"
@@ -483,6 +521,9 @@ help:
 	@echo "... FirstImpedanceControl.o"
 	@echo "... FirstImpedanceControl.i"
 	@echo "... FirstImpedanceControl.s"
+	@echo "... HalfCircle.o"
+	@echo "... HalfCircle.i"
+	@echo "... HalfCircle.s"
 	@echo "... JointImpedanceControl.o"
 	@echo "... JointImpedanceControl.i"
 	@echo "... JointImpedanceControl.s"

@@ -27,6 +27,7 @@ SET(PROGRAM_files
   Waypoints
   JointImpedanceControl
   FirstImpedanceControl
+  HalfCircle
   JointImpedanceControl_example
   CartesianImpedance_example
 )

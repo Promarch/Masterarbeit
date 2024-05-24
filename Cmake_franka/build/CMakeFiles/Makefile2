@@ -69,6 +69,7 @@ all: CMakeFiles/JointPositions2.dir/all
 all: CMakeFiles/Waypoints.dir/all
 all: CMakeFiles/JointImpedanceControl.dir/all
 all: CMakeFiles/FirstImpedanceControl.dir/all
+all: CMakeFiles/HalfCircle.dir/all
 all: CMakeFiles/JointImpedanceControl_example.dir/all
 all: CMakeFiles/CartesianImpedance_example.dir/all
 .PHONY : all
@@ -84,6 +85,7 @@ clean: CMakeFiles/JointPositions2.dir/clean
 clean: CMakeFiles/Waypoints.dir/clean
 clean: CMakeFiles/JointImpedanceControl.dir/clean
 clean: CMakeFiles/FirstImpedanceControl.dir/clean
+clean: CMakeFiles/HalfCircle.dir/clean
 clean: CMakeFiles/JointImpedanceControl_example.dir/clean
 clean: CMakeFiles/CartesianImpedance_example.dir/clean
 .PHONY : clean
@@ -95,7 +97,7 @@ clean: CMakeFiles/CartesianImpedance_example.dir/clean
 CMakeFiles/examples_common.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/examples_common.dir/build.make CMakeFiles/examples_common.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/examples_common.dir/build.make CMakeFiles/examples_common.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=15,16 "Built target examples_common"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=17,18 "Built target examples_common"
 .PHONY : CMakeFiles/examples_common.dir/all
 
 # Build rule for subdir invocation for target.
@@ -121,7 +123,7 @@ CMakeFiles/examples_common.dir/clean:
 CMakeFiles/JointVelocity.dir/all: CMakeFiles/examples_common.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointVelocity.dir/build.make CMakeFiles/JointVelocity.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointVelocity.dir/build.make CMakeFiles/JointVelocity.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=11,12 "Built target JointVelocity"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=13,14 "Built target JointVelocity"
 .PHONY : CMakeFiles/JointVelocity.dir/all
 
 # Build rule for subdir invocation for target.
@@ -147,7 +149,7 @@ CMakeFiles/JointVelocity.dir/clean:
 CMakeFiles/JointPositions2.dir/all: CMakeFiles/examples_common.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions2.dir/build.make CMakeFiles/JointPositions2.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions2.dir/build.make CMakeFiles/JointPositions2.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=9,10 "Built target JointPositions2"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=11,12 "Built target JointPositions2"
 .PHONY : CMakeFiles/JointPositions2.dir/all
 
 # Build rule for subdir invocation for target.
@@ -173,7 +175,7 @@ CMakeFiles/JointPositions2.dir/clean:
 CMakeFiles/Waypoints.dir/all: CMakeFiles/examples_common.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Waypoints.dir/build.make CMakeFiles/Waypoints.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Waypoints.dir/build.make CMakeFiles/Waypoints.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=13,14 "Built target Waypoints"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=15,16 "Built target Waypoints"
 .PHONY : CMakeFiles/Waypoints.dir/all
 
 # Build rule for subdir invocation for target.
@@ -199,7 +201,7 @@ CMakeFiles/Waypoints.dir/clean:
 CMakeFiles/JointImpedanceControl.dir/all: CMakeFiles/examples_common.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl.dir/build.make CMakeFiles/JointImpedanceControl.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl.dir/build.make CMakeFiles/JointImpedanceControl.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=5,6 "Built target JointImpedanceControl"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=7,8 "Built target JointImpedanceControl"
 .PHONY : CMakeFiles/JointImpedanceControl.dir/all
 
 # Build rule for subdir invocation for target.
@@ -245,13 +247,39 @@ CMakeFiles/FirstImpedanceControl.dir/clean:
 .PHONY : CMakeFiles/FirstImpedanceControl.dir/clean
 
 #=============================================================================
+# Target rules for target CMakeFiles/HalfCircle.dir
+
+# All Build rule for target.
+CMakeFiles/HalfCircle.dir/all: CMakeFiles/examples_common.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HalfCircle.dir/build.make CMakeFiles/HalfCircle.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HalfCircle.dir/build.make CMakeFiles/HalfCircle.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=5,6 "Built target HalfCircle"
+.PHONY : CMakeFiles/HalfCircle.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/HalfCircle.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles 4
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/HalfCircle.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles 0
+.PHONY : CMakeFiles/HalfCircle.dir/rule
+
+# Convenience name for target.
+HalfCircle: CMakeFiles/HalfCircle.dir/rule
+.PHONY : HalfCircle
+
+# clean rule for target.
+CMakeFiles/HalfCircle.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HalfCircle.dir/build.make CMakeFiles/HalfCircle.dir/clean
+.PHONY : CMakeFiles/HalfCircle.dir/clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/JointImpedanceControl_example.dir
 
 # All Build rule for target.
 CMakeFiles/JointImpedanceControl_example.dir/all: CMakeFiles/examples_common.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl_example.dir/build.make CMakeFiles/JointImpedanceControl_example.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl_example.dir/build.make CMakeFiles/JointImpedanceControl_example.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=7,8 "Built target JointImpedanceControl_example"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=9,10 "Built target JointImpedanceControl_example"
 .PHONY : CMakeFiles/JointImpedanceControl_example.dir/all
 
 # Build rule for subdir invocation for target.
