@@ -28,7 +28,70 @@ int main () {
     // Variables to store force/torque data
     std::array<double, 7> force_print; 
     std::array<double, 7> torque_print; 
-    
+
+    // Randbedingungen und -variablen
+    const double radius{1.0};
+    double time = 0.0;
+    double time_max = 5;
+
+    try {
+            //Set Up
+        // connect to the robot
+        franka::Robot robot("192.168.1.11");
+        setDefaultBehavior(robot);
+        // Load Model for Jacobian
+        franka::Model model = robot.loadModel();
+
+        // Callback function
+        std::function<franka::JointVelocities(const franka::RobotState&, franka::Duration)> 
+            JointVelocities_control_callback = [&](const franka::RobotState& robot_state, franka::Duration period) -> franka::JointVelocities {
+
+            time += period.toSec();
+            // Get state variables
+            std::array<double, 42> jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
+            Eigen::Map<const Eigen::Matrix<double,6,7>> jacobian(jacobian_array.data());
+
+            // Calculate y and z speeds
+            double dy = radius * -M_PI/time_max * (cos(time * M_PI/time_max));
+            double dz = radius * -M_PI/time_max * (sin(time * M_PI/time_max));
+
+            // Calculate factor to smooth function
+            double factor = (1 - cos(M_PI * time/(time_max/2) )) / 2.0;
+
+            // Define workspace array
+            Eigen::VectorXd wd(6);
+            wd.setZero();
+            wd(1) = dy;
+            wd(2) = dz;
+            
+            // Compute desired Joint velocities
+            Eigen::VectorXd JointVelocities(7);
+            JointVelocities << jacobian.transpose() * wd * factor;
+
+            std::array<double, 7> JointVelocities_array{};
+            Eigen::VectorXd::Map(&JointVelocities_array[0], 7) = JointVelocities;
+            franka::JointVelocities output = JointVelocities_array;
+            
+
+            if (time >= time_max) {
+                std::cout << std::endl << "Finished motion, shutting down example" << std::endl;
+                return franka::MotionFinished(output);
+            }
+
+            return output;
+        };
+
+        robot.control(JointVelocities_control_callback);
+
+    }
+    catch (const franka::Exception& ex) {
+        std::cout << ex.what() << std::endl;
+    }
+
+    return 0;
+}
+
+    /*
         // Compliance parameters
     const double translational_stiffness{150.0};
     const double rotational_stiffness{10.0};
@@ -41,54 +104,4 @@ int main () {
     damping.setZero();
     damping.topLeftCorner(3, 3) << 2.0 * sqrt(translational_stiffness) * Eigen::MatrixXd::Identity(3, 3);
     damping.bottomRightCorner(3, 3) << 2.0* sqrt(rotational_stiffness) * Eigen::MatrixXd::Identity(3, 3);
-
-    // Geometric variables
-    const double radius{10.0};
-    double time = 0.0;
-
-    try {
-            //Set Up
-        // connect to the robot
-        franka::Robot robot("192.168.1.11");
-        setDefaultBehavior(robot);
-        // Load Model 
-        franka::Model model = robot.loadModel();
-
-        // Get starting position
-        franka::RobotState initial_state = robot.readOnce();
-        Eigen::Affine3d initial_transform(Eigen::Matrix4d::Map(initial_state.O_T_EE.data()));
-        Eigen::Vector3d init_pos(initial_transform.translation());
-        Eigen::Quaterniond init_rot(initial_transform.linear());
-
-        // Callback function
-        std::function<franka::Torques(const franka::RobotState&, franka::Duration)> 
-            impedance_control_callback = [&](const franka::RobotState& robot_state, franka::Duration period) -> franka::Torques {
-
-            time += period.toSec();
-            // Get state variables
-            std::array<double, 7> coriolis_array = model.coriolis(robot_state);
-            std::array<double, 42> jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
-
-            // Convert to eigen
-            Eigen::Map<const Eigen::Matrix<double,7,1>> coriolis(coriolis_array.data());
-            Eigen::Map<const Eigen::Matrix<double,6,7>> jacobian(jacobian_array.data());
-            Eigen::Map<const Eigen::Matrix<double,7,1>> q(robot_state.q.data());
-            Eigen::Map<const Eigen::Matrix<double,7,1>> dq(robot_state.dq.data());
-            Eigen::Affine3d transform_matrix(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
-            Eigen::Vector3d position(transform_matrix.translation());
-            Eigen::Quaterniond orientation(transform_matrix.linear());
-
-                // Computation of the desired pose
-            Eigen::Matrix<double, 6,1> des_pos;
-            des_pos.setZero();
-            des_pos[0] = radius * cos(M_PI_2 + time * M_PI/5);
-            des_pos[1] = radius * sin(M_PI_2 + time * M_PI/5) - radius;
-        };
-
-    }
-    catch (const franka::Exception& ex) {
-        std::cout << ex.what() << std::endl;
-    }
-
-    return 0;
-}
+    */
