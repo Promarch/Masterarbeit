@@ -36,6 +36,11 @@
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/CircleExplore.dir/CircleExplore.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/CircleExplore.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/CircleExplore.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl_example.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl_example.cpp"
 },

@@ -253,6 +253,19 @@ HalfCircle/fast:
 .PHONY : HalfCircle/fast
 
 #=============================================================================
+# Target rules for targets named CircleExplore
+
+# Build rule for target.
+CircleExplore: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CircleExplore
+.PHONY : CircleExplore
+
+# fast build rule for target.
+CircleExplore/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CircleExplore.dir/build.make CMakeFiles/CircleExplore.dir/build
+.PHONY : CircleExplore/fast
+
+#=============================================================================
 # Target rules for targets named JointImpedanceControl_example
 
 # Build rule for target.
@@ -301,6 +314,30 @@ CartesianImpedance_example.s: CartesianImpedance_example.cpp.s
 CartesianImpedance_example.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/CartesianImpedance_example.dir/build.make CMakeFiles/CartesianImpedance_example.dir/CartesianImpedance_example.cpp.s
 .PHONY : CartesianImpedance_example.cpp.s
+
+CircleExplore.o: CircleExplore.cpp.o
+.PHONY : CircleExplore.o
+
+# target to build an object file
+CircleExplore.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CircleExplore.dir/build.make CMakeFiles/CircleExplore.dir/CircleExplore.cpp.o
+.PHONY : CircleExplore.cpp.o
+
+CircleExplore.i: CircleExplore.cpp.i
+.PHONY : CircleExplore.i
+
+# target to preprocess a source file
+CircleExplore.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CircleExplore.dir/build.make CMakeFiles/CircleExplore.dir/CircleExplore.cpp.i
+.PHONY : CircleExplore.cpp.i
+
+CircleExplore.s: CircleExplore.cpp.s
+.PHONY : CircleExplore.s
+
+# target to generate assembly for a file
+CircleExplore.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CircleExplore.dir/build.make CMakeFiles/CircleExplore.dir/CircleExplore.cpp.s
+.PHONY : CircleExplore.cpp.s
 
 FirstImpedanceControl.o: FirstImpedanceControl.cpp.o
 .PHONY : FirstImpedanceControl.o
@@ -507,6 +544,7 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... CartesianImpedance_example"
+	@echo "... CircleExplore"
 	@echo "... FirstImpedanceControl"
 	@echo "... HalfCircle"
 	@echo "... JointImpedanceControl"
@@ -518,6 +556,9 @@ help:
 	@echo "... CartesianImpedance_example.o"
 	@echo "... CartesianImpedance_example.i"
 	@echo "... CartesianImpedance_example.s"
+	@echo "... CircleExplore.o"
+	@echo "... CircleExplore.i"
+	@echo "... CircleExplore.s"
 	@echo "... FirstImpedanceControl.o"
 	@echo "... FirstImpedanceControl.i"
 	@echo "... FirstImpedanceControl.s"
