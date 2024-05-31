@@ -1,0 +1,31 @@
+
+
+control loop = {
+    
+        // Create desired position
+    // Select a random position on the circle
+    theta = rand(0, -PI)
+    w_d_y = r * cos(theta)
+    w_d_z = r* sin(theta)
+    phi_d = -theta       //wo ist mein theta null? Wenn der greifer nach unten zeigt? davon müsste man es abhängig machen 
+    // Compute array
+    kappa = ones(6)
+    w_d = zeros(6)
+    w_d_y = w_d(1)
+    w_d_z = w_d(2)
+    phi_d = w_d(3)
+
+
+    dw_d = zeros(7); 
+
+    for i in (1,2,3): 
+        if K_F_ext_hat_K[i]>10 : 
+            kappa[i] -= 0.1
+
+    // Hier noch wahrscheinlich abrupte Geschwindigkeitsveränderungen aufweichen
+
+    dq = jacobian.transpose() * (kappa * (w_d - w) + (1-kappa) * dq)
+
+    return franka::JointVelocities dq
+
+}

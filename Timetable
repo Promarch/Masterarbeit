@@ -16,3 +16,23 @@ Gutes Gespräch mit Niko, Idee ist, dass man quasi einen controller schreibt der
 Die Terme von Niko waren mehr oder weniger, dass man im Joint Space die Kräfte vorgibt, und da durch die Kinematik einige Redundanzen gegeben sind man im Nullspace Bewegungen vorgeben kann. 
 Alternatives Vorgehen ist, dass man einfach eine Viertelkugel abfährt und bei Widerstand einfach die nächste Bahn ansteuert und die gewollte Position abbricht. 
 Rest des Tages wurde damit benutzt einen Halbkreis in python zu diskretisieren, damit man diesen morgen in den Roboter einprogrammiert. 
+
+27.05
+Vormittag nicht sehr produktiv, bisschen probiert zu überlegen wie ich's machen könnte, bin aber nicht wirklich weit gekommen. 
+Nachmittags dann hauptsächlich Roboterdynamik angeschaut. Allgemein muss ich wahrscheinlich meine Roboterprogrammierung über die Jakobimatrizen machen, 
+muss mir daher halt auch überlegen wie ich die Geschwindigkeiten im Arbeitsraum definiere damit sich diese sinnvoll auf die gelenkwinkel übersetzen. 
+Allgemeine Frage die ich noch habe ist wie sie im Beispiel quasi die Gelenkgeschwindigkeiten berechnen, aber im Anschluss die Gelenkmomente angeben. 
+28.05.
+Vormittags Videos von Roboterdynamik angeschaut, Nachmittags dann versucht wieder den Roboter zu steuern. 
+Gegen Ende hab ich's dann mit der Transformationsmatrix hinbekommen, aber es ist echt noch viel zu tun. 
+29.05.
+Vormittags damit verbracht rauszufinden wie man am besten einen Halbkreis programmiert, nur um herauszufinden dass es mit meiner Methode sehr schwierig wird.  
+Idee: Ich definiere mir eine viertelkugel innerhalb dessen mein roboter sich bewegen darf. 
+Sollte sich der Roboter ausserhalb dieser Kugel befinden wird ein fehler auf die gewünschte Geschwindigkeit addiert, damit man wieder zurück zur eigentlichen Kugel kommt. 
+Davon abgesehen wird eine Geschwindigkeit im Arbeitsraum vorgegeben und mit der Jacobimatrix in den Gelenkraum projiziert. Wenn die Kraft einen gewissen Schwellwert überschreitet wird die Bewegung in dieser Richtung langsamer und eine zusätzliche Geschwindigkeit wird dazu geschaltet. Sollte die Kraft weitersteigen wird die entgegengesetzte Richtung angesteuert. 
+31.05. 
+Weitere Ideen:
+- Muss ne Anlauf und Auslaufphase einplanen, da sich sonst mein Roboter über nicht kontinuierliche Beschleunigungen beschwert. 
+- w_d könnte ein zufälliger Punkt auf der Viertelkugel sein, und die Geschwindigkeit werden dann durch (w_d-w) angepasst. Die Orientierung könnte man auch immer so angeben, dass die x-achse auf den Ursprung der Kugel zeigt. 
+- Falls Kraft höher wird, versuchen die Geschwindigkeiten leicht zu modifizieren, wenn Kraft kleiner wird, weiter machen, wenn nicht, andere Richtung einschlagen, Bedingung wäre, dass die Richtung noch immer in Richtung w_d ist. 
+Optimierung des vorherigen Punktes: (hier geht's vorerst nur um Geschwindigkeit, kp was ich mit der Positionsdifferenz mache). Die Richtung der Geschwindigkeit wird in einen tangentialen und senkrechten Anteil unterteilt. Der tangentiale Anteil ist proportional zur Kraft, die in die selbe Richtung wirkt. Falls ein hoher wiederstand da ist, wird die Kraft dementsprechend langsamer. Eine Idee könnte sein, dass es ein Minimum an Geschwindigkeit gibt, damit man bei zu hohen Kräften auch die Bewegung abbrechen kann (und dann einen neuen Punkt berechnet). Die senkrechte Geschwindigkeit besteht aus dem Vorzeichen und dem eigentlichen Wert. Ähnlich dem tangentialen Anteil ist die Geschwindigkeit vom senkrechten Anteil proportional zur Kraft in die Richtung, mit dem Unterschied dass wenn die Kraft erreicht ist sich das Vorzeichen ändert und der Roboter in die andere Richtung fährt. Ich wüsste in dem Fall ehrlich gesagt auch nicht wofür ich w_d verwenden würde, da ich die Differenz ja mehr oder weniger in den ganzen bums einbaue. Vielleicht dass der Roboter langsamer wird wenn er in die nähe des Ziels kommt, damit es nicht zu einem brutalen Richtungswechsel kommt wenn ein neues Ziel eingetragen wird. 
