@@ -19,7 +19,7 @@ void setDefaultBehavior(franka::Robot& robot) {
         {{20.0, 20.0, 18.0, 18.0, 16.0, 14.0, 12.0}}, {{20.0, 20.0, 18.0, 18.0, 16.0, 14.0, 12.0}},
         {{20.0, 20.0, 20.0, 25.0, 25.0, 25.0}}, {{20.0, 20.0, 20.0, 25.0, 25.0, 25.0}},
         {{20.0, 20.0, 20.0, 25.0, 25.0, 25.0}}, {{20.0, 20.0, 20.0, 25.0, 25.0, 25.0}});
-    robot.setJointImpedance({{3000, 3000, 3000, 1000, 3000, 3000, 3000}});
+    robot.setJointImpedance({{3000, 3000, 3000, 2500, 2500, 2000, 2000}});
     robot.setCartesianImpedance({{3000, 3000, 3000, 300, 300, 300}});
 }
 
@@ -38,7 +38,7 @@ int main () {
     // Randbedingungen und -variablen
     const double radius{0.1};
     double time = 0.0;
-    double time_max = 5;
+    double time_max = 10;
 
     try {
             //Set Up
@@ -59,21 +59,25 @@ int main () {
             time += period.toSec();
 
             // set y and z positions
-            double y = radius * -sin(time * M_PI/time_max);
-            double z = radius * cos(time * M_PI/time_max) - radius;
+            double y = abs(radius * -sin(time * 2*M_PI/time_max));
+            double z = radius * cos(time * 2*M_PI/time_max) - radius; //
             // Calculate factor to smooth function
-            double factor = (1 - cos(M_PI * time/(time_max/2) )) / 2.0; // Sinusosidal function that goes from 0 to 0 during time_max
+            double period_1 = (1 - std::cos(M_PI * time/(time_max/2) )) / 2.0;      // Sinusosidal function with 1 period during time_max
+            double period_2 = (1 - cos(M_PI * time/(time_max/2/2) )) / 2.0;    // Sinusosidal function with 2 periods during time_max
 
-            // Normal way
-            franka::CartesianPose pose_desired = initial_pose; 
-            pose_desired.O_T_EE[13] += y * factor;
-//            pose_desired.O_T_EE[14] += z * factor;
+                // Create new Translation matrix to try doing the same shit with eigen
+            Eigen::Matrix4d pose_out, translation(Eigen::Matrix4d::Identity()), rotation(Eigen::Matrix4d::Identity());
+            // Translation to control the movement (half circle)
+            translation(1,3) = (translation(1,3) + y) * period_2; 
+            translation(2,3) = (translation(2,3) + z) * period_1;
+            // Rotation to control the gripper 
+            double theta = -M_PI_2 * period_1; // periodical function that peaks at pi/2 at time_max/2
+            Eigen::Vector3d axis(1,0,0); // rotation axis (here I want a rotation around the x-axis)
+            Eigen::AngleAxisd rotation_vector(theta, axis); // rotation vector, needed in the next step
+            rotation.block<3,3>(0,0) = rotation_vector.toRotationMatrix();  // put the rotation into the translation matrix
+            // Compute the desired position
+            pose_out = translation * initial_transformation * rotation; // 
 
-            // Create new Translation matrix to try doing the same shit with eigen
-            Eigen::Matrix4d pose_out, transformation(Eigen::Matrix4d::Identity());
-            transformation(1,3) = transformation(1,3) + y * factor; 
-            transformation(2,3) = transformation(2,3) + z * factor; 
-            pose_out = initial_transformation * transformation; 
             // Convert to array
             std::array<double, 16> pose_out_array; 
             Eigen::Map<Eigen::Matrix<double, 4, 4, Eigen::ColMajor>>(pose_out_array.data()) = pose_out;
@@ -87,6 +91,7 @@ int main () {
         };
 
         // Callback function for force
+/*
         std::function<franka::JointVelocities(const franka::RobotState&, franka::Duration)> 
             JointVelocities_control_callback = [&](const franka::RobotState& robot_state, franka::Duration period) -> franka::JointVelocities {
 
@@ -117,7 +122,7 @@ int main () {
             franka::JointVelocities output = JointVelocities_array;
             
             };
-
+*/
         robot.control(cartesian_pose_callback);
 
     }

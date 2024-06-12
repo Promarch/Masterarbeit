@@ -28,6 +28,9 @@ SET(PROGRAM_files
   JointImpedanceControl
   FirstImpedanceControl
   HalfCircle
+  CircleExplore
+  OrientationControl
+  ForceControl
   JointImpedanceControl_example
   CartesianImpedance_example
 )

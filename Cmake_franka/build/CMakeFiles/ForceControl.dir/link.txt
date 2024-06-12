@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/ForceControl.dir/ForceControl.cpp.o -o ForceControl  libexamples_common.a /usr/lib/libfranka.so.0.10.0 

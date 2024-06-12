@@ -266,6 +266,32 @@ CircleExplore/fast:
 .PHONY : CircleExplore/fast
 
 #=============================================================================
+# Target rules for targets named OrientationControl
+
+# Build rule for target.
+OrientationControl: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 OrientationControl
+.PHONY : OrientationControl
+
+# fast build rule for target.
+OrientationControl/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OrientationControl.dir/build.make CMakeFiles/OrientationControl.dir/build
+.PHONY : OrientationControl/fast
+
+#=============================================================================
+# Target rules for targets named ForceControl
+
+# Build rule for target.
+ForceControl: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ForceControl
+.PHONY : ForceControl
+
+# fast build rule for target.
+ForceControl/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ForceControl.dir/build.make CMakeFiles/ForceControl.dir/build
+.PHONY : ForceControl/fast
+
+#=============================================================================
 # Target rules for targets named JointImpedanceControl_example
 
 # Build rule for target.
@@ -362,6 +388,30 @@ FirstImpedanceControl.s: FirstImpedanceControl.cpp.s
 FirstImpedanceControl.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/FirstImpedanceControl.dir/build.make CMakeFiles/FirstImpedanceControl.dir/FirstImpedanceControl.cpp.s
 .PHONY : FirstImpedanceControl.cpp.s
+
+ForceControl.o: ForceControl.cpp.o
+.PHONY : ForceControl.o
+
+# target to build an object file
+ForceControl.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ForceControl.dir/build.make CMakeFiles/ForceControl.dir/ForceControl.cpp.o
+.PHONY : ForceControl.cpp.o
+
+ForceControl.i: ForceControl.cpp.i
+.PHONY : ForceControl.i
+
+# target to preprocess a source file
+ForceControl.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ForceControl.dir/build.make CMakeFiles/ForceControl.dir/ForceControl.cpp.i
+.PHONY : ForceControl.cpp.i
+
+ForceControl.s: ForceControl.cpp.s
+.PHONY : ForceControl.s
+
+# target to generate assembly for a file
+ForceControl.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ForceControl.dir/build.make CMakeFiles/ForceControl.dir/ForceControl.cpp.s
+.PHONY : ForceControl.cpp.s
 
 HalfCircle.o: HalfCircle.cpp.o
 .PHONY : HalfCircle.o
@@ -483,6 +533,30 @@ JointVelocity.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointVelocity.dir/build.make CMakeFiles/JointVelocity.dir/JointVelocity.cpp.s
 .PHONY : JointVelocity.cpp.s
 
+OrientationControl.o: OrientationControl.cpp.o
+.PHONY : OrientationControl.o
+
+# target to build an object file
+OrientationControl.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OrientationControl.dir/build.make CMakeFiles/OrientationControl.dir/OrientationControl.cpp.o
+.PHONY : OrientationControl.cpp.o
+
+OrientationControl.i: OrientationControl.cpp.i
+.PHONY : OrientationControl.i
+
+# target to preprocess a source file
+OrientationControl.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OrientationControl.dir/build.make CMakeFiles/OrientationControl.dir/OrientationControl.cpp.i
+.PHONY : OrientationControl.cpp.i
+
+OrientationControl.s: OrientationControl.cpp.s
+.PHONY : OrientationControl.s
+
+# target to generate assembly for a file
+OrientationControl.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OrientationControl.dir/build.make CMakeFiles/OrientationControl.dir/OrientationControl.cpp.s
+.PHONY : OrientationControl.cpp.s
+
 Waypoints.o: Waypoints.cpp.o
 .PHONY : Waypoints.o
 
@@ -546,11 +620,13 @@ help:
 	@echo "... CartesianImpedance_example"
 	@echo "... CircleExplore"
 	@echo "... FirstImpedanceControl"
+	@echo "... ForceControl"
 	@echo "... HalfCircle"
 	@echo "... JointImpedanceControl"
 	@echo "... JointImpedanceControl_example"
 	@echo "... JointPositions2"
 	@echo "... JointVelocity"
+	@echo "... OrientationControl"
 	@echo "... Waypoints"
 	@echo "... examples_common"
 	@echo "... CartesianImpedance_example.o"
@@ -562,6 +638,9 @@ help:
 	@echo "... FirstImpedanceControl.o"
 	@echo "... FirstImpedanceControl.i"
 	@echo "... FirstImpedanceControl.s"
+	@echo "... ForceControl.o"
+	@echo "... ForceControl.i"
+	@echo "... ForceControl.s"
 	@echo "... HalfCircle.o"
 	@echo "... HalfCircle.i"
 	@echo "... HalfCircle.s"
@@ -577,6 +656,9 @@ help:
 	@echo "... JointVelocity.o"
 	@echo "... JointVelocity.i"
 	@echo "... JointVelocity.s"
+	@echo "... OrientationControl.o"
+	@echo "... OrientationControl.i"
+	@echo "... OrientationControl.s"
 	@echo "... Waypoints.o"
 	@echo "... Waypoints.i"
 	@echo "... Waypoints.s"

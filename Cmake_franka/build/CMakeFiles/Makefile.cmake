@@ -75,6 +75,8 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/FirstImpedanceControl.dir/DependInfo.cmake"
   "CMakeFiles/HalfCircle.dir/DependInfo.cmake"
   "CMakeFiles/CircleExplore.dir/DependInfo.cmake"
+  "CMakeFiles/OrientationControl.dir/DependInfo.cmake"
+  "CMakeFiles/ForceControl.dir/DependInfo.cmake"
   "CMakeFiles/JointImpedanceControl_example.dir/DependInfo.cmake"
   "CMakeFiles/CartesianImpedance_example.dir/DependInfo.cmake"
   )

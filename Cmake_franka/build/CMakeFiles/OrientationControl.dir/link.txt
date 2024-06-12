@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/OrientationControl.dir/OrientationControl.cpp.o -o OrientationControl  libexamples_common.a /usr/lib/libfranka.so.0.10.0 

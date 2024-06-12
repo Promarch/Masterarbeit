@@ -42,21 +42,24 @@ int main(int argc, char** argv) {
     // Positions
     std::array<double, 7> initial_position;
     std::array<double, 7> start_position = robot.readOnce().q_d;
-    // std::array<double, 7> pos1 = {0.23, -0.75, 0.72, -2.63, 0, 1.86, 1.21}; // Pos for waypoints
+    //std::array<double, 7> pos1 = {0.23, -0.75, 0.72, -2.63, 0, 1.86, 1.21}; // Pos for waypoints
     std::array<double, 7> pos1 = {1.42, 0.15, -0.15, -2.87, 0.21, 2.64, 0.69};  // Pos for rubber band tests
+    //std::array<double, 7> pos1 = {0.01, -0.97, -0.01, -3.06, -0.16, 2.02, 0.65};  // Pos for sleep
+    //std::array<double, 7> pos1 = {{0, -M_PI_4, 0, -3 * M_PI_4, 0, M_PI_2, M_PI_4}}; // Pos for half circle
     std::array<double, 7> pos2 = {-0.32, -0.23, -0.33, -2.68, 0.09, 2.27, 0.43};
     std::array<double, 7> deltaPos;
     // Substract the initial position from the second position
     std::transform(pos1.begin(), pos1.end(), start_position.begin(), deltaPos.begin(), std::minus<double>() );
     // Time 
     double time = 0.0;
+    double time_max = 3; 
     double sampling_interval = 0.1;
     double next_sampling_time = sampling_interval;
     // Sampled force/torque values
     std::vector<std::array<double, 6>> force_torque_data;
     
     
-    robot.control([&initial_position, &pos1, &pos2, &time, &next_sampling_time, &force_torque_data, &dq_d_values, &deltaPos]
+    robot.control([&initial_position, &pos1, &pos2, &time, &time_max, &next_sampling_time, &force_torque_data, &dq_d_values, &deltaPos]
                                 (const franka::RobotState& robot_state, franka::Duration period) -> franka::JointPositions {
       time += period.toSec();
       if (time == 0.0) {
@@ -70,7 +73,7 @@ int main(int argc, char** argv) {
       }
 
       std::array<double, 7> target_position;
-      double factor = (1 - std::cos(M_PI * time/5 )) / 2.0;
+      double factor = (1 - std::cos(M_PI * time/time_max )) / 2.0;
       for (size_t i = 0; i<7; i++) {
         target_position[i] = initial_position[i] + deltaPos[i]*factor;
       }
@@ -94,7 +97,7 @@ int main(int argc, char** argv) {
       dq_d_values.push_back(robot_state.dq_d);
 */
 
-      if (time >= 5.0) {
+      if (time >= time_max) {
         std::cout << std::endl << "Finished motion, shutting down example" << std::endl;
 
         return franka::MotionFinished(output);

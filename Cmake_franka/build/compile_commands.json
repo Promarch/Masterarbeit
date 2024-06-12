@@ -41,6 +41,16 @@
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/OrientationControl.dir/OrientationControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/OrientationControl.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/OrientationControl.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ForceControl.dir/ForceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl_example.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl_example.cpp"
 },

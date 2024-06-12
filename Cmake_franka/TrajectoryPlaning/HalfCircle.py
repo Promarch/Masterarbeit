@@ -21,15 +21,22 @@ def plot_xy (x,y) :
     plt.plot(x,y, '+')
     plt.axis('equal')
     plt.show()
+# %%
 
+# Test to look at the sinusoidal period im using to smooth the trajectory
+time_max = 5; 
+time = np.linspace(0,5,50)
+factor = (1 - np.cos(np.pi * time/(time_max/2) )) / 3.0
+
+plot_xy(time, factor)
 # %% 
 
 # Normal half circle
 t = np.linspace(0, 5, 50)
 r = 3
 
-x = r * np.cos(np.pi/2 + t* np.pi/5)
-y = r * np.sin(np.pi/2 + t* np.pi/5) - r
+x = r * -np.sin(t* np.pi/5)
+y = r * np.cos(t* np.pi/5) - r
 
 plot_xy(x,y)
 
