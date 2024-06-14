@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
     std::transform(pos1.begin(), pos1.end(), start_position.begin(), deltaPos.begin(), std::minus<double>() );
     // Time 
     double time = 0.0;
-    double time_max = 3; 
+    double time_max = 3;
     double sampling_interval = 0.1;
     double next_sampling_time = sampling_interval;
     // Sampled force/torque values

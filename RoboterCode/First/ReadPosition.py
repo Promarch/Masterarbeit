@@ -15,7 +15,7 @@ x_rot = np.arctan2(rot_matrix[2, 1], rot_matrix[2, 2])
 print("Current Joint position:", q)
 print("Current Cartesian position:", robot.current_pose)
 print("Translation matrix: \n", np.round(trans_matrix,3))
-print(f"X-Rotation: {np.rad2deg(x_rot)}, y-rotation: {np.rad2deg(y_rot)}, z-rotation: {np.rad2deg(z_rot)}")
+print(f"x-Rotation: {np.rad2deg(x_rot)}, y-rotation: {np.rad2deg(y_rot)}, z-rotation: {np.rad2deg(z_rot)}")
 
 
 #print("Current x-force: ", Measure.FORCE_X)
