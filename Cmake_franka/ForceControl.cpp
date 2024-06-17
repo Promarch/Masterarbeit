@@ -57,7 +57,7 @@ Eigen::Matrix<double, 6, 1> OrientationToEE(const franka::RobotState& robot_stat
 
   // Apply the rotation
   vector.head(3) = rotation * vector.head(3);
-  // vector.tail(3) = rotation * vector.tail(3); 
+  vector.tail(3) = rotation * vector.tail(3); 
 
   return vector; 
 
@@ -84,6 +84,20 @@ void writeDataToFileImpl(const std::vector<std::array<double, 7>>& data, const s
   }
 }
 
+// Get x_e, but with quaternions
+Eigen::Matrix<double, 6 ,1> computeTransformationQuat(const franka::RobotState& robot_state) {
+
+  Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
+  Eigen::Vector3d position(transform.translation());
+  Eigen::Quaterniond orientation(transform.linear());
+
+  Eigen::Matrix<double, 6 ,1> x_e; 
+  x_e.head(3) = position; 
+  x_e.tail(3) << orientation.x(), orientation.y(), orientation.z();
+
+  return x_e;
+}
+
 int main() {
   try {
     // Set Up basic robot function
@@ -94,7 +108,7 @@ int main() {
 
       // Damping/Stifness
     const double translation_stiffness{50.0};
-    const double rotation_stiffness{10.0};
+    const double rotation_stiffness{20.0};
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6); 
     K_p.topLeftCorner(3,3) *= translation_stiffness; 
@@ -110,32 +124,33 @@ int main() {
     double sampling_interval = 0.1;
     double next_sampling_time = 0;
 
-      // Trajectory variable
-    // Desired relative position, in EE (end-effector) coordinates
-    Eigen::Matrix<double, 6,1> delta = {0.0, 0.0, 0.0, 0.0, M_PI/10, 0.0};
-    delta = OrientationToEE(initial_state, delta); 
-
-    // Current position
-    Eigen::Matrix<double, 6,1> x_d; // x_d_test; x_d_test.setZero(); 
-    x_d = computeTransformation(initial_state) + delta; // Transform to 6x1 vector to use later with jacobian 
-    Eigen::Vector3d pos_d = x_d.head(3); // declared here so that it is not redeclared every time in the control loop
-    //x_d_test(1) = x_d(1); // Used to isolate a single component for testing reasons
+    // Initial position
+    Eigen::Affine3d transform_init(Eigen::Matrix4d::Map(initial_state.O_T_EE.data()));
+    Eigen::Vector3d position_init(transform_init.translation());
+    Eigen::Quaterniond rotation_init(transform_init.linear());
+    
+      // Desired relative position
+    Eigen::Matrix<double, 3,1> delta_pos, pos_d;
+    delta_pos = {0.0, -0.2, 0.0};
+    delta_pos = rotation_init * delta_pos; 
+      // Create quaternion to rotate around desired angle
+    double rot_angle = M_PI/6;
+    Eigen::Vector3d axis(1,0,0);
+    Eigen::AngleAxisd angle_axis(rot_angle, axis);
+    Eigen::Quaterniond rot_quaternion(angle_axis);
+    Eigen::Quaterniond rot_quaternion_rel = rotation_init * rot_quaternion * rotation_init.inverse();
+    // Compute the desired position and rotation
+    pos_d << position_init + delta_pos;
+    Eigen::Quaterniond rot_d = rot_quaternion_rel * rotation_init; 
+    
+    // Other variables
     double factor = 0;
 
-    
+
     auto force_control_callback = [&] (const franka::RobotState& robot_state, franka::Duration period) -> franka::Torques {
 
       time += period.toSec();
 
-      // Get current position and rotation
-      std::array<double, 42> jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
-      Eigen::Map<const Eigen::Matrix<double, 6,7>> jacobian(jacobian_array.data());
-      Eigen::Map<const Eigen::Matrix<double, 7,1>> dq(robot_state.dq.data()); 
-      Eigen::Matrix<double, 6,1> v_e = jacobian * dq; 
-      Eigen::Matrix<double, 6,1> x_e; // x_e_test; x_e_test.setZero();
-      x_e = computeTransformation(robot_state);
-      // x_e_test(1) = x_e(1); 
-      
       // acceleration time
       if (time<time_acc) {
         factor = (1 - std::cos(M_PI * time/time_acc))/2;
@@ -146,23 +161,46 @@ int main() {
       else {
         factor = (1 + std::cos(M_PI * (time-(time_max-time_dec))/time_dec))/2;
       }
-      
+
+        // Get state variables
+      std::array<double, 42> jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
+      Eigen::Map<const Eigen::Matrix<double, 6,7>> jacobian(jacobian_array.data());
+      Eigen::Map<const Eigen::Matrix<double, 7,1>> dq(robot_state.dq.data()); 
+        // Get current position
+      Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
+      Eigen::Vector3d position(transform.translation());
+      Eigen::Quaterniond rotation(transform.linear());
+
+        // Compute trajectory between current and desired orientation
+      // Positional error
+      Eigen::Matrix<double, 6,1> error; 
+      error.head(3) << pos_d - position; 
+      // Rotational error
+      if (rot_d.coeffs().dot(rotation.coeffs()) < 0.0) {
+        rotation.coeffs() << -rotation.coeffs();
+      }
+      // Difference quaternion
+      Eigen::Quaterniond error_quaternion(rotation.inverse() * rot_d);
+      error.tail(3) << error_quaternion.x(), error_quaternion.y(), error_quaternion.z();
+      // Transform to base frame
+      error.tail(3) << transform.linear() * error.tail(3);
+
       // Calculate the necessary wrench, from Handbook of robotics, Chap. 7
       Eigen::Matrix<double, 6,1> h_c; h_c.setZero();
-      h_c = K_p * (x_d-x_e) - K_d * v_e; 
+      Eigen::Matrix<double, 6,1> v_e = jacobian * dq; 
+      h_c = K_p * error - K_d * v_e; 
 
       // Calculate torque and map to an array
       std::array<double, 7> tau_d{};
       Eigen::VectorXd::Map(&tau_d[0], 7) = jacobian.transpose() * h_c * factor;
 
       // Calculate positional error for tests
-      Eigen::Vector3d pos_e = x_e.head<3>();
-      double distance = (pos_d-pos_e).norm(); 
+      double distance = (pos_d-position).norm(); 
 
       // Stop if time is reached
       if (time >= time_max) {
         std::cout << std::fixed << std::setprecision(3);
-        std::cout << "Time: " << time << std::endl << "Rotation error: " << std::endl << x_d.tail(3)-x_e.tail(3) << std::endl << "Position error: " << distance << std::endl << std::endl; 
+        std::cout << "Time: " << time << std::endl << "Rotation error: " << std::endl << error.tail(3) << std::endl << "Position error: " << distance << std::endl << std::endl; 
         std::cout << std::endl << "Finished motion, shutting down example" << std::endl;
         franka::Torques output = tau_d;
         return franka::MotionFinished(output);
@@ -171,7 +209,7 @@ int main() {
       // Print current wrench, time, and absolute positional error
       if (time >= next_sampling_time) {
         std::cout << std::fixed << std::setprecision(3);
-        std::cout << "Time: " << time << std::endl << "Rotation error: " << std::endl << x_d.tail(3)-x_e.tail(3) << std::endl << "Position error: " << distance << std::endl<< std::endl; 
+        std::cout << "Time: " << time << std::endl << "Rotation error: " << std::endl << error.tail(3) << std::endl << "Position error: " << distance << std::endl<< std::endl; 
         next_sampling_time += sampling_interval;
       }
 
