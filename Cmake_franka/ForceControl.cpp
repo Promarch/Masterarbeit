@@ -46,6 +46,19 @@ Eigen::Matrix<double, 6, 1> computeTransformation(const franka::RobotState& robo
     return x;
 }
 
+// Function that takes an orientation (position+rotation) and translates it in the EE coordinates
+Eigen::Matrix<double, 6, 1> OrientationToEE(const franka::RobotState& robot_state, Eigen::Matrix<double, 6,1> vector) {
+
+  // Get the rotation matrix from the translation matrix
+  Eigen::Matrix4d transformation(robot_state.O_T_EE.data());
+  Eigen::Matrix3d rotation = transformation.topLeftCorner(3,3); 
+
+  // Apply the rotation
+  vector.head(3) = rotation * vector.head(3);
+
+  return vector; 
+
+}
 // Macro to convert variable name to string
 #define writeDataToFile(data) writeDataToFileImpl(data, #data ".txt")
 void writeDataToFileImpl(const std::vector<std::array<double, 7>>& data, const std::string& filename) {
@@ -78,19 +91,30 @@ int main() {
       // Variables for the loop
     double time = 0.0;
     double time_max = 2.5;
-    double time_acc = 0.7;
+    double time_acc = 0.8;
     double sampling_interval = 0.1;
     double next_sampling_time = sampling_interval;
 
       // Trajectory variable
-    Eigen::Matrix<double, 6,1> delta = {0.0, 0.10, 0.0, 0.0, 0.0, 0.0};
-    Eigen::Matrix<double, 6,1> x_d, x_d_test; x_d_test.setZero(); 
-    x_d = computeTransformation(initial_state) + delta; // 
-    x_d_test(1) = x_d(1); 
+    // Desired relative position, in EE (end-effector) coordinates
+    Eigen::Matrix<double, 6,1> delta = {0.0, -0.1, 0.0, 0.0, 0.0, 0};
+    delta = OrientationToEE(initial_state, delta); 
+    /* 
+    Eigen::Vector3d delta_pos = delta.head(3);
+    Eigen::Matrix4d transform_init(initial_state.O_T_EE.data());
+    Eigen::Matrix3d rotation_init = transform_init.topLeftCorner(3, 3);
+    Eigen::Vector3d rotated_delta_pos = rotation_init * delta_pos;
+    delta.head(3) = rotated_delta_pos; 
+    */
+    // Current position
+    Eigen::Matrix<double, 6,1> x_d; // x_d_test; x_d_test.setZero(); 
+    x_d = computeTransformation(initial_state) + delta; // Transform to 6x1 vector to use later with jacobian 
+    Eigen::Vector3d pos_d = x_d.head(3); // declared here so that it is not redeclared every time in the control loop
+    //x_d_test(1) = x_d(1); // Used to isolate a single component for testing reasons
     double factor = 0;
 
       // Damping/Stifness
-    const double translation_stiffness{100.0};
+    const double translation_stiffness{50.0};
     const double rotation_stiffness{10.0};
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6); 
@@ -108,9 +132,10 @@ int main() {
       Eigen::Map<const Eigen::Matrix<double, 6,7>> jacobian(jacobian_array.data());
       Eigen::Map<const Eigen::Matrix<double, 7,1>> dq(robot_state.dq.data()); 
       Eigen::Matrix<double, 6,1> v_e = jacobian * dq; 
-      Eigen::Matrix<double, 6,1> x_e, x_e_test; x_e_test.setZero();
+      Eigen::Matrix<double, 6,1> x_e; // x_e_test; x_e_test.setZero();
       x_e = computeTransformation(robot_state);
-      x_e_test(1) = x_e(1); 
+      // x_e_test(1) = x_e(1); 
+      
       // acceleration time
       if (time<time_acc) {
         factor = (1 - std::cos(M_PI * time/time_acc))/2;
@@ -119,24 +144,32 @@ int main() {
         factor = 1;
       }
       
+      // Calculate the necessary wrench, from Handbook of robotics, Chap. 7
       Eigen::Matrix<double, 6,1> h_c; h_c.setZero();
-      x_e.setZero(); 
+      h_c = K_p * (x_d-x_e) - K_d * v_e; 
 
-      h_c = K_p * (x_d_test-x_e_test) - K_d * v_e; 
-
+      // Calculate torque and map to an array
       std::array<double, 7> tau_d{};
       Eigen::VectorXd::Map(&tau_d[0], 7) = jacobian.transpose() * h_c * factor;
 
+      // Calculate positional error for tests
+      Eigen::Vector3d pos_e = x_e.head<3>();
+      double distance = (pos_d-pos_e).norm(); 
+
+      // Stop if time is reached
       if (time >= time_max) {
-        std::cout << "Time: " << time << std::endl << "H_c: " << h_c << std::endl; 
+        std::cout << std::fixed << std::setprecision(3);
+        std::cout << "Time: " << time << std::endl << "Rotation error: " << x_d.tail(3)-x_e.tail(3) << std::endl << "Position error: " << distance << std::endl; 
         std::cout << std::endl << "Finished motion, shutting down example" << std::endl;
         franka::Torques output = tau_d;
         return franka::MotionFinished(output);
       }
 
+      // Print current wrench, time, and absolute positional error
       if (time >= next_sampling_time) {
-          std::cout << "Time: " << time << std::endl << "H_c: " << h_c << std::endl; 
-          next_sampling_time += sampling_interval;
+        std::cout << std::fixed << std::setprecision(3);
+        std::cout << "Time: " << time << std::endl << "Rotation error: " << x_d.tail(3)-x_e.tail(3) << std::endl << "Position error: " << distance << std::endl; 
+        next_sampling_time += sampling_interval;
       }
 
       return tau_d;
