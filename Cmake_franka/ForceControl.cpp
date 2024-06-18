@@ -69,8 +69,8 @@ int main() {
     franka::RobotState initial_state = robot.readOnce();
 
       // Damping/Stifness
-    const double translation_stiffness{250.0};
-    const double rotation_stiffness{50.0};
+    const double translation_stiffness{150.0};
+    const double rotation_stiffness{75.0};
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6); 
     K_p.topLeftCorner(3,3) *= translation_stiffness; 
@@ -92,17 +92,25 @@ int main() {
     Eigen::Quaterniond rotation_init(transform_init.linear());
     
       // Desired Rotation, created with quaternions
-    double angle_flexion = M_PI/9;
-    double rot_z = M_PI/12;
-    Eigen::Vector3d axis(0,1,0);
-    Eigen::AngleAxisd angle_axis(angle_flexion, axis);
-    Eigen::Quaterniond rot_quaternion(angle_axis);
-    Eigen::Quaterniond rot_quaternion_rel = rotation_init * rot_quaternion * rotation_init.inverse();
+    // Flexion (Rotation around y in local CoSy) 
+    double angle_flexion = M_PI/6;
+    Eigen::Vector3d axis_flexion(0,1,0);
+    Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
+    Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
+    // Varus-Valgus (Rotation around z in local CoSy) 
+    double angle_varus = 0;
+    Eigen::Vector3d axis_varus(1,0,0);
+    Eigen::AngleAxisd angle_axis_varus(angle_varus, axis_varus);
+    Eigen::Quaterniond quaternion_varus(angle_axis_varus);
+    // Combine the rotations
+    Eigen::Quaterniond quaternion_combined = quaternion_varus * quaternion_flexion;
+    Eigen::Quaterniond rot_quaternion_rel = rotation_init * quaternion_combined * rotation_init.inverse();
       // Desired relative position
     double radius_gelenk = 0.1;
     Eigen::Matrix<double, 3,1> delta_pos, pos_d;
     delta_pos = {0.0, 0.0, 0.0};
     delta_pos(0) = -radius_gelenk * sin(angle_flexion);
+    delta_pos(1) = -radius_gelenk * sin(angle_varus);
     delta_pos(2) = radius_gelenk - radius_gelenk * cos(angle_flexion);
     delta_pos = rotation_init * delta_pos; 
     // Compute the desired position and rotation
