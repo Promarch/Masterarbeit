@@ -89,8 +89,8 @@ int main() {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector
-    // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.2, 1.0});
-    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.15, 1.0});
+    // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
     franka::RobotState initial_state = robot.readOnce();
@@ -102,8 +102,8 @@ int main() {
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6); 
     K_p.topLeftCorner(3,3) *= translation_stiffness; 
     K_p.bottomRightCorner(3,3) *= rotation_stiffness; 
-    K_d.topLeftCorner(3,3) *= 2 * sqrt(translation_stiffness);
-    K_d.bottomRightCorner(3,3) *= 2 * sqrt(rotation_stiffness); 
+    K_d.topLeftCorner(3,3) *= 1 * sqrt(translation_stiffness);
+    K_d.bottomRightCorner(3,3) *= 1 * sqrt(rotation_stiffness); 
 
       // Variables for the loop
     double time = 0.0;
@@ -134,15 +134,8 @@ int main() {
     Eigen::Quaterniond quaternion_combined = quaternion_varus * quaternion_flexion;
     Eigen::Quaterniond rot_quaternion_rel = rotation_init * quaternion_combined * rotation_init.inverse();
       // Desired relative position
-    double radius_gelenk = 0.1;
-    Eigen::Matrix<double, 3,1> delta_pos, pos_d;
-    delta_pos = {0.0, 0.0, 0.0};
-    //delta_pos(0) = -radius_gelenk * sin(angle_flexion);
-    //delta_pos(1) = -radius_gelenk * sin(angle_varus);
-    //delta_pos(2) = radius_gelenk - radius_gelenk * cos(angle_flexion);
-    //delta_pos = rotation_init * delta_pos; 
-    // Compute the desired position and rotation
-    pos_d << position_init + delta_pos;
+    Eigen::Matrix<double, 3,1> pos_d;
+    pos_d << position_init;
     Eigen::Quaterniond rot_d = rot_quaternion_rel * rotation_init; 
     
     // Other variables
