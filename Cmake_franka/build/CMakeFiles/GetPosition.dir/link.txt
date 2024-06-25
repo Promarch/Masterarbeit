@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/GetPosition.dir/GetPosition.cpp.o -o GetPosition  libexamples_common.a /usr/lib/libfranka.so.0.10.0 

@@ -22,17 +22,14 @@ add_library(examples_common STATIC
 target_link_libraries(examples_common PUBLIC Franka::Franka Eigen3::Eigen3)
 
 SET(PROGRAM_files
-  JointVelocity
-  JointPositions2
   Waypoints
   JointImpedanceControl
-  FirstImpedanceControl
   HalfCircle
   CircleExplore
-  OrientationControl
   ForceControl
   JointImpedanceControl_example
   CartesianImpedance_example
+  GetPosition
 )
 
 foreach(singleFile ${PROGRAM_files})
@@ -47,3 +44,4 @@ install(TARGETS ${singleFile}
 )
 
 target_link_libraries(JointImpedanceControl_example Threads::Threads)
+target_link_libraries(ForceControl Poco::Foundation)

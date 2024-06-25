@@ -42,17 +42,18 @@ int main(int argc, char** argv) {
     // Positions
     std::array<double, 7> initial_position;
     std::array<double, 7> start_position = robot.readOnce().q_d;
-    //std::array<double, 7> pos1 = {0.23, -0.75, 0.72, -2.63, 0, 1.86, 1.21}; // Pos for waypoints
-    std::array<double, 7> pos1 = {1.42, 0.15, -0.15, -2.87, 0.21, 2.64, 0.69};  // Pos for rubber band tests
-    //std::array<double, 7> pos1 = {0.01, -0.97, -0.01, -3.06, -0.16, 2.02, 0.65};  // Pos for sleep
-    //std::array<double, 7> pos1 = {{0, -M_PI_4, 0, -3 * M_PI_4, 0, M_PI_2, M_PI_4}}; // Pos for half circle
+    // std::array<double, 7> pos1 = {0.23, -0.75, 0.72, -2.63, 0, 1.86, 1.21}; // Pos for waypoints
+    // std::array<double, 7> pos1 = {1.42, 0.15, -0.15, -2.87, 0.21, 2.64, 0.69};  // Pos for rubber band tests
+    // std::array<double, 7> pos1 = {0.01, -0.97, -0.01, -3.06, -0.16, 2.02, 0.65};  // Pos for sleep
+    // std::array<double, 7> pos1 = {{0, -M_PI_4, 0, -3 * M_PI_4, 0, M_PI_2, M_PI_4}}; // Pos for half circle
+    std::array<double, 7> pos1 = {{M_PI/2, 0.06, 0.00, -2.11, 0.0, 2.19, 0.84}}; // Left of the table, for general orientation tests
     std::array<double, 7> pos2 = {-0.32, -0.23, -0.33, -2.68, 0.09, 2.27, 0.43};
     std::array<double, 7> deltaPos;
     // Substract the initial position from the second position
     std::transform(pos1.begin(), pos1.end(), start_position.begin(), deltaPos.begin(), std::minus<double>() );
     // Time 
     double time = 0.0;
-    double time_max = 3;
+    double time_max = 3.5;
     double sampling_interval = 0.1;
     double next_sampling_time = sampling_interval;
     // Sampled force/torque values

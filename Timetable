@@ -37,8 +37,23 @@ Weitere Ideen:
 - Falls Kraft höher wird, versuchen die Geschwindigkeiten leicht zu modifizieren, wenn Kraft kleiner wird, weiter machen, wenn nicht, andere Richtung einschlagen, Bedingung wäre, dass die Richtung noch immer in Richtung w_d ist. 
 Optimierung des vorherigen Punktes: (hier geht's vorerst nur um Geschwindigkeit, kp was ich mit der Positionsdifferenz mache). Die Richtung der Geschwindigkeit wird in einen tangentialen und senkrechten Anteil unterteilt. Der tangentiale Anteil ist proportional zur Kraft, die in die selbe Richtung wirkt. Falls ein hoher wiederstand da ist, wird die Kraft dementsprechend langsamer. Eine Idee könnte sein, dass es ein Minimum an Geschwindigkeit gibt, damit man bei zu hohen Kräften auch die Bewegung abbrechen kann (und dann einen neuen Punkt berechnet). Die senkrechte Geschwindigkeit besteht aus dem Vorzeichen und dem eigentlichen Wert. Ähnlich dem tangentialen Anteil ist die Geschwindigkeit vom senkrechten Anteil proportional zur Kraft in die Richtung, mit dem Unterschied dass wenn die Kraft erreicht ist sich das Vorzeichen ändert und der Roboter in die andere Richtung fährt. Ich wüsste in dem Fall ehrlich gesagt auch nicht wofür ich w_d verwenden würde, da ich die Differenz ja mehr oder weniger in den ganzen bums einbaue. Vielleicht dass der Roboter langsamer wird wenn er in die nähe des Ziels kommt, damit es nicht zu einem brutalen Richtungswechsel kommt wenn ein neues Ziel eingetragen wird. 
 
-06.05
+06.06
 Weitere Idee: 
 - Während der if-Schleife nicht dq_d regeln, sonder dq_soll, und dann nach der if_schleife die abrupten geschwindigkeitswechsel abfangen. 
-11.05
+11.06
 Niko meinte bei der letzten Besprechung, dass ich nicht unbedingt positionen, sondern eher orientierungen regeln soll, also quasi dass man 60 grad flexion ausprobiert, oder 10 grad torsion. Dazu könnte man über den Nullspace noch die Kraft regeln, so dass sie nicht über 5N kommt. Gerade ist's aber echt schwierig, da ich momentan versuche direkt die Kräfte zu regeln, indem ich die differenz zwischen soll und ist-Zustand mache, die mit nem proportionalfaktor dann über die Jacobimatrix auf die Joint projiziere. Habs gerade ausprobiert, der Roboter ist direkt überdreht und durch zu hohe geschwindigkeit zum stopp gekommen. 
+
+14.06
+Heute ging deutlich besser, kraftregelung funktioniert ungefähr, ist aus dem Buch handbook of robotics, kapitel 7. Reines stiffness control, keine Kraftbeschränkung oder so ähnlich. 
+Mit dem Gummiband funktioniert es schon relativ gut, als nächstes müsste ich schauen, wie ich Steifigkeiten selektiv einstellen kann damit ich zB in y eine position angebe und es sich einfacher in z-richtung verschieben lässt. 
+Im anschluss wäre es noch interessant zu testen, ob es funktioniert rotationen anzugeben. 
+Ab da kann's dann Richtung Kniemanipulation gehen, wobei ich hier wahrscheinlich eine bessere Aufhängung brauche, da ich nicht denke dass die jetzige gut mit Rotationen auskommt. Allgemeine Dimensionen stimmen, aber ich müsste die Löcher zum greifen tiefer machen. 
+
+17.06. 
+Kraftregelung funktioniert ungefähr, Relative positionen werden angefahre, positionen auch, wobei ich hier immer wieder probleme mit der Torque kontnuität habe. Mögliche Lösung wäre die gesendeten Momente über die letzten 5 Werte zu mitteln, dazu gibt es auch ein Beispiel in LibFranka. Im Moment werden Rotationen noch um den Greifer gemacht, was den Nachteil hat, dass man ein enormes Moment aufbringt da in Realität nicht um den Greifer sondern um das Rotationszentrum im Kniegelenk rotiert wird. 
+18.06.
+Viel 3D modellierung, Aufhängung für die Marker gemacht, die Löcher für die Halterung am Knie neu dimensioniert, und die spacer am greifarm konstruiert. 
+Niko meinte auch, dass eine elegante Lösung für mein Rotationsproblem eine modifizierung der Jakobimatrix wäre, indem man als Position des End-Effektors nicht die greifer nimmt, sondern das Rotationszentrum des Kniegelenks.
+19.06.
+Großer 3D Druck ist über Nacht fehlgeschlagen, da sich die Rolle verknotet hat und dadurch stecken geblieben ist. Durfte dadurch heute hauptsächlich den Bowdentube entfernen und einen Teil rausschneiden. 
+

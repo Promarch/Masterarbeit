@@ -64,17 +64,14 @@ CMAKE_BINARY_DIR = /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
 # The main recursive "all" target.
 all: CMakeFiles/examples_common.dir/all
-all: CMakeFiles/JointVelocity.dir/all
-all: CMakeFiles/JointPositions2.dir/all
 all: CMakeFiles/Waypoints.dir/all
 all: CMakeFiles/JointImpedanceControl.dir/all
-all: CMakeFiles/FirstImpedanceControl.dir/all
 all: CMakeFiles/HalfCircle.dir/all
 all: CMakeFiles/CircleExplore.dir/all
-all: CMakeFiles/OrientationControl.dir/all
 all: CMakeFiles/ForceControl.dir/all
 all: CMakeFiles/JointImpedanceControl_example.dir/all
 all: CMakeFiles/CartesianImpedance_example.dir/all
+all: CMakeFiles/GetPosition.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -83,17 +80,14 @@ preinstall:
 
 # The main recursive "clean" target.
 clean: CMakeFiles/examples_common.dir/clean
-clean: CMakeFiles/JointVelocity.dir/clean
-clean: CMakeFiles/JointPositions2.dir/clean
 clean: CMakeFiles/Waypoints.dir/clean
 clean: CMakeFiles/JointImpedanceControl.dir/clean
-clean: CMakeFiles/FirstImpedanceControl.dir/clean
 clean: CMakeFiles/HalfCircle.dir/clean
 clean: CMakeFiles/CircleExplore.dir/clean
-clean: CMakeFiles/OrientationControl.dir/clean
 clean: CMakeFiles/ForceControl.dir/clean
 clean: CMakeFiles/JointImpedanceControl_example.dir/clean
 clean: CMakeFiles/CartesianImpedance_example.dir/clean
+clean: CMakeFiles/GetPosition.dir/clean
 .PHONY : clean
 
 #=============================================================================
@@ -103,7 +97,7 @@ clean: CMakeFiles/CartesianImpedance_example.dir/clean
 CMakeFiles/examples_common.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/examples_common.dir/build.make CMakeFiles/examples_common.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/examples_common.dir/build.make CMakeFiles/examples_common.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=23,24 "Built target examples_common"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=17,18 "Built target examples_common"
 .PHONY : CMakeFiles/examples_common.dir/all
 
 # Build rule for subdir invocation for target.
@@ -123,65 +117,13 @@ CMakeFiles/examples_common.dir/clean:
 .PHONY : CMakeFiles/examples_common.dir/clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/JointVelocity.dir
-
-# All Build rule for target.
-CMakeFiles/JointVelocity.dir/all: CMakeFiles/examples_common.dir/all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointVelocity.dir/build.make CMakeFiles/JointVelocity.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointVelocity.dir/build.make CMakeFiles/JointVelocity.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=17,18 "Built target JointVelocity"
-.PHONY : CMakeFiles/JointVelocity.dir/all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/JointVelocity.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles 4
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/JointVelocity.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles 0
-.PHONY : CMakeFiles/JointVelocity.dir/rule
-
-# Convenience name for target.
-JointVelocity: CMakeFiles/JointVelocity.dir/rule
-.PHONY : JointVelocity
-
-# clean rule for target.
-CMakeFiles/JointVelocity.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointVelocity.dir/build.make CMakeFiles/JointVelocity.dir/clean
-.PHONY : CMakeFiles/JointVelocity.dir/clean
-
-#=============================================================================
-# Target rules for target CMakeFiles/JointPositions2.dir
-
-# All Build rule for target.
-CMakeFiles/JointPositions2.dir/all: CMakeFiles/examples_common.dir/all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions2.dir/build.make CMakeFiles/JointPositions2.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions2.dir/build.make CMakeFiles/JointPositions2.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=15,16 "Built target JointPositions2"
-.PHONY : CMakeFiles/JointPositions2.dir/all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/JointPositions2.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles 4
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/JointPositions2.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles 0
-.PHONY : CMakeFiles/JointPositions2.dir/rule
-
-# Convenience name for target.
-JointPositions2: CMakeFiles/JointPositions2.dir/rule
-.PHONY : JointPositions2
-
-# clean rule for target.
-CMakeFiles/JointPositions2.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointPositions2.dir/build.make CMakeFiles/JointPositions2.dir/clean
-.PHONY : CMakeFiles/JointPositions2.dir/clean
-
-#=============================================================================
 # Target rules for target CMakeFiles/Waypoints.dir
 
 # All Build rule for target.
 CMakeFiles/Waypoints.dir/all: CMakeFiles/examples_common.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Waypoints.dir/build.make CMakeFiles/Waypoints.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Waypoints.dir/build.make CMakeFiles/Waypoints.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=21,22 "Built target Waypoints"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=15,16 "Built target Waypoints"
 .PHONY : CMakeFiles/Waypoints.dir/all
 
 # Build rule for subdir invocation for target.
@@ -225,32 +167,6 @@ JointImpedanceControl: CMakeFiles/JointImpedanceControl.dir/rule
 CMakeFiles/JointImpedanceControl.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl.dir/build.make CMakeFiles/JointImpedanceControl.dir/clean
 .PHONY : CMakeFiles/JointImpedanceControl.dir/clean
-
-#=============================================================================
-# Target rules for target CMakeFiles/FirstImpedanceControl.dir
-
-# All Build rule for target.
-CMakeFiles/FirstImpedanceControl.dir/all: CMakeFiles/examples_common.dir/all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/FirstImpedanceControl.dir/build.make CMakeFiles/FirstImpedanceControl.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/FirstImpedanceControl.dir/build.make CMakeFiles/FirstImpedanceControl.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=5,6 "Built target FirstImpedanceControl"
-.PHONY : CMakeFiles/FirstImpedanceControl.dir/all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/FirstImpedanceControl.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles 4
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/FirstImpedanceControl.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles 0
-.PHONY : CMakeFiles/FirstImpedanceControl.dir/rule
-
-# Convenience name for target.
-FirstImpedanceControl: CMakeFiles/FirstImpedanceControl.dir/rule
-.PHONY : FirstImpedanceControl
-
-# clean rule for target.
-CMakeFiles/FirstImpedanceControl.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/FirstImpedanceControl.dir/build.make CMakeFiles/FirstImpedanceControl.dir/clean
-.PHONY : CMakeFiles/FirstImpedanceControl.dir/clean
 
 #=============================================================================
 # Target rules for target CMakeFiles/HalfCircle.dir
@@ -305,39 +221,13 @@ CMakeFiles/CircleExplore.dir/clean:
 .PHONY : CMakeFiles/CircleExplore.dir/clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/OrientationControl.dir
-
-# All Build rule for target.
-CMakeFiles/OrientationControl.dir/all: CMakeFiles/examples_common.dir/all
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OrientationControl.dir/build.make CMakeFiles/OrientationControl.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OrientationControl.dir/build.make CMakeFiles/OrientationControl.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=19,20 "Built target OrientationControl"
-.PHONY : CMakeFiles/OrientationControl.dir/all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/OrientationControl.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles 4
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/OrientationControl.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles 0
-.PHONY : CMakeFiles/OrientationControl.dir/rule
-
-# Convenience name for target.
-OrientationControl: CMakeFiles/OrientationControl.dir/rule
-.PHONY : OrientationControl
-
-# clean rule for target.
-CMakeFiles/OrientationControl.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/OrientationControl.dir/build.make CMakeFiles/OrientationControl.dir/clean
-.PHONY : CMakeFiles/OrientationControl.dir/clean
-
-#=============================================================================
 # Target rules for target CMakeFiles/ForceControl.dir
 
 # All Build rule for target.
 CMakeFiles/ForceControl.dir/all: CMakeFiles/examples_common.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ForceControl.dir/build.make CMakeFiles/ForceControl.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ForceControl.dir/build.make CMakeFiles/ForceControl.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=7,8 "Built target ForceControl"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=5,6 "Built target ForceControl"
 .PHONY : CMakeFiles/ForceControl.dir/all
 
 # Build rule for subdir invocation for target.
@@ -407,6 +297,32 @@ CartesianImpedance_example: CMakeFiles/CartesianImpedance_example.dir/rule
 CMakeFiles/CartesianImpedance_example.dir/clean:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/CartesianImpedance_example.dir/build.make CMakeFiles/CartesianImpedance_example.dir/clean
 .PHONY : CMakeFiles/CartesianImpedance_example.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/GetPosition.dir
+
+# All Build rule for target.
+CMakeFiles/GetPosition.dir/all: CMakeFiles/examples_common.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/GetPosition.dir/build.make CMakeFiles/GetPosition.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/GetPosition.dir/build.make CMakeFiles/GetPosition.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles --progress-num=7,8 "Built target GetPosition"
+.PHONY : CMakeFiles/GetPosition.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/GetPosition.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles 4
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/GetPosition.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles 0
+.PHONY : CMakeFiles/GetPosition.dir/rule
+
+# Convenience name for target.
+GetPosition: CMakeFiles/GetPosition.dir/rule
+.PHONY : GetPosition
+
+# clean rule for target.
+CMakeFiles/GetPosition.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/GetPosition.dir/build.make CMakeFiles/GetPosition.dir/clean
+.PHONY : CMakeFiles/GetPosition.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

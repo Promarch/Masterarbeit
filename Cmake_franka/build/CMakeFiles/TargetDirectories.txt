@@ -1,15 +1,12 @@
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/examples_common.dir
-/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/JointVelocity.dir
-/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/JointPositions2.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/Waypoints.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/JointImpedanceControl.dir
-/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/FirstImpedanceControl.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/HalfCircle.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/CircleExplore.dir
-/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/OrientationControl.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/ForceControl.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/JointImpedanceControl_example.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/CartesianImpedance_example.dir
+/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/GetPosition.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/edit_cache.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/rebuild_cache.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/list_install_components.dir

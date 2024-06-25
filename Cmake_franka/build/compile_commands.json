@@ -1,62 +1,47 @@
 [
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/examples_common.dir/cmake/examples_common.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/cmake/examples_common.cpp",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/examples_common.dir/cmake/examples_common.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/cmake/examples_common.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/cmake/examples_common.cpp"
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointVelocity.dir/JointVelocity.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/JointVelocity.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/JointVelocity.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointPositions2.dir/JointPositions2.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/JointPositions2.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/JointPositions2.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/Waypoints.dir/Waypoints.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/Waypoints.cpp",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/Waypoints.dir/Waypoints.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/Waypoints.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/Waypoints.cpp"
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointImpedanceControl.dir/JointImpedanceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl.cpp",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointImpedanceControl.dir/JointImpedanceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl.cpp"
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/FirstImpedanceControl.dir/FirstImpedanceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/FirstImpedanceControl.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/FirstImpedanceControl.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/HalfCircle.dir/HalfCircle.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/HalfCircle.cpp",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/HalfCircle.dir/HalfCircle.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/HalfCircle.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/HalfCircle.cpp"
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/CircleExplore.dir/CircleExplore.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/CircleExplore.cpp",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/CircleExplore.dir/CircleExplore.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/CircleExplore.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/CircleExplore.cpp"
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/OrientationControl.dir/OrientationControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/OrientationControl.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/OrientationControl.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ForceControl.dir/ForceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp",
+  "command": "/usr/bin/g++ -DPOCO_ENABLE_CPP11 -DPOCO_ENABLE_CPP14 -DPOCO_HAVE_FD_EPOLL -DPOCO_OS_FAMILY_UNIX -DPOCO_UNBUNDLED -D_DEBUG -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_REENTRANT -D_THREAD_SAFE -D_XOPEN_SOURCE=500 -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ForceControl.dir/ForceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp"
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl_example.cpp",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl_example.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl_example.cpp"
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++  -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/CartesianImpedance_example.dir/CartesianImpedance_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/CartesianImpedance_example.cpp",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/CartesianImpedance_example.dir/CartesianImpedance_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/CartesianImpedance_example.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/CartesianImpedance_example.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/GetPosition.dir/GetPosition.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/GetPosition.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/GetPosition.cpp"
 }
 ]

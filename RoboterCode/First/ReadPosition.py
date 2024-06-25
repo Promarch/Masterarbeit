@@ -18,8 +18,4 @@ print("Translation matrix: \n", np.round(trans_matrix,3))
 print(f"x-Rotation: {np.rad2deg(x_rot)}, y-rotation: {np.rad2deg(y_rot)}, z-rotation: {np.rad2deg(z_rot)}")
 
 
-#print("Current x-force: ", Measure.FORCE_X)
-#print("Current y-force: ", Measure.FORCE_Y)
-#print("Current z-force: ", Measure.FORCE_Z)
-
 print("EoL")

@@ -1,12 +1,16 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-
+#include <ctime>
 #include <array>
 #include <vector>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
+
+#include <Poco/DateTimeFormatter.h>
+#include <Poco/File.h>
+#include <Poco/Path.h>
 
 #include <franka/duration.h>
 #include <franka/exception.h>
@@ -26,8 +30,15 @@ void setDefaultBehavior(franka::Robot &robot) {
 };
 
 // Macro to convert variable name to string for the function
-#define writeDataToFile(data) writeDataToFileImpl(data, #data ".txt")
-void writeDataToFileImpl(const std::vector<std::array<double, 7>>& data, const std::string& filename) {
+#define writeDataToFile(data) writeDataToFileImpl(data, #data)
+std::string getCurrentDateTime() {
+  std::time_t now = std::time(nullptr);
+  char buf[80];
+  std::strftime(buf, sizeof(buf), "%Y%m%d_%H%M%S", std::localtime(&now));
+  return std::string(buf);
+}
+void writeDataToFileImpl(const std::vector<std::array<double, 7>>& data, const std::string& var_name) {
+  std::string filename = var_name + "_" + getCurrentDateTime() + ".txt";
   std::ofstream data_file(filename);
   if (data_file.is_open()) {
     data_file << std::fixed << std::setprecision(2);
@@ -46,24 +57,40 @@ void writeDataToFileImpl(const std::vector<std::array<double, 7>>& data, const s
   }
 }
 
-// Get x_e, but with quaternions
-Eigen::Matrix<double, 6 ,1> computeTransformationQuat(const franka::RobotState& robot_state) {
-
-  Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
-  Eigen::Vector3d position(transform.translation());
-  Eigen::Quaterniond orientation(transform.linear());
-
-  Eigen::Matrix<double, 6 ,1> x_e; 
-  x_e.head(3) = position; 
-  x_e.tail(3) << orientation.x(), orientation.y(), orientation.z();
-
-  return x_e;
+void writeLogToFile(const std::vector<franka::Record>& log) {
+  if (log.empty()) {
+    return;
+  }
+  try {
+    Poco::Path temp_dir_path(Poco::Path::temp());
+    temp_dir_path.pushDirectory("libfranka-logs");
+    Poco::File temp_dir(temp_dir_path);
+    temp_dir.createDirectories();
+    std::string now_string =
+        Poco::DateTimeFormatter::format(Poco::Timestamp{}, "%Y-%m-%d-%h-%m-%S-%i");
+    std::string filename = std::string{"log-" + now_string + ".csv"};
+    Poco::File log_file(Poco::Path(temp_dir_path, filename));
+    if (!log_file.createFile()) {
+      std::cout << "Failed to write log file." << std::endl;
+      return;
+    }
+    std::ofstream log_stream(log_file.path().c_str());
+    log_stream << franka::logToCSV(log);
+    std::cout << "Log file written to: " << log_file.path() << std::endl;
+  } catch (...) {
+    std::cout << "Failed to write log file." << std::endl;
+  }
 }
 
+
 int main() {
+  std::vector<std::array<double, 7>> tau_data; // Vector to store the torque
   try {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
+    // Set new end-effector
+    // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.2, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
     franka::RobotState initial_state = robot.readOnce();
@@ -81,10 +108,11 @@ int main() {
       // Variables for the loop
     double time = 0.0;
     double time_max = 2.5;
-    double time_acc = 0.8;
+    double time_acc = 1.9;
     double time_dec = 0.5; // time for decceleration, to stop abrubt braking
     double sampling_interval = 0.1;
     double next_sampling_time = 0;
+    
 
     // Initial orientation
     Eigen::Affine3d transform_init(Eigen::Matrix4d::Map(initial_state.O_T_EE.data()));
@@ -93,8 +121,8 @@ int main() {
     
       // Desired Rotation, created with quaternions
     // Flexion (Rotation around y in local CoSy) 
-    double angle_flexion = M_PI/6;
-    Eigen::Vector3d axis_flexion(0,1,0);
+    double angle_flexion = M_PI/12;
+    Eigen::Vector3d axis_flexion(1,0,0);
     Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
     Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
     // Varus-Valgus (Rotation around z in local CoSy) 
@@ -109,10 +137,10 @@ int main() {
     double radius_gelenk = 0.1;
     Eigen::Matrix<double, 3,1> delta_pos, pos_d;
     delta_pos = {0.0, 0.0, 0.0};
-    delta_pos(0) = -radius_gelenk * sin(angle_flexion);
-    delta_pos(1) = -radius_gelenk * sin(angle_varus);
-    delta_pos(2) = radius_gelenk - radius_gelenk * cos(angle_flexion);
-    delta_pos = rotation_init * delta_pos; 
+    //delta_pos(0) = -radius_gelenk * sin(angle_flexion);
+    //delta_pos(1) = -radius_gelenk * sin(angle_varus);
+    //delta_pos(2) = radius_gelenk - radius_gelenk * cos(angle_flexion);
+    //delta_pos = rotation_init * delta_pos; 
     // Compute the desired position and rotation
     pos_d << position_init + delta_pos;
     Eigen::Quaterniond rot_d = rot_quaternion_rel * rotation_init; 
@@ -187,17 +215,24 @@ int main() {
         next_sampling_time += sampling_interval;
       }
 
+      tau_data.push_back(tau_d);
       return tau_d;
 
     };
 
+    
     robot.control(force_control_callback);
+    writeDataToFile(tau_data);
   }
-
-  catch (const franka::Exception& e) {
-
+  catch (const franka::ControlException& e) {
     std::cout << e.what() << std::endl;
-    // writeDataToFile();
+    writeLogToFile(e.log);
+    writeDataToFile(tau_data);
     return -1;
   }
+  catch (const franka::Exception& e) {
+    std::cout << e.what() << std::endl;
+    return -1;
+  }
+  
 }
