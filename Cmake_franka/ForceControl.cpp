@@ -37,11 +37,12 @@ std::string getCurrentDateTime() {
   std::strftime(buf, sizeof(buf), "%Y%m%d_%H%M%S", std::localtime(&now));
   return std::string(buf);
 }
-void writeDataToFileImpl(const std::vector<std::array<double, 7>>& data, const std::string& var_name) {
+template <std::size_t N>
+void writeDataToFileImpl(const std::vector<std::array<double, N>>& data, const std::string& var_name) {
   std::string filename = var_name + "_" + getCurrentDateTime() + ".txt";
   std::ofstream data_file(filename);
   if (data_file.is_open()) {
-    data_file << std::fixed << std::setprecision(2);
+    data_file << std::fixed << std::setprecision(4);
     for (const auto& sample : data) {
       for (size_t i = 0; i < sample.size(); ++i) {
         data_file << sample[i];
@@ -84,20 +85,25 @@ void writeLogToFile(const std::vector<franka::Record>& log) {
 
 
 int main() {
+
+  // Variables to store the torque or position of the robot during the movement
   std::vector<std::array<double, 7>> tau_data; // Vector to store the torque
+  std::vector<std::array<double, 3>> position_data, rotation_data; // Vector to store the torque
+  std::vector<std::array<double, 6>> error_data; // Vector to store the position and rotation error
+  
   try {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector
-    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.15, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.23, 1.0});
     // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
     franka::RobotState initial_state = robot.readOnce();
 
       // Damping/Stifness
-    const double translation_stiffness{150.0};
-    const double rotation_stiffness{75.0};
+    const double translation_stiffness{1000.0};
+    const double rotation_stiffness{100.0};
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6); 
     K_p.topLeftCorner(3,3) *= translation_stiffness; 
@@ -107,26 +113,30 @@ int main() {
 
       // Variables for the loop
     double time = 0.0;
-    double time_max = 2.5;
-    double time_acc = 1.9;
+    double time_max = 10;
+    double time_acc = 5;
     double time_dec = 0.5; // time for decceleration, to stop abrubt braking
     double sampling_interval = 0.1;
     double next_sampling_time = 0;
     
-
     // Initial orientation
     Eigen::Affine3d transform_init(Eigen::Matrix4d::Map(initial_state.O_T_EE.data()));
     Eigen::Vector3d position_init(transform_init.translation());
     Eigen::Quaterniond rotation_init(transform_init.linear());
+    Eigen::Matrix3d rot_matrix_init = rotation_init.toRotationMatrix();
+      // Compute current rotation in angles for plots
+    double roll_init = std::atan2(rot_matrix_init(2, 1), rot_matrix_init(2, 2));
+    double pitch_init = std::asin(-rot_matrix_init(2, 0));
+    double yaw_init = std::atan2(rot_matrix_init(1, 0), rot_matrix_init(0, 0));
     
       // Desired Rotation, created with quaternions
     // Flexion (Rotation around y in local CoSy) 
-    double angle_flexion = M_PI/12;
-    Eigen::Vector3d axis_flexion(1,0,0);
+    double angle_flexion = M_PI/6;
+    Eigen::Vector3d axis_flexion(0,1,0);
     Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
     Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
     // Varus-Valgus (Rotation around z in local CoSy) 
-    double angle_varus = 0;
+    double angle_varus = M_PI/6;
     Eigen::Vector3d axis_varus(1,0,0);
     Eigen::AngleAxisd angle_axis_varus(angle_varus, axis_varus);
     Eigen::Quaterniond quaternion_varus(angle_axis_varus);
@@ -139,14 +149,15 @@ int main() {
     Eigen::Quaterniond rot_d = rot_quaternion_rel * rotation_init; 
     
     // Other variables
-    double factor = 0;
+    double factor{0};
 
 
     auto force_control_callback = [&] (const franka::RobotState& robot_state, franka::Duration period) -> franka::Torques {
 
       time += period.toSec();
 
-      // acceleration time
+        // Factor for smooth acceleration
+      // numerical value
       if (time<time_acc) {
         factor = (1 - std::cos(M_PI * time/time_acc))/2;
       } 
@@ -156,6 +167,9 @@ int main() {
       else {
         factor = (1 + std::cos(M_PI * (time-(time_max-time_dec))/time_dec))/2;
       }
+      // Only apply to rotation so that position deviations are immediatly corrected
+      Eigen::Matrix<double, 6,1> factor_filter; 
+      factor_filter << 1,1,1,factor, factor, factor;
 
         // Get state variables
       std::array<double, 42> jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
@@ -165,6 +179,11 @@ int main() {
       Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
       Eigen::Vector3d position(transform.translation());
       Eigen::Quaterniond rotation(transform.linear());
+      Eigen::Matrix3d rot_matrix = rotation.toRotationMatrix();
+        // Compute current rotation in angles for plots
+      double roll = std::atan2(rot_matrix(2, 1), rot_matrix(2, 2));
+      double pitch = std::asin(-rot_matrix(2, 0));
+      double yaw = std::atan2(rot_matrix(1, 0), rot_matrix(0, 0));
 
         // Compute trajectory between current and desired orientation
       // Positional error
@@ -187,7 +206,7 @@ int main() {
 
       // Calculate torque and map to an array
       std::array<double, 7> tau_d{};
-      Eigen::VectorXd::Map(&tau_d[0], 7) = jacobian.transpose() * h_c * factor;
+      Eigen::VectorXd::Map(&tau_d[0], 7) = jacobian.transpose() * h_c.cwiseProduct(factor_filter); // 
 
       // Calculate positional error for tests
       double distance = (pos_d-position).norm(); 
@@ -208,7 +227,15 @@ int main() {
         next_sampling_time += sampling_interval;
       }
 
+      // Map the position and error to an array
+      std::array<double, 3> pos_array{}; 
+      std::array<double, 6> error_array{}; 
+      Eigen::VectorXd::Map(&pos_array[0], 3) = position;
+      Eigen::VectorXd::Map(&error_array[0], 6) = error;
       tau_data.push_back(tau_d);
+      position_data.push_back(pos_array);
+      rotation_data.push_back({(roll_init+angle_varus-roll)/M_PI*180, (pitch-pitch_init+angle_flexion)/M_PI*180, (yaw-yaw_init)/M_PI*180});
+      
       return tau_d;
 
     };
@@ -216,11 +243,14 @@ int main() {
     
     robot.control(force_control_callback);
     writeDataToFile(tau_data);
+    writeDataToFile(position_data);
+    writeDataToFile(rotation_data);
   }
   catch (const franka::ControlException& e) {
     std::cout << e.what() << std::endl;
     writeLogToFile(e.log);
     writeDataToFile(tau_data);
+    writeDataToFile(error_data);
     return -1;
   }
   catch (const franka::Exception& e) {
