@@ -8,10 +8,6 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#include <Poco/DateTimeFormatter.h>
-#include <Poco/File.h>
-#include <Poco/Path.h>
-
 #include <franka/duration.h>
 #include <franka/exception.h>
 #include <franka/model.h>
@@ -58,32 +54,6 @@ void writeDataToFileImpl(const std::vector<std::array<double, N>>& data, const s
   }
 }
 
-void writeLogToFile(const std::vector<franka::Record>& log) {
-  if (log.empty()) {
-    return;
-  }
-  try {
-    Poco::Path temp_dir_path(Poco::Path::temp());
-    temp_dir_path.pushDirectory("libfranka-logs");
-    Poco::File temp_dir(temp_dir_path);
-    temp_dir.createDirectories();
-    std::string now_string =
-        Poco::DateTimeFormatter::format(Poco::Timestamp{}, "%Y-%m-%d-%h-%m-%S-%i");
-    std::string filename = std::string{"log-" + now_string + ".csv"};
-    Poco::File log_file(Poco::Path(temp_dir_path, filename));
-    if (!log_file.createFile()) {
-      std::cout << "Failed to write log file." << std::endl;
-      return;
-    }
-    std::ofstream log_stream(log_file.path().c_str());
-    log_stream << franka::logToCSV(log);
-    std::cout << "Log file written to: " << log_file.path() << std::endl;
-  } catch (...) {
-    std::cout << "Failed to write log file." << std::endl;
-  }
-}
-
-
 int main() {
 
   // Variables to store the torque or position of the robot during the movement
@@ -102,22 +72,27 @@ int main() {
     franka::RobotState initial_state = robot.readOnce();
 
       // Damping/Stifness
-    const double translation_stiffness{1000.0};
+    const double translation_stiffness{500.0};
     const double rotation_stiffness{100.0};
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
-    Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6); 
+    Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6);
+    Eigen::MatrixXd K_i = Eigen::MatrixXd::Identity(6, 6); 
     K_p.topLeftCorner(3,3) *= translation_stiffness; 
     K_p.bottomRightCorner(3,3) *= rotation_stiffness; 
     K_d.topLeftCorner(3,3) *= 1 * sqrt(translation_stiffness);
-    K_d.bottomRightCorner(3,3) *= 1 * sqrt(rotation_stiffness); 
+    K_d.bottomRightCorner(3,3) *= 1 * sqrt(rotation_stiffness);
+    K_i.topLeftCorner(3,3) *= 2 * sqrt(translation_stiffness);
+    K_i.bottomRightCorner(3,3) *= 2 * sqrt(rotation_stiffness); 
 
-      // Variables for the loop
+      // Time for the loop
     double time = 0.0;
-    double time_max = 10;
+    double time_max = 15;
     double time_acc = 5;
     double time_dec = 0.5; // time for decceleration, to stop abrubt braking
     double sampling_interval = 0.1;
     double next_sampling_time = 0;
+    Eigen::Matrix<double, 6,1> int_error; int_error.setZero();
+    double dt = 0;
     
     // Initial orientation
     Eigen::Affine3d transform_init(Eigen::Matrix4d::Map(initial_state.O_T_EE.data()));
@@ -136,7 +111,7 @@ int main() {
     Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
     Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
     // Varus-Valgus (Rotation around z in local CoSy) 
-    double angle_varus = M_PI/6;
+    double angle_varus = M_PI/9;
     Eigen::Vector3d axis_varus(1,0,0);
     Eigen::AngleAxisd angle_axis_varus(angle_varus, axis_varus);
     Eigen::Quaterniond quaternion_varus(angle_axis_varus);
@@ -153,8 +128,8 @@ int main() {
 
 
     auto force_control_callback = [&] (const franka::RobotState& robot_state, franka::Duration period) -> franka::Torques {
-
-      time += period.toSec();
+      dt = period.toSec();
+      time += dt;
 
         // Factor for smooth acceleration
       // numerical value
@@ -201,8 +176,12 @@ int main() {
 
       // Calculate the necessary wrench, from Handbook of robotics, Chap. 7
       Eigen::Matrix<double, 6,1> h_c; h_c.setZero();
-      Eigen::Matrix<double, 6,1> v_e = jacobian * dq; 
-      h_c = K_p * error - K_d * v_e; 
+      Eigen::Matrix<double, 6,1> v_e = jacobian * dq;
+
+      // integrate error using forward euler
+      int_error += dt*error;
+
+      h_c = K_p * error - K_d * v_e + K_i * int_error; 
 
       // Calculate torque and map to an array
       std::array<double, 7> tau_d{};
@@ -232,27 +211,31 @@ int main() {
       std::array<double, 6> error_array{}; 
       Eigen::VectorXd::Map(&pos_array[0], 3) = position;
       Eigen::VectorXd::Map(&error_array[0], 6) = error;
+      // Add the current data to the array
       tau_data.push_back(tau_d);
       position_data.push_back(pos_array);
       rotation_data.push_back({(roll_init+angle_varus-roll)/M_PI*180, (pitch-pitch_init+angle_flexion)/M_PI*180, (yaw-yaw_init)/M_PI*180});
       
+      // Send desired tau to the robot
       return tau_d;
 
     };
 
-    
+    // start control loop
     robot.control(force_control_callback);
+    // Write Data to .txt file
     writeDataToFile(tau_data);
     writeDataToFile(position_data);
     writeDataToFile(rotation_data);
   }
+  // Catches Exceptions caused within the execution of a program (I think)
   catch (const franka::ControlException& e) {
     std::cout << e.what() << std::endl;
-    writeLogToFile(e.log);
     writeDataToFile(tau_data);
     writeDataToFile(error_data);
     return -1;
   }
+  // General exceptions
   catch (const franka::Exception& e) {
     std::cout << e.what() << std::endl;
     return -1;
