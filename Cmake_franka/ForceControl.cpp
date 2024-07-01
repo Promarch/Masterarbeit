@@ -60,6 +60,7 @@ int main() {
   std::vector<std::array<double, 7>> tau_data; // Vector to store the torque
   std::vector<std::array<double, 3>> position_data, rotation_data; // Vector to store the torque
   std::vector<std::array<double, 6>> force_data; // Vector to store the force and torque on the EE
+  std::vector<std::array<double, 6>> error_data; // Vector 
   
   try {
     // Set Up basic robot function
@@ -72,8 +73,8 @@ int main() {
     franka::RobotState initial_state = robot.readOnce();
 
       // Damping/Stifness
-    const double translation_stiffness{500.0};
-    const double rotation_stiffness{30.0};
+    const double translation_stiffness{3.0};
+    const double rotation_stiffness{0.5};
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_i = Eigen::MatrixXd::Identity(6, 6); 
@@ -86,8 +87,8 @@ int main() {
 
       // Time variables for the loop
     double time = 0.0;
-    double time_max = 15; // Maximum runtime
-    double time_acc = 5;  // Time spent accelerating
+    double time_max = 3; // Maximum runtime
+    double time_acc = 2.5;  // Time spent accelerating
     double time_dec = 0.5; // time for decceleration, to stop abrubt braking
     double sampling_interval = 0.1; // Interval at which the console outputs the current error
     double next_sampling_time = 0;  // Needed for the sampling interval
@@ -99,29 +100,18 @@ int main() {
     Eigen::Vector3d position_init(transform_init.translation());
     Eigen::Quaterniond rotation_init(transform_init.linear());
     Eigen::Matrix3d rot_matrix_init = rotation_init.toRotationMatrix();
+    Eigen::Map<const Eigen::Matrix<double, 6, 1>> F_init(initial_state.K_F_ext_hat_K.data()); 
       // Compute current rotation in angles for plots
     double roll_init = std::atan2(rot_matrix_init(2, 1), rot_matrix_init(2, 2));
     double pitch_init = std::asin(-rot_matrix_init(2, 0));
     double yaw_init = std::atan2(rot_matrix_init(1, 0), rot_matrix_init(0, 0));
     
-      // Desired Rotation, created with quaternions
-    // Flexion (Rotation around y in local CoSy) 
-    double angle_flexion = M_PI/6;
-    Eigen::Vector3d axis_flexion(0,1,0);
-    Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
-    Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
-    // Varus-Valgus (Rotation around z in local CoSy) 
-    double angle_varus = 0;
-    Eigen::Vector3d axis_varus(1,0,0);
-    Eigen::AngleAxisd angle_axis_varus(angle_varus, axis_varus);
-    Eigen::Quaterniond quaternion_varus(angle_axis_varus);
-    // Combine the rotations
-    Eigen::Quaterniond quaternion_combined = quaternion_varus * quaternion_flexion;
-    Eigen::Quaterniond rot_quaternion_rel = rotation_init * quaternion_combined * rotation_init.inverse();
-      // Desired relative position
-    Eigen::Matrix<double, 3,1> pos_d;
-    pos_d << position_init;
-    Eigen::Quaterniond rot_d = rot_quaternion_rel * rotation_init; 
+      // Desired force
+    double internalTorque{0};
+    double flexionTorque{0.0};
+    double varusTorque{0};
+    Eigen::Matrix<double, 6, 1> F_d{0, 0, 1, internalTorque, flexionTorque, varusTorque};
+    F_d << F_d + F_init;
     
     // Other variables
     double factor_rot{0};
@@ -133,6 +123,7 @@ int main() {
       time += dt;
 
         // Factor for smooth acceleration
+        // the rotation have a smooth transition, the position starts immediatly at 1 since they are supposed to counteract movement instead of causing it
       // numerical value
       if (time<time_acc) {
         factor_rot = (1 - std::cos(M_PI * time/time_acc))/2;
@@ -146,53 +137,47 @@ int main() {
         factor_rot = (1 + std::cos(M_PI * (time-(time_max-time_dec))/time_dec))/2;
         factor_pos = factor_rot;
       }
-      // Only apply to rotation so that position deviations are immediatly corrected
+      // Combine the factors
       Eigen::Matrix<double, 6,1> factor_filter; 
-      factor_filter << factor_pos, factor_pos, factor_pos, factor_rot, factor_rot, factor_rot;
+      factor_filter << factor_rot, factor_rot, factor_rot, factor_rot, factor_rot, factor_rot;
 
-        // Get state variables
+        // Get model variables
       std::array<double, 42> jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
-      Eigen::Map<const Eigen::Matrix<double, 6,7>> jacobian(jacobian_array.data());
-      Eigen::Map<const Eigen::Matrix<double, 7,1>> dq(robot_state.dq.data()); 
-        // Get current position
+      Eigen::Map<const Eigen::Matrix<double, 6, 7>> jacobian(jacobian_array.data());
+        // Get current state
+      Eigen::Map<const Eigen::Matrix<double, 7, 1>> dtau(robot_state.dtau_J.data()); 
+      Eigen::Matrix<double, 6, 1> dF = jacobian * dtau; 
+      Eigen::Map<const Eigen::Matrix<double, 6, 1>> F(robot_state.K_F_ext_hat_K.data());
+      
+        // Get current orientation for plots
       Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
       Eigen::Vector3d position(transform.translation());
       Eigen::Quaterniond rotation(transform.linear());
       Eigen::Matrix3d rot_matrix = rotation.toRotationMatrix();
-        // Compute current rotation in angles for plots
+        // Compute current rotation in angles
       double roll = std::atan2(rot_matrix(2, 1), rot_matrix(2, 2));
       double pitch = std::asin(-rot_matrix(2, 0));
       double yaw = std::atan2(rot_matrix(1, 0), rot_matrix(0, 0));
 
         // Compute trajectory between current and desired orientation
-      // Positional error
+      // Error
       Eigen::Matrix<double, 6,1> error; error.setZero();
-      error.head(3) << pos_d - position; 
-      // Rotational error
-      if (rot_d.coeffs().dot(rotation.coeffs()) < 0.0) {
-        rotation.coeffs() << -rotation.coeffs();
-      }
-      // Difference quaternion
-      Eigen::Quaterniond error_quaternion(rotation.inverse() * rot_d);
-      error.tail(3) << error_quaternion.x(), error_quaternion.y(), error_quaternion.z();
-      // Transform to base frame
-      error.tail(3) << transform.linear() * error.tail(3);
-
-      // Calculate the necessary wrench, from Handbook of robotics, Chap. 7
-      Eigen::Matrix<double, 6,1> h_c; h_c.setZero();
-      Eigen::Matrix<double, 6,1> v_e = jacobian * dq;
+      error << F-F_d; 
 
       // integrate error using forward euler
       int_error += dt*error;
 
-      h_c = K_p * error - K_d * v_e + K_i * int_error; 
+      // Calculate the necessary wrench, from Haddadin und Schindlbeck (nicht direkt aber da hab ich die Formel her)
+      Eigen::Matrix<double, 6,1> h_c; h_c.setZero();
+
+      h_c = K_p * error; // - K_d * dF No K_i part, so this is left out: + K_i * int_error 
 
       // Calculate torque and map to an array
       std::array<double, 7> tau_d{};
       Eigen::VectorXd::Map(&tau_d[0], 7) = jacobian.transpose() * h_c.cwiseProduct(factor_filter); // 
 
       // Calculate positional error for tests
-      double distance = (pos_d-position).norm(); 
+      double distance = (position_init-position).norm(); 
 
       // Stop if time is reached
       if (time >= time_max) {
@@ -218,8 +203,11 @@ int main() {
       // Add the current data to the array
       tau_data.push_back(tau_d);
       position_data.push_back(pos_array);
-      rotation_data.push_back({(roll_init+angle_varus-roll)/M_PI*180, (pitch-pitch_init+angle_flexion)/M_PI*180, (yaw-yaw_init)/M_PI*180});
+      rotation_data.push_back({(roll_init-roll)/M_PI*180, (pitch-pitch_init)/M_PI*180, (yaw-yaw_init)/M_PI*180});
       force_data.push_back(robot_state.K_F_ext_hat_K);
+      error_data.push_back(error_array);
+
+      // tau_d = {0,0,0,0,0,0,0};
       // Send desired tau to the robot
       return tau_d;
 
@@ -232,6 +220,7 @@ int main() {
     writeDataToFile(position_data);
     writeDataToFile(rotation_data);
     writeDataToFile(force_data);
+    writeDataToFile(error_data);
   }
   // Catches Exceptions caused within the execution of a program (I think)
   catch (const franka::ControlException& e) {
@@ -240,6 +229,8 @@ int main() {
     writeDataToFile(position_data);
     writeDataToFile(rotation_data);
     writeDataToFile(force_data);
+    writeDataToFile(error_data);
+
     return -1;
   }
   // General exceptions
