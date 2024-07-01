@@ -55,5 +55,10 @@ Kraftregelung funktioniert ungefähr, Relative positionen werden angefahre, posi
 Viel 3D modellierung, Aufhängung für die Marker gemacht, die Löcher für die Halterung am Knie neu dimensioniert, und die spacer am greifarm konstruiert. 
 Niko meinte auch, dass eine elegante Lösung für mein Rotationsproblem eine modifizierung der Jakobimatrix wäre, indem man als Position des End-Effektors nicht die greifer nimmt, sondern das Rotationszentrum des Kniegelenks.
 19.06.
-Großer 3D Druck ist über Nacht fehlgeschlagen, da sich die Rolle verknotet hat und dadurch stecken geblieben ist. Durfte dadurch heute hauptsächlich den Bowdentube entfernen und einen Teil rausschneiden. 
-
+Großer 3D Druck ist über Nacht fehlgeschlagen, da sich die Rolle verknotet hat und dadurch stecken geblieben ist. Durfte dadurch heute hauptsächlich den Bowdentube entfernen und einen Teil rausschneiden.
+Southside, daher wenig gemacht 
+Ikom woche, daher nur halbtags da
+24.06.
+Nur kurz da gewesen, End-Effektor in Libfranka angepasst damit die Rotation ungefähr ums Kniegelenk hin passiert und nicht um die Greifer
+25.06.
+Neues Script in python um den Verlauf der Momente in den jeweiligen Gelenken zu messen, ForceControl angepasst dass es auch diese Werte ausgibt, dazu auch die Steifigkeit angepasst damit kein controller torque discontinuity aufkommt

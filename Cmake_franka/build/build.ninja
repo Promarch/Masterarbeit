@@ -106,39 +106,6 @@ build Waypoints: CXX_EXECUTABLE_LINKER__Waypoints_Debug CMakeFiles/Waypoints.dir
   TARGET_PDB = Waypoints.dbg
 
 # =============================================================================
-# Object build statements for EXECUTABLE target JointImpedanceControl
-
-
-#############################################
-# Order-only phony target for JointImpedanceControl
-
-build cmake_object_order_depends_target_JointImpedanceControl: phony || cmake_object_order_depends_target_examples_common
-
-build CMakeFiles/JointImpedanceControl.dir/JointImpedanceControl.cpp.o: CXX_COMPILER__JointImpedanceControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl.cpp || cmake_object_order_depends_target_JointImpedanceControl
-  DEP_FILE = CMakeFiles/JointImpedanceControl.dir/JointImpedanceControl.cpp.o.d
-  FLAGS = -g -std=gnu++14
-  INCLUDES = -isystem /usr/include/eigen3
-  OBJECT_DIR = CMakeFiles/JointImpedanceControl.dir
-  OBJECT_FILE_DIR = CMakeFiles/JointImpedanceControl.dir
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target JointImpedanceControl
-
-
-#############################################
-# Link the executable JointImpedanceControl
-
-build JointImpedanceControl: CXX_EXECUTABLE_LINKER__JointImpedanceControl_Debug CMakeFiles/JointImpedanceControl.dir/JointImpedanceControl.cpp.o | libexamples_common.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a
-  FLAGS = -g
-  LINK_LIBRARIES = libexamples_common.a  /usr/lib/libfranka.so.0.10.0
-  OBJECT_DIR = CMakeFiles/JointImpedanceControl.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = JointImpedanceControl
-  TARGET_PDB = JointImpedanceControl.dbg
-
-# =============================================================================
 # Object build statements for EXECUTABLE target HalfCircle
 
 
@@ -203,40 +170,6 @@ build CircleExplore: CXX_EXECUTABLE_LINKER__CircleExplore_Debug CMakeFiles/Circl
   PRE_LINK = :
   TARGET_FILE = CircleExplore
   TARGET_PDB = CircleExplore.dbg
-
-# =============================================================================
-# Object build statements for EXECUTABLE target ForceControl
-
-
-#############################################
-# Order-only phony target for ForceControl
-
-build cmake_object_order_depends_target_ForceControl: phony || cmake_object_order_depends_target_examples_common
-
-build CMakeFiles/ForceControl.dir/ForceControl.cpp.o: CXX_COMPILER__ForceControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp || cmake_object_order_depends_target_ForceControl
-  DEFINES = -DPOCO_ENABLE_CPP11 -DPOCO_ENABLE_CPP14 -DPOCO_HAVE_FD_EPOLL -DPOCO_OS_FAMILY_UNIX -DPOCO_UNBUNDLED -D_DEBUG -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_REENTRANT -D_THREAD_SAFE -D_XOPEN_SOURCE=500
-  DEP_FILE = CMakeFiles/ForceControl.dir/ForceControl.cpp.o.d
-  FLAGS = -g -std=gnu++14
-  INCLUDES = -isystem /usr/include/eigen3
-  OBJECT_DIR = CMakeFiles/ForceControl.dir
-  OBJECT_FILE_DIR = CMakeFiles/ForceControl.dir
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target ForceControl
-
-
-#############################################
-# Link the executable ForceControl
-
-build ForceControl: CXX_EXECUTABLE_LINKER__ForceControl_Debug CMakeFiles/ForceControl.dir/ForceControl.cpp.o | libexamples_common.a /usr/lib/libfranka.so.0.10.0 /usr/lib/x86_64-linux-gnu/libPocoFoundation.so.80 /usr/lib/x86_64-linux-gnu/libpcre.so /usr/lib/x86_64-linux-gnu/libz.so || libexamples_common.a
-  FLAGS = -g
-  LINK_LIBRARIES = libexamples_common.a  /usr/lib/libfranka.so.0.10.0  /usr/lib/x86_64-linux-gnu/libPocoFoundation.so.80  /usr/lib/x86_64-linux-gnu/libpcre.so  /usr/lib/x86_64-linux-gnu/libz.so  -lpthread  -ldl  -lrt
-  OBJECT_DIR = CMakeFiles/ForceControl.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = ForceControl
-  TARGET_PDB = ForceControl.dbg
 
 # =============================================================================
 # Object build statements for EXECUTABLE target JointImpedanceControl_example
@@ -337,6 +270,72 @@ build GetPosition: CXX_EXECUTABLE_LINKER__GetPosition_Debug CMakeFiles/GetPositi
   TARGET_FILE = GetPosition
   TARGET_PDB = GetPosition.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target ForceControl
+
+
+#############################################
+# Order-only phony target for ForceControl
+
+build cmake_object_order_depends_target_ForceControl: phony || cmake_object_order_depends_target_examples_common
+
+build CMakeFiles/ForceControl.dir/ForceControl.cpp.o: CXX_COMPILER__ForceControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp || cmake_object_order_depends_target_ForceControl
+  DEP_FILE = CMakeFiles/ForceControl.dir/ForceControl.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/ForceControl.dir
+  OBJECT_FILE_DIR = CMakeFiles/ForceControl.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target ForceControl
+
+
+#############################################
+# Link the executable ForceControl
+
+build ForceControl: CXX_EXECUTABLE_LINKER__ForceControl_Debug CMakeFiles/ForceControl.dir/ForceControl.cpp.o | libexamples_common.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/ForceControl.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = ForceControl
+  TARGET_PDB = ForceControl.dbg
+
+# =============================================================================
+# Object build statements for EXECUTABLE target ImpedanceControl
+
+
+#############################################
+# Order-only phony target for ImpedanceControl
+
+build cmake_object_order_depends_target_ImpedanceControl: phony || cmake_object_order_depends_target_examples_common
+
+build CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o: CXX_COMPILER__ImpedanceControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceControl.cpp || cmake_object_order_depends_target_ImpedanceControl
+  DEP_FILE = CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/ImpedanceControl.dir
+  OBJECT_FILE_DIR = CMakeFiles/ImpedanceControl.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target ImpedanceControl
+
+
+#############################################
+# Link the executable ImpedanceControl
+
+build ImpedanceControl: CXX_EXECUTABLE_LINKER__ImpedanceControl_Debug CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o | libexamples_common.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/ImpedanceControl.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = ImpedanceControl
+  TARGET_PDB = ImpedanceControl.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -415,7 +414,7 @@ build examples_common: phony libexamples_common.a
 #############################################
 # Folder: /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
-build all: phony libexamples_common.a Waypoints JointImpedanceControl HalfCircle CircleExplore ForceControl JointImpedanceControl_example CartesianImpedance_example GetPosition
+build all: phony libexamples_common.a Waypoints HalfCircle CircleExplore JointImpedanceControl_example CartesianImpedance_example GetPosition ForceControl ImpedanceControl
 
 # =============================================================================
 # Built-in targets

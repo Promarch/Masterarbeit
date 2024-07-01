@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
     // std::array<double, 7> pos1 = {0.01, -0.97, -0.01, -3.06, -0.16, 2.02, 0.65};  // Pos for sleep
     // std::array<double, 7> pos1 = {{0, -M_PI_4, 0, -3 * M_PI_4, 0, M_PI_2, M_PI_4}}; // Pos for half circle
     std::array<double, 7> pos1 = {{M_PI/2, 0.06, 0.00, -2.11, 0.0, 2.19, 0.84}}; // Left of the table, for general orientation tests
+    // std::array<double, 7> pos1 = {{2.62, -0.22, 0.24, -2.23, -0.01, 2.05, 0.46}}; // Starting position for the knee
     std::array<double, 7> pos2 = {-0.32, -0.23, -0.33, -2.68, 0.09, 2.27, 0.43};
     std::array<double, 7> deltaPos;
     // Substract the initial position from the second position

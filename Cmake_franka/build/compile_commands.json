@@ -11,11 +11,6 @@
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointImpedanceControl.dir/JointImpedanceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/HalfCircle.dir/HalfCircle.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/HalfCircle.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/HalfCircle.cpp"
 },
@@ -23,11 +18,6 @@
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/CircleExplore.dir/CircleExplore.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/CircleExplore.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/CircleExplore.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++ -DPOCO_ENABLE_CPP11 -DPOCO_ENABLE_CPP14 -DPOCO_HAVE_FD_EPOLL -DPOCO_OS_FAMILY_UNIX -DPOCO_UNBUNDLED -D_DEBUG -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE -D_REENTRANT -D_THREAD_SAFE -D_XOPEN_SOURCE=500 -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ForceControl.dir/ForceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp"
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
@@ -43,5 +33,15 @@
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/GetPosition.dir/GetPosition.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/GetPosition.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/GetPosition.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ForceControl.dir/ForceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceControl.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceControl.cpp"
 }
 ]
