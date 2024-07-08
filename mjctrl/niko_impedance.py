@@ -130,8 +130,7 @@ def main() -> None:
 
             # Solve for joint torques.
             tau_imp = jac_reduced.T @ F
-            tau_np = (eye - np.linalg.pinv(jac) @
-                      jac)[dof_ids, dof_ids] @ (Kn * (q0 - data.qpos[dof_ids]))
+            tau_np = (eye - np.linalg.pinv(jac) @ jac)[dof_ids, dof_ids] @ (Kn * (q0 - data.qpos[dof_ids]))
             tau = tau_imp + tau_np
 
             tau_max_cur = np.abs(tau).max()
