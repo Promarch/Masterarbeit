@@ -23,18 +23,12 @@ gravity_compensation: bool = True
 # Simulation timestep in seconds.
 dt: float = 0.002
 
-# Nullspace P gain.
-Kn = np.asarray([10.0, 10.0, 10.0, 10.0, 5.0, 5.0, 5.0])
-
-# Maximum allowable joint velocity in rad/s.
-max_angvel = 0.785
-
 #%%
 def main() -> None:
     assert mujoco.__version__ >= "3.1.0", "Please upgrade to mujoco 3.1.0 or later."
 
     # Load the model and data.
-    model = mujoco.MjModel.from_xml_path("franka_emika_panda/scene.xml")
+    model = mujoco.MjModel.from_xml_path("franka_fr3/scene.xml")
     data = mujoco.MjData(model)
 
     # Enable gravity compensation. Set to 0.0 to disable.
@@ -72,22 +66,26 @@ def main() -> None:
     # Stiffness matrix and stuff
     translation_stiffness = 500
     rotation_stiffness = 30
-    K_p = np.eye(6) * translation_stiffness
-    K_p[3:,3:] = np.eye(3) * rotation_stiffness
-    K_d = np.eye(6) * np.sqrt(translation_stiffness)
-    K_d[3:,3:] = np.eye(3) * np.sqrt(rotation_stiffness)
+    K_p_values = np.array([translation_stiffness, translation_stiffness, translation_stiffness, rotation_stiffness, rotation_stiffness, rotation_stiffness])
+    K_p = np.diag(K_p_values)
+    K_d = np.diag(np.sqrt(K_p_values))
 
     # Pre-allocate numpy arrays.
     jac = np.zeros((6, model.nv))
-    diag = damping * np.eye(6)
-    eye = np.eye(model.nv)
-    twist = np.zeros(6)
     error = np.zeros(6)
     error_pos = error[:3]
     error_ori = error[3:]
     site_quat = np.zeros(4)
     site_quat_conj = np.zeros(4)
     error_quat = np.zeros(4)
+
+    # Desired position
+    pos_init = [-0.000124617, 0.55703, 0.06149]
+    quat_init = [0, 0.7071068, 0.7071068, 0] #[ 0.6830127, -0.6830127, -0.1830127, -0.1830127 ]
+
+    # Time variables
+    time_acc = 3
+    step_start = 0
 
     with mujoco.viewer.launch_passive(
         model=model,
@@ -105,6 +103,9 @@ def main() -> None:
         viewer.opt.frame = mujoco.mjtFrame.mjFRAME_SITE
 
         while viewer.is_running():
+            if step_start==0:
+                t_init = time.time()
+
             step_start = time.time()
 
             # Position error.
@@ -116,30 +117,28 @@ def main() -> None:
             mujoco.mju_mulQuat(error_quat, data.mocap_quat[mocap_id], site_quat_conj)
             mujoco.mju_quat2Vel(error_ori, error_quat, 1.0)
 
-            # # Spatial velocity (aka twist)
-            # twist[:3] = Kpos * error[:3] / integration_dt
-            # twist[3:] = error_ori * Kori / integration_dt
-
             # Jacobian.
             mujoco.mj_jacSite(model, data, jac[:3], jac[3:], site_id)
 
             # Current velocity
             vel = jac @ data.qvel
 
+            # Ensure smooth acceleration
+            if (time.time()-t_init)<time_acc:
+                factor = (1 - np.cos(np.pi * (time.time()-t_init)/time_acc))/2
+            else:
+                factor = 1
+            factor_filter = np.ones(6)*factor
+
             # Impedance control
             F = K_p @ error - K_d @ vel
-            tau = jac.T @ F
+            tau = jac.T @ (F*factor_filter)
 
-            # # Clamp maximum joint velocity.
-            # dq_abs_max = np.abs(dq).max()
-            # if dq_abs_max > max_angvel:
-            #     dq *= max_angvel / dq_abs_max
-
-            # # Integrate joint velocities to obtain joint positions.
-            # q = data.qpos.copy()  # Note the copy here is important.
-            # mujoco.mj_integratePos(model, q, dq, integration_dt)
-            # np.clip(q, *model.jnt_range.T, out=q)
-
+            # # Integrate the moment to get joint positions
+            # q_step = data.qpos.copy()
+            # dq_step = data.qvel.copy()
+            # mujoco.mj_integratePos(model, dq_step, tau, integration_dt)
+            # mujoco.mj_integratePos(model, q_step, dq_step, integration_dt)
             # Set the control signal and step the simulation.
             data.ctrl[actuator_ids] = tau[dof_ids]
             mujoco.mj_step(model, data)

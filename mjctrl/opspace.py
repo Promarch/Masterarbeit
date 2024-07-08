@@ -89,7 +89,7 @@ def main() -> None:
         model=model,
         data=data,
         show_left_ui=False,
-        show_right_ui=False,
+        show_right_ui=True,
     ) as viewer:
         # Reset the simulation.
         mujoco.mj_resetDataKeyframe(model, data, key_id)
