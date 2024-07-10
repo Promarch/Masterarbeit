@@ -2,6 +2,7 @@
 import mujoco
 import mujoco.viewer
 import numpy as np
+import matplotlib.pyplot as plt
 import time
 
 # Integration timestep in seconds. This corresponds to the amount of time the joint
@@ -90,6 +91,10 @@ def main() -> None:
     time_acc = 5
     step_start = 0
 
+    # Lists to collect force and torque data
+    force_data_list = []
+    time_list = []
+
     with mujoco.viewer.launch_passive(
         model=model,
         data=data,
@@ -134,14 +139,14 @@ def main() -> None:
             factor_filter = np.ones(6)
             factor_filter[3:] = factor_rot
 
-            # Impedance control
+                # Impedance control
             F = K_p @ error -  K_d @ vel
             tau = jac.T @ (F*factor_filter)
 
-            # Damped least squares control
+                # Damped least squares control
             # tau = jac.T @ (np.linalg.solve(jac @ jac.T + diag, error))
 
-            # Operational space
+                # Operational space
             # Compute the task-space inertia matrix.
             mujoco.mj_solveM(model, data, M_inv, np.eye(model.nv))
             Mx_inv = jac @ M_inv @ jac.T
@@ -149,7 +154,6 @@ def main() -> None:
                 Mx = np.linalg.inv(Mx_inv)
             else:
                 Mx = np.linalg.pinv(Mx_inv, rcond=1e-2)
-
             # Compute generalized forces.
             tau = jac.T @ Mx @ ((K_p @ error - K_d @ (jac @ data.qvel[dof_ids]))*factor_filter)
 
@@ -157,10 +161,22 @@ def main() -> None:
             data.ctrl[actuator_ids] = tau[dof_ids]
             mujoco.mj_step(model, data)
 
+            # Get sensor data
+            force_data_list.append(data.sensor("ForceSensor").data.copy())
+            time_list.append(data.time)
+
             viewer.sync()
             time_until_next_step = dt - (time.time() - step_start)
             if time_until_next_step > 0:
                 time.sleep(time_until_next_step)
+        force_data = np.vstack(force_data_list)
+        time_data = np.array(time_list)
+
+        # plt.plot(time_data, force_data, label=["x", "y", "z"])
+        # plt.legend()
+        # plt.show()
+        
+        print("Last line")
 
 
 if __name__ == "__main__":

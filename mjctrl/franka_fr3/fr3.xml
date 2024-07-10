@@ -205,6 +205,10 @@
     </body>
   </worldbody>
 
+  <sensor> 
+    <force name="ForceSensor" site="target_site"/>
+  </sensor>
+
   <actuator>
     <motor class="fr3" name="joint1" joint="joint1"/>
     <motor class="fr3" name="joint2" joint="joint2"/>
