@@ -93,6 +93,7 @@ def main() -> None:
 
     # Lists to collect force and torque data
     force_data_list = []
+    torque_data_list = []
     time_list = []
 
     with mujoco.viewer.launch_passive(
@@ -129,7 +130,7 @@ def main() -> None:
             mujoco.mj_jacSite(model, data, jac[:3], jac[3:], site_id)
 
             # Current velocity
-            vel = jac @ data.qvel
+            vel = (jac[:,dof_ids] @ data.qvel[dof_ids])
 
             # Ensure smooth acceleration
             if (time.time()-t_init)<time_acc:
@@ -155,13 +156,14 @@ def main() -> None:
             else:
                 Mx = np.linalg.pinv(Mx_inv, rcond=1e-2)
             # Compute generalized forces.
-            tau = jac.T @ Mx @ ((K_p @ error - K_d @ (jac @ data.qvel[dof_ids]))*factor_filter)
+            # tau = jac.T @ Mx @ ((K_p @ error - K_d @ (jac[:,dof_ids] @ data.qvel[dof_ids]))*factor_filter)
 
             # Set the control signal and step the simulation.
             data.ctrl[actuator_ids] = tau[dof_ids]
             mujoco.mj_step(model, data)
 
             # Get sensor data
+            torque_data_list.append(data.sensor("TorqueSensor").data.copy())
             force_data_list.append(data.sensor("ForceSensor").data.copy())
             time_list.append(data.time)
 
@@ -170,10 +172,29 @@ def main() -> None:
             if time_until_next_step > 0:
                 time.sleep(time_until_next_step)
         force_data = np.vstack(force_data_list)
+        torque_data = np.vstack(torque_data_list)
         time_data = np.array(time_list)
 
-        # plt.plot(time_data, force_data, label=["x", "y", "z"])
-        # plt.legend()
+        # # Plot force and torque data
+        # plt.figure(figsize=(12, 6))
+
+        # plt.subplot(2, 1, 1)
+        # plt.plot(time_data, force_data)
+        # plt.title("Force at Attachment Site")
+        # plt.xlabel("Time (s)")
+        # plt.ylabel("Force (N)")
+        # plt.grid(0.25)
+        # plt.legend(['Fx', 'Fy', 'Fz'])
+
+        # plt.subplot(2, 1, 2)
+        # plt.plot(time_data, torque_data)
+        # plt.title("Torque at Attachment Site")
+        # plt.xlabel("Time (s)")
+        # plt.ylabel("Torque (Nm)")
+        # plt.grid(0.25)
+        # plt.legend(['Tx', 'Ty', 'Tz'])
+
+        # plt.tight_layout()
         # plt.show()
         
         print("Last line")
