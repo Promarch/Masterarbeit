@@ -73,8 +73,8 @@ int main() {
     franka::RobotState initial_state = robot.readOnce();
 
       // Damping/Stifness
-    const double translation_stiffness{3.0};
-    const double rotation_stiffness{0.5};
+    const double translation_stiffness{1.0};
+    const double rotation_stiffness{0.1};
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_i = Eigen::MatrixXd::Identity(6, 6); 
@@ -87,8 +87,8 @@ int main() {
 
       // Time variables for the loop
     double time = 0.0;
-    double time_max = 3; // Maximum runtime
-    double time_acc = 2.5;  // Time spent accelerating
+    double time_max = 5; // Maximum runtime
+    double time_acc = 2;  // Time spent accelerating
     double time_dec = 0.5; // time for decceleration, to stop abrubt braking
     double sampling_interval = 0.1; // Interval at which the console outputs the current error
     double next_sampling_time = 0;  // Needed for the sampling interval
@@ -110,8 +110,8 @@ int main() {
     double internalTorque{0};
     double flexionTorque{0.0};
     double varusTorque{0};
-    Eigen::Matrix<double, 6, 1> F_d{0, 0, 1, internalTorque, flexionTorque, varusTorque};
-    F_d << F_d + F_init;
+    Eigen::Matrix<double, 6, 1> F_d{0, 0, 8, internalTorque, flexionTorque, varusTorque};
+    F_d = F_d + F_init; // 
     
     // Other variables
     double factor_rot{0};
@@ -170,8 +170,8 @@ int main() {
       // Calculate the necessary wrench, from Haddadin und Schindlbeck (nicht direkt aber da hab ich die Formel her)
       Eigen::Matrix<double, 6,1> h_c; h_c.setZero();
 
-      h_c = K_p * error; // - K_d * dF No K_i part, so this is left out: + K_i * int_error 
-
+      h_c = K_p * error; //  No K_i part, so this is left out: + K_i * int_error 
+      // h_c << 0, 0, 0, 0, 0, 0;
       // Calculate torque and map to an array
       std::array<double, 7> tau_d{};
       Eigen::VectorXd::Map(&tau_d[0], 7) = jacobian.transpose() * h_c.cwiseProduct(factor_filter); // 

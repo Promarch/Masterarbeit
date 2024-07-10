@@ -336,6 +336,39 @@ build ImpedanceControl: CXX_EXECUTABLE_LINKER__ImpedanceControl_Debug CMakeFiles
   TARGET_FILE = ImpedanceControl
   TARGET_PDB = ImpedanceControl.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target ReadForce
+
+
+#############################################
+# Order-only phony target for ReadForce
+
+build cmake_object_order_depends_target_ReadForce: phony || cmake_object_order_depends_target_examples_common
+
+build CMakeFiles/ReadForce.dir/ReadForce.cpp.o: CXX_COMPILER__ReadForce_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ReadForce.cpp || cmake_object_order_depends_target_ReadForce
+  DEP_FILE = CMakeFiles/ReadForce.dir/ReadForce.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/ReadForce.dir
+  OBJECT_FILE_DIR = CMakeFiles/ReadForce.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target ReadForce
+
+
+#############################################
+# Link the executable ReadForce
+
+build ReadForce: CXX_EXECUTABLE_LINKER__ReadForce_Debug CMakeFiles/ReadForce.dir/ReadForce.cpp.o | libexamples_common.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/ReadForce.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = ReadForce
+  TARGET_PDB = ReadForce.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -414,7 +447,7 @@ build examples_common: phony libexamples_common.a
 #############################################
 # Folder: /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
-build all: phony libexamples_common.a Waypoints HalfCircle CircleExplore JointImpedanceControl_example CartesianImpedance_example GetPosition ForceControl ImpedanceControl
+build all: phony libexamples_common.a Waypoints HalfCircle CircleExplore JointImpedanceControl_example CartesianImpedance_example GetPosition ForceControl ImpedanceControl ReadForce
 
 # =============================================================================
 # Built-in targets

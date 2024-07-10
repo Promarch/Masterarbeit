@@ -62,3 +62,6 @@ Ikom woche, daher nur halbtags da
 Nur kurz da gewesen, End-Effektor in Libfranka angepasst damit die Rotation ungefähr ums Kniegelenk hin passiert und nicht um die Greifer
 25.06.
 Neues Script in python um den Verlauf der Momente in den jeweiligen Gelenken zu messen, ForceControl angepasst dass es auch diese Werte ausgibt, dazu auch die Steifigkeit angepasst damit kein controller torque discontinuity aufkommt
+Zwischenzeit: Impedanzregler funktioniert zuverlässig, auch rotationen um den simulierten EE funktionieren gut. Neuer Versuch war, den ganzen Bums über eine Kraftregelung zu machen, wobei das eher schlecht funktioniert hat. Als Steuerung ist's ok, aber als Regelung ist es eine Katastrophe da die gemessenen Kräfte viel zu ungenau sind. Hab auch probiert zu schauen, ob man die Kräfte besser messen kann/besser berechnen kann, hab dafür auch ne cpp funktion zum messen und eine python funktion zum auswerten geschrieben, aber es bleibt echt ungenau. Komplett implementiert hab ich's nicht da danach Niko kam mit dem mujoco model, seitdem bin ich da dran. 
+08.07
+euh viel passiert, seit letztem Donnerstag bin ich dabei den Roboter über Mujoco zu simulieren. Hab's heute hinbekommen die xml-file vom Roboter so anzupassen, dass sie sich quasi identisch zum Roboter verhält. Ansonsten war ich bisher dabei die 

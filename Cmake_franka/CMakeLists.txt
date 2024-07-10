@@ -30,6 +30,7 @@ SET(PROGRAM_files
   GetPosition
   ForceControl
   ImpedanceControl
+  ReadForce
 )
 
 foreach(singleFile ${PROGRAM_files})

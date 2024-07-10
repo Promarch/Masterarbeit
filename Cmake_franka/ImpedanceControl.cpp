@@ -73,7 +73,7 @@ int main() {
 
       // Damping/Stifness
     const double translation_stiffness{500.0};
-    const double rotation_stiffness{30.0};
+    const double rotation_stiffness{100.0};
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_i = Eigen::MatrixXd::Identity(6, 6); 
@@ -111,12 +111,12 @@ int main() {
     Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
     Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
     // Varus-Valgus (Rotation around z in local CoSy) 
-    double angle_varus = 0;
-    Eigen::Vector3d axis_varus(1,0,0);
-    Eigen::AngleAxisd angle_axis_varus(angle_varus, axis_varus);
-    Eigen::Quaterniond quaternion_varus(angle_axis_varus);
+    double angle_internal = 0;
+    Eigen::Vector3d axis_internal(1,0,0);
+    Eigen::AngleAxisd angle_axis_internal(angle_internal, axis_internal);
+    Eigen::Quaterniond quaternion_internal(angle_axis_internal);
     // Combine the rotations
-    Eigen::Quaterniond quaternion_combined = quaternion_varus * quaternion_flexion;
+    Eigen::Quaterniond quaternion_combined = quaternion_internal * quaternion_flexion;
     Eigen::Quaterniond rot_quaternion_rel = rotation_init * quaternion_combined * rotation_init.inverse();
       // Desired relative position
     Eigen::Matrix<double, 3,1> pos_d;
@@ -185,7 +185,7 @@ int main() {
       // integrate error using forward euler
       int_error += dt*error;
 
-      h_c = K_p * error - K_d * v_e + K_i * int_error; 
+      h_c = K_p * error - K_d * v_e ; // + K_i * int_error
 
       // Calculate torque and map to an array
       std::array<double, 7> tau_d{};
@@ -218,7 +218,7 @@ int main() {
       // Add the current data to the array
       tau_data.push_back(tau_d);
       position_data.push_back(pos_array);
-      rotation_data.push_back({(roll_init+angle_varus-roll)/M_PI*180, (pitch-pitch_init+angle_flexion)/M_PI*180, (yaw-yaw_init)/M_PI*180});
+      rotation_data.push_back({(roll_init+angle_internal-roll)/M_PI*180, (pitch-pitch_init+angle_flexion)/M_PI*180, (yaw-yaw_init)/M_PI*180});
       force_data.push_back(robot_state.K_F_ext_hat_K);
       // Send desired tau to the robot
       return tau_d;

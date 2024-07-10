@@ -42,7 +42,15 @@ int main() {
     x_e.head(3) = position_d;
     x_e.tail(3) << orientation_d.x(), orientation_d.y(), orientation_d.z();
 
-    std::cout << "x_e: " << std::endl << x_e << std::endl; 
+    std::cout << "x_e: \n" << x_e << std::endl; 
+    std::array<double, 7> gravity_array = model.gravity(initial_state);
+    Eigen::Map<Eigen::Matrix<double, 7, 1>> initial_gravity(gravity_array.data());
+    std::cout << "gravity: \n" << initial_gravity << std::endl; 
+    std::array<double, 7> tau_array = initial_state.tau_J;
+    Eigen::Map<Eigen::Matrix<double, 7, 1>> initial_tau(tau_array.data());
+    std::array<double, 7> tau_filter_array = initial_state.tau_ext_hat_filtered;
+    Eigen::Map<Eigen::Matrix<double, 7, 1>> initial_tau_filter(tau_filter_array.data());
+    std::cout << "Tau: \n" << initial_tau-initial_gravity << "\nTau filter: \n" << initial_tau_filter << std::endl; 
 
   }
 

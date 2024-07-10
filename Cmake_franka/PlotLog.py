@@ -66,7 +66,7 @@ def plot_rotation(df):
     plt.legend()
     plt.show()
 
-def plot_error(df_pos, df_rot):
+def plot_orientation_error(df_pos, df_rot):
     # Get Original position and calculate the absolute distance
     pos_origin = df_pos.iloc[0,:].values
     distance_abs = np.linalg.norm(df_pos-pos_origin, axis=1)
@@ -80,8 +80,18 @@ def plot_error(df_pos, df_rot):
     ax1 = fig.add_subplot(122, projection='3d')
     ax1.plot(df_pos.iloc[:,0].to_numpy(), df_pos.iloc[:,1].to_numpy(), df_pos.iloc[:,2].to_numpy(), label="trajectory")
     ax1.plot(pos_origin[0], pos_origin[1], pos_origin[2], 'o', label="start")
-    # Set y-lim
-    ax1.set_xlim([df_pos.iloc[:,0].min()-.1, df_pos.iloc[:,0].min()+.1])
+    # Set plot limits (https://stackoverflow.com/questions/13685386/how-to-set-the-equal-aspect-ratio-for-all-axes-x-y-z)
+    x = df_pos.iloc[:, 0].to_numpy()
+    y = df_pos.iloc[:, 1].to_numpy()
+    z = df_pos.iloc[:, 2].to_numpy()
+    max_range = np.array([x.max()-x.min(), y.max()-y.min(), z.max()-z.min()]).max() / 2.0
+    mid_x = (x.max()+x.min()) * 0.5
+    mid_y = (y.max()+y.min()) * 0.5
+    mid_z = (z.max()+z.min()) * 0.5
+    ax1.set_xlim(mid_x - max_range, mid_x + max_range)
+    ax1.set_ylim(mid_y - max_range, mid_y + max_range)
+    ax1.set_zlim(mid_z - max_range, mid_z + max_range)
+    # Set View
     ax1.view_init(elev=19, azim=-154)
     # Set Label of axis
     ax1.set_xlabel("x")
@@ -124,7 +134,28 @@ def plot_force(df_force):
     # Add grid to all plots
     for a in ax.flat:
         a.grid(True)
-    
+    plt.suptitle("Forces from sensor")
+    plt.show()
+
+def plot_force_error(df_error):
+    fig, ax = plt.subplots(2, 1, figsize=(8,8), sharex=True)
+        # Plot Forces
+    ax[0].plot(df_error.iloc[:,0].to_numpy(), 'r', label="X")
+    ax[0].plot(df_error.iloc[:,1].to_numpy(), 'g', label="Y")
+    ax[0].plot(df_error.iloc[:,2].to_numpy(), 'b', label="Z")
+    ax[0].legend(loc = "upper right")
+    ax[0].set_title("Forces [N]")
+        # Plot torque
+    ax[1].plot(df_error.iloc[:,3].to_numpy(), 'r', label="X")
+    ax[1].plot(df_error.iloc[:,4].to_numpy(), 'g', label="Y")
+    ax[1].plot(df_error.iloc[:,5].to_numpy(), 'b', label="Z")
+    ax[1].legend(loc = "upper right")
+    ax[1].set_title("Torques [Nm]")
+
+    # Add grid to all plots
+    for a in ax.flat:
+        a.grid(True)
+    plt.suptitle("Force Error")
     plt.show()
 # %%
 # Plot torques
@@ -149,7 +180,7 @@ df_orig_rot = pd.read_csv(filePath_rot, header=None)
 df_rot = df_orig_rot.copy()
 
 # Plot error
-plot_error(df_pos, df_rot)
+plot_orientation_error(df_pos, df_rot)
 
 # %%
     # Get force data
@@ -160,3 +191,51 @@ df_force = df_orig_force.copy()
     # Plot Force
 plot_force(df_force)
 
+# %%
+    # Get force error data
+list_of_files_error = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/error*')
+filePath_error = max(list_of_files_error, key=os.path.getctime)
+df_orig_error = pd.read_csv(filePath_error, header=None)
+df_error = df_orig_error.copy()
+    # Plot Force
+# plot_force_error(df_error)
+# %%
+    # Get position
+# list_of_files_pos = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/position_*')
+# filePath_pos = max(list_of_files_pos, key=os.path.getctime)
+# df_orig_pos = pd.read_csv(filePath_pos, header=None)
+# df_pos = df_orig_pos.copy()
+
+# # Prepare data
+# x = df_pos.iloc[:, 0].to_numpy()
+# y = df_pos.iloc[:, 1].to_numpy()
+# z = df_pos.iloc[:, 2].to_numpy()
+
+# # Create a figure and a 3D axis
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
+
+# # Create a colormap
+# cmap = plt.get_cmap('viridis')
+# colors = cmap(np.linspace(0, 1, len(x)))
+
+# # Plot each segment with a different color
+# for i in range(len(x)):
+#     ax.plot(x[i], y[i], z[i], color=colors[i], marker = '+')
+# # Set labels
+# ax.set_xlabel('X')
+# ax.set_ylabel('Y')
+# ax.set_zlabel('Z')
+
+# max_range = np.array([x.max()-x.min(), y.max()-y.min(), z.max()-z.min()]).max() / 2.0
+
+# mid_x = (x.max()+x.min()) * 0.5
+# mid_y = (y.max()+y.min()) * 0.5
+# mid_z = (z.max()+z.min()) * 0.5
+# ax.set_xlim(mid_x - max_range, mid_x + max_range)
+# ax.set_ylim(mid_y - max_range, mid_y + max_range)
+# ax.set_zlim(mid_z - max_range, mid_z + max_range)
+# # Set View
+# ax.view_init(elev=19, azim=-154)
+# # Show the plot
+# plt.show()
