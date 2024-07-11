@@ -195,7 +195,7 @@
                               <site name="attachment_site" rgba="1 0 0 1" size="0.01" group="1" quat="0 0 0 1"/>
                             </body>
                             <body name="cylinder_bottom" pos="0 0 0.1125" quat="1 0 0 0">
-                              <joint name="knee_joint" type="hinge" axis="0 1 0" stiffness="30"/>
+                              <joint name="knee_joint" type="hinge" axis="0 1 0" stiffness="7"/>
                               <site name="sensor_site"/>
                               <geom type="cylinder" size=".03" fromto="0 0 0 0 0 .1" material="button_green"/>
                             </body>

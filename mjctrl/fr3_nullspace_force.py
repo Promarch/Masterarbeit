@@ -70,6 +70,7 @@ def main() -> None:
     K_p_values = np.array([translation_stiffness, translation_stiffness, translation_stiffness, rotation_stiffness, rotation_stiffness, rotation_stiffness])
     K_p = np.diag(K_p_values)
     K_d = np.diag(np.sqrt(K_p_values))
+    K_n = np.asarray([10.0, 10.0, 10.0, 10.0, 5.0, 5.0, 5.0])
 
     # Pre-allocate numpy arrays.
     jac = np.zeros((6, model.nv))
@@ -83,13 +84,14 @@ def main() -> None:
     M_inv = np.zeros((model.nv, model.nv))
     Mx = np.zeros((6, 6))
 
-    # Desired position
-    pos_init = [-0.000124617, 0.55703, 0.06149]
-    quat_init = [0, 0.7071068, 0.7071068, 0] #[ 0.6830127, -0.6830127, -0.1830127, -0.1830127 ]
+    # Desired Force
+    F_d = np.asarray([0, 0, 0, 0, 30, 0])
 
     # Time variables
     time_acc = 5
     step_start = 0
+    time_debug = 0.5
+    time_sample = 0.5
 
     # Lists to collect force and torque data
     force_data_list = []
@@ -100,7 +102,7 @@ def main() -> None:
         model=model,
         data=data,
         show_left_ui=True,
-        show_right_ui=True,
+        show_right_ui=False,
     ) as viewer:
         # Reset the simulation.
         mujoco.mj_resetDataKeyframe(model, data, key_id)
@@ -114,12 +116,13 @@ def main() -> None:
         while viewer.is_running():
             if step_start==0:
                 t_init = time.time()
+                pos_init = data.site(site_id).xpos
 
             step_start = time.time()
 
             # Position error.
             error_pos[:] = data.mocap_pos[mocap_id] - data.site(site_id).xpos
-
+            error_pos[:3] = pos_init - data.site(site_id).xpos
             # Orientation error.
             mujoco.mju_mat2Quat(site_quat, data.site(site_id).xmat)
             mujoco.mju_negQuat(site_quat_conj, site_quat)
@@ -140,12 +143,17 @@ def main() -> None:
             factor_filter = np.ones(6)
             factor_filter[3:] = factor_rot
 
-                # Impedance control
-            F = K_p @ error -  K_d @ vel
-            tau = jac.T @ (F*factor_filter)
-
-                # Damped least squares control
-            # tau = jac.T @ (np.linalg.solve(jac @ jac.T + diag, error))
+                # Impedance control with nullspace
+            # Impedance control of the position
+            jac_red = jac[:3,dof_ids]
+            jac7 = jac[:,dof_ids]
+            F_c = K_p @ error -  K_d @ vel
+            tau = jac_red.T @ (F_c*factor_filter)[:3]
+            # Nullspace Control of the torque
+            F_current = data.sensor("ForceSensor").data.copy()
+            T_current = data.sensor("TorqueSensor").data.copy()
+            F = np.concatenate((F_current, T_current))
+            # tau += (np.eye(7) - np.linalg.pinv(jac7) @ jac7 ) @ (K_n * (jac7.T @ (F_d-F)))
 
                 # Operational space
             # Compute the task-space inertia matrix.
@@ -169,6 +177,9 @@ def main() -> None:
 
             viewer.sync()
             time_until_next_step = dt - (time.time() - step_start)
+            if (time.time()-t_init)>time_debug:
+                time_debug += time_sample
+
             if time_until_next_step > 0:
                 time.sleep(time_until_next_step)
         force_data = np.vstack(force_data_list)
