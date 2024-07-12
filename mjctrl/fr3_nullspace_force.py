@@ -85,7 +85,7 @@ def main() -> None:
     Mx = np.zeros((6, 6))
 
     # Desired Force
-    F_d = np.asarray([0, 0, 0, 0, 30, 0])
+    F_d = np.asarray([0, 0, 0, 0, -5, 0])
 
     # Time variables
     time_acc = 5
@@ -141,19 +141,20 @@ def main() -> None:
             else:
                 factor_rot = 1
             factor_filter = np.ones(6)
-            factor_filter[3:] = factor_rot
+            factor_filter[3:] = 0 #factor_rot
 
-                # Impedance control with nullspace
-            # Impedance control of the position
-            jac_red = jac[:3,dof_ids]
-            jac7 = jac[:,dof_ids]
-            F_c = K_p @ error -  K_d @ vel
-            tau = jac_red.T @ (F_c*factor_filter)[:3]
-            # Nullspace Control of the torque
+                # Some force Control
             F_current = data.sensor("ForceSensor").data.copy()
             T_current = data.sensor("TorqueSensor").data.copy()
             F = np.concatenate((F_current, T_current))
-            # tau += (np.eye(7) - np.linalg.pinv(jac7) @ jac7 ) @ (K_n * (jac7.T @ (F_d-F)))
+            # Impedance control of the position
+            jac_red = jac[:3,dof_ids]
+            jac7 = jac[:,dof_ids]
+            h_c = K_p @ error -  K_d @ vel
+            # tau = jac7.T @ (h_c*factor_filter)
+            tau = jac7.T @ ((F_d))
+            # Nullspace Control of the torque
+            # tau += (np.eye(7) - np.linalg.pinv(jac7) @ jac7 ) @ (jac7.T @ (F_d-F))
 
                 # Operational space
             # Compute the task-space inertia matrix.
@@ -187,7 +188,7 @@ def main() -> None:
         time_data = np.array(time_list)
 
         # Plot force and torque data
-        plt.figure(figsize=(12, 6))
+        plt.figure(figsize=(8, 4))
 
         plt.subplot(2, 1, 1)
         plt.plot(time_data, force_data)
