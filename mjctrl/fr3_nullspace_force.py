@@ -85,7 +85,7 @@ def main() -> None:
     Mx = np.zeros((6, 6))
 
     # Desired Force
-    F_d = np.asarray([0, 0, 0, 0, -5, 0])
+    F_d = np.asarray([0, 0, 0, 2, -5, 0])
 
     # Time variables
     time_acc = 5
@@ -152,20 +152,9 @@ def main() -> None:
             jac7 = jac[:,dof_ids]
             h_c = K_p @ error -  K_d @ vel
             # tau = jac7.T @ (h_c*factor_filter)
-            tau = jac7.T @ ((F_d))
+            tau = jac.T @ ((F_d))
             # Nullspace Control of the torque
             # tau += (np.eye(7) - np.linalg.pinv(jac7) @ jac7 ) @ (jac7.T @ (F_d-F))
-
-                # Operational space
-            # Compute the task-space inertia matrix.
-            mujoco.mj_solveM(model, data, M_inv, np.eye(model.nv))
-            Mx_inv = jac @ M_inv @ jac.T
-            if abs(np.linalg.det(Mx_inv)) >= 1e-2:
-                Mx = np.linalg.inv(Mx_inv)
-            else:
-                Mx = np.linalg.pinv(Mx_inv, rcond=1e-2)
-            # Compute generalized forces.
-            # tau = jac.T @ Mx @ ((K_p @ error - K_d @ (jac[:,dof_ids] @ data.qvel[dof_ids]))*factor_filter)
 
             # Set the control signal and step the simulation.
             data.ctrl[actuator_ids] = tau[dof_ids]
