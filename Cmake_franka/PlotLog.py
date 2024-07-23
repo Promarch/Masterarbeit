@@ -116,7 +116,7 @@ def plot_orientation_error(df_pos, df_rot):
 
     plt.show()
 
-def plot_force(df_force):
+def plot_force_F_T(df_force):
     fig, ax = plt.subplots(2, 1, figsize=(8,8), sharex=True)
         # Plot Forces
     ax[0].plot(df_force.iloc[:,0].to_numpy(), 'r', label="X")
@@ -135,6 +135,24 @@ def plot_force(df_force):
     for a in ax.flat:
         a.grid(True)
     plt.suptitle("Forces from sensor")
+    plt.show()
+
+def plot_force_tau_F(df_F_ext, df_force_tau):
+    fig, axs = plt.subplots(6, 1, figsize=(10, 15), sharex=True)
+    x = df_F_ext.index.values
+    plot_name = ["X", "Y", "Z", "rot_x", "rot_y", "rot_z"]
+    for i in range(6):
+        axs[i].plot(x, df_force_tau.iloc[:,i].to_numpy(), label = "Tau+jacobi")
+        axs[i].plot(x, df_F_ext.iloc[:,i].to_numpy(), label = "F Robot")
+        axs[i].set_ylabel(plot_name[i])
+        axs[i].grid(True)
+        #axs[i].set_ylim([df[useCols[1:]].min().min(), df[useCols[1:]].max().max()])
+        axs[i].legend(loc = "upper right")
+
+    axs[-1].set_xlabel('Time')
+    # Adjust layout
+    plt.suptitle("Torque of each joint")
+    # Show the plot
     plt.show()
 
 def plot_force_error(df_error):
@@ -157,6 +175,7 @@ def plot_force_error(df_error):
         a.grid(True)
     plt.suptitle("Force Error")
     plt.show()
+
 # %%
 # Plot torques
 list_of_files_tau = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/tau_da*')
@@ -183,14 +202,20 @@ df_rot = df_orig_rot.copy()
 plot_orientation_error(df_pos, df_rot)
 
 # %%
-    # Get force data
-list_of_files_force = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force*')
-filePath_force = max(list_of_files_force, key=os.path.getctime)
-df_orig_force = pd.read_csv(filePath_force, header=None)
-df_force = df_orig_force.copy()
-    # Plot Force
-plot_force(df_force)
+    # Get external force data
+list_of_files_force_ext = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force*')
+filePath_force_ext = max(list_of_files_force_ext, key=os.path.getctime)
+df_orig_force_ext = pd.read_csv(filePath_force_ext, header=None)
+df_force_ext = df_orig_force_ext.copy()
 
+    # Get force data from torque+jacobian
+list_of_files_force_tau = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/tau_force*')
+filePath_force_tau = max(list_of_files_force_tau, key=os.path.getctime)
+df_orig_force_tau = pd.read_csv(filePath_force_tau, header=None)
+df_force_tau = df_orig_force_tau.copy()
+
+    # Plot Force
+plot_force_tau_F(df_force_ext, df_force_tau)
 # %%
     # Get force error data
 list_of_files_error = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/error*')
@@ -199,43 +224,3 @@ df_orig_error = pd.read_csv(filePath_error, header=None)
 df_error = df_orig_error.copy()
     # Plot Force
 # plot_force_error(df_error)
-# %%
-    # Get position
-# list_of_files_pos = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/position_*')
-# filePath_pos = max(list_of_files_pos, key=os.path.getctime)
-# df_orig_pos = pd.read_csv(filePath_pos, header=None)
-# df_pos = df_orig_pos.copy()
-
-# # Prepare data
-# x = df_pos.iloc[:, 0].to_numpy()
-# y = df_pos.iloc[:, 1].to_numpy()
-# z = df_pos.iloc[:, 2].to_numpy()
-
-# # Create a figure and a 3D axis
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
-
-# # Create a colormap
-# cmap = plt.get_cmap('viridis')
-# colors = cmap(np.linspace(0, 1, len(x)))
-
-# # Plot each segment with a different color
-# for i in range(len(x)):
-#     ax.plot(x[i], y[i], z[i], color=colors[i], marker = '+')
-# # Set labels
-# ax.set_xlabel('X')
-# ax.set_ylabel('Y')
-# ax.set_zlabel('Z')
-
-# max_range = np.array([x.max()-x.min(), y.max()-y.min(), z.max()-z.min()]).max() / 2.0
-
-# mid_x = (x.max()+x.min()) * 0.5
-# mid_y = (y.max()+y.min()) * 0.5
-# mid_z = (z.max()+z.min()) * 0.5
-# ax.set_xlim(mid_x - max_range, mid_x + max_range)
-# ax.set_ylim(mid_y - max_range, mid_y + max_range)
-# ax.set_zlim(mid_z - max_range, mid_z + max_range)
-# # Set View
-# ax.view_init(elev=19, azim=-154)
-# # Show the plot
-# plt.show()

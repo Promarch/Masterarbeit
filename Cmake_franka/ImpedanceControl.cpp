@@ -59,21 +59,21 @@ int main() {
   // Variables to store the torque or position of the robot during the movement
   std::vector<std::array<double, 7>> tau_data; // Vector to store the torque
   std::vector<std::array<double, 3>> position_data, rotation_data; // Vector to store the torque
-  std::vector<std::array<double, 6>> force_data; // Vector to store the force and torque on the EE
+  std::vector<std::array<double, 6>> force_data, tau_force_data; // Vector to store the force and torque on the EE
   
   try {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector
-    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.225, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.245, 1.0});
     // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
     franka::RobotState initial_state = robot.readOnce();
 
       // Damping/Stifness
-    const double translation_stiffness{500.0};
-    const double rotation_stiffness{100.0};
+    const double translation_stiffness{250.0};
+    const double rotation_stiffness{50.0};
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_i = Eigen::MatrixXd::Identity(6, 6); 
@@ -86,8 +86,8 @@ int main() {
 
       // Time for the loop
     double time = 0.0;
-    double time_max = 15;
-    double time_acc = 5;
+    double time_max = 8;
+    double time_acc = 4;
     double time_dec = 0.5; // time for decceleration, to stop abrubt braking
     double sampling_interval = 0.1;
     double next_sampling_time = 0;
@@ -107,7 +107,7 @@ int main() {
       // Desired Rotation, created with quaternions
     // Flexion (Rotation around y in local CoSy) 
     double angle_flexion = M_PI/9;
-    Eigen::Vector3d axis_flexion(0,1,0);
+    Eigen::Vector3d axis_flexion(1,0,0);
     Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
     Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
     // Varus-Valgus (Rotation around z in local CoSy) 
@@ -159,6 +159,8 @@ int main() {
       Eigen::Vector3d position(transform.translation());
       Eigen::Quaterniond rotation(transform.linear());
       Eigen::Matrix3d rot_matrix = rotation.toRotationMatrix();
+        // Get current filtered torque for measurements
+      Eigen::Map<const Eigen::Matrix<double, 7, 1>> tau_filter(robot_state.tau_ext_hat_filtered.data());
         // Compute current rotation in angles for plots
       double roll = std::atan2(rot_matrix(2, 1), rot_matrix(2, 2));
       double pitch = std::asin(-rot_matrix(2, 0));
@@ -210,16 +212,26 @@ int main() {
         next_sampling_time += sampling_interval;
       }
 
-      // Map the position and error to an array
+        // Calculate and print data for plots 
+      // Calculate forces directly from torque sensor: F = J * tau
+      std::array<double, 42> body_jacobian_array = model.bodyJacobian(franka::Frame::kEndEffector, robot_state);
+      Eigen::Map<const Eigen::Matrix<double, 6,7>> body_jacobian(body_jacobian_array.data());
+      Eigen::Matrix<double, 6, 1> force_tau = body_jacobian * tau_filter; 
+
+      // Map the position and error to an array (I cant add Eigen vectors to arrays)
       std::array<double, 3> pos_array{}; 
-      std::array<double, 6> error_array{}; 
+      std::array<double, 6> error_array{}, force_tau_array{}; 
       Eigen::VectorXd::Map(&pos_array[0], 3) = position;
       Eigen::VectorXd::Map(&error_array[0], 6) = error;
+      Eigen::VectorXd::Map(&force_tau_array[0], 6) = force_tau;
+      
       // Add the current data to the array
       tau_data.push_back(tau_d);
       position_data.push_back(pos_array);
       rotation_data.push_back({(roll_init+angle_internal-roll)/M_PI*180, (pitch-pitch_init+angle_flexion)/M_PI*180, (yaw-yaw_init)/M_PI*180});
       force_data.push_back(robot_state.K_F_ext_hat_K);
+      tau_force_data.push_back(force_tau_array);
+
       // Send desired tau to the robot
       return tau_d;
 
@@ -232,6 +244,7 @@ int main() {
     writeDataToFile(position_data);
     writeDataToFile(rotation_data);
     writeDataToFile(force_data);
+    writeDataToFile(tau_force_data);
   }
   // Catches Exceptions caused within the execution of a program (I think)
   catch (const franka::ControlException& e) {

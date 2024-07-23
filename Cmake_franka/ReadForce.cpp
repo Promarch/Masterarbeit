@@ -63,7 +63,7 @@ int main() {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector
-    // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.225, 1.0});
+    // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.240, 1.0});
     robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
@@ -71,8 +71,8 @@ int main() {
 
     // Variables to control loop time
     double time{0};
-    double time_max{2};
-    double sampling_interval = 0.1; // Interval at which the console outputs the current error
+    double time_max{5};
+    double sampling_interval = 0.25; // Interval at which the console outputs the current error
     double next_sampling_time = 0;  // Needed for the sampling interval
 
 
@@ -82,7 +82,7 @@ int main() {
 
         // Get state variables
       // Jacobian
-      std::array<double, 42> jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
+      std::array<double, 42> jacobian_array = model.bodyJacobian(franka::Frame::kEndEffector, robot_state);
       Eigen::Map<const Eigen::Matrix<double, 6, 7>> jacobian(jacobian_array.data());
       // Tau with gravity
       std::array<double, 7> tau_j_array = robot_state.tau_J; 
@@ -96,7 +96,7 @@ int main() {
       
         // Compute stuff
       Eigen::Matrix<double, 7, 1> tau_grav = tau_J-gravity;
-      Eigen::Matrix<double, 6, 1> F_tau_filter = jacobian * tau_filter; 
+      Eigen::Matrix<double, 6, 1> F_tau_filter = jacobian.transpose().completeOrthogonalDecomposition().pseudoInverse() * tau_filter; 
       Eigen::Matrix<double, 6, 1> F_tau_grav = jacobian * tau_grav; 
       Eigen::Matrix<double, 6, 1> F_grav = jacobian * gravity; 
 
@@ -119,7 +119,7 @@ int main() {
       // Print current wrench, time, and absolute positional error
       if (time >= next_sampling_time) {
         std::cout << std::fixed << std::setprecision(3);
-        std::cout << "Time: " << time << std::endl; 
+        std::cout << "Time: " << time << "\n"; 
         next_sampling_time += sampling_interval;
       }
 
