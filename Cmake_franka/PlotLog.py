@@ -137,13 +137,13 @@ def plot_force_F_T(df_force):
     plt.suptitle("Forces from sensor")
     plt.show()
 
-def plot_force_tau_F(df_F_ext, df_force_tau):
+def plot_force_tau_F(df_F_ext, df_force_tau, labels=["F Robot", "Tau+Jacobi"]):
     fig, axs = plt.subplots(6, 1, figsize=(10, 15), sharex=True)
     x = df_F_ext.index.values
-    plot_name = ["X", "Y", "Z", "rot_x", "rot_y", "rot_z"]
+    plot_name = ["$F_x$", "$F_y$", "$F_z$", r"$\tau _x$", r"$\tau _y$", r"$\tau _z$"]
     for i in range(6):
-        axs[i].plot(x, df_force_tau.iloc[:,i].to_numpy(), label = "Tau+jacobi")
-        axs[i].plot(x, df_F_ext.iloc[:,i].to_numpy(), label = "F Robot")
+        axs[i].plot(x, df_F_ext.iloc[:,i].to_numpy(), label = labels[0])
+        axs[i].plot(x, df_force_tau.iloc[:,i].to_numpy(), label = labels[1])
         axs[i].set_ylabel(plot_name[i])
         axs[i].grid(True)
         #axs[i].set_ylim([df[useCols[1:]].min().min(), df[useCols[1:]].max().max()])
@@ -151,7 +151,7 @@ def plot_force_tau_F(df_F_ext, df_force_tau):
 
     axs[-1].set_xlabel('Time')
     # Adjust layout
-    plt.suptitle("Torque of each joint")
+    plt.suptitle("Force/Torque in workspace")
     # Show the plot
     plt.show()
 
@@ -183,7 +183,7 @@ filePath_tau = max(list_of_files_tau, key=os.path.getctime)
 df_orig_tau = pd.read_csv(filePath_tau, header=None)
 df_tau = df_orig_tau.copy()
 
-plot_torque(df_tau)
+# plot_torque(df_tau)
 
 # %%
 # Plot orientation error
@@ -215,7 +215,7 @@ df_orig_force_tau = pd.read_csv(filePath_force_tau, header=None)
 df_force_tau = df_orig_force_tau.copy()
 
     # Plot Force
-plot_force_tau_F(df_force_ext, df_force_tau)
+plot_force_F_T(df_force_ext)
 # %%
     # Get force error data
 list_of_files_error = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/error*')

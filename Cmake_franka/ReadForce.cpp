@@ -63,8 +63,11 @@ int main() {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector
-    // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.240, 1.0});
-    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.245, 1.0});
+    robot.setK({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -0.245, 1.0});
+    // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
+    // robot.setK({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
+    
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
     franka::RobotState initial_state = robot.readOnce();
@@ -97,24 +100,18 @@ int main() {
         // Compute stuff
       Eigen::Matrix<double, 7, 1> tau_grav = tau_J-gravity;
       Eigen::Matrix<double, 6, 1> F_tau_filter = jacobian.transpose().completeOrthogonalDecomposition().pseudoInverse() * tau_filter; 
-      Eigen::Matrix<double, 6, 1> F_tau_grav = jacobian * tau_grav; 
-      Eigen::Matrix<double, 6, 1> F_grav = jacobian * gravity; 
 
         // Map the Eigen vectors to an array
       std::array<double, 7> tau_grav_array{}; 
-      std::array<double, 6> F_tau_filter_array{}, F_tau_grav_array{}, F_grav_array{}; 
+      std::array<double, 6> F_tau_filter_array{}; 
       Eigen::VectorXd::Map(&tau_grav_array[0], 7) = tau_grav;
       Eigen::VectorXd::Map(&F_tau_filter_array[0], 6) = F_tau_filter;
-      Eigen::VectorXd::Map(&F_tau_grav_array[0], 6) = F_tau_grav;
-      Eigen::VectorXd::Map(&F_grav_array[0], 6) = F_grav;
 
         // Add current measurements to the vector      
       tau_grav_data.push_back(tau_grav_array);
       tau_filter_data.push_back(tau_filter_array);
-      F_tau_grav_data.push_back(F_tau_grav_array);
       F_tau_filter_data.push_back(F_tau_filter_array);
       F_ext_data.push_back(robot_state.K_F_ext_hat_K);
-      F_grav_data.push_back(F_grav_array);
 
       // Print current wrench, time, and absolute positional error
       if (time >= next_sampling_time) {

@@ -65,15 +65,16 @@ int main() {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector
-    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.245, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.205, 1.0});
+    // robot.setK({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
     // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
     franka::RobotState initial_state = robot.readOnce();
 
       // Damping/Stifness
-    const double translation_stiffness{250.0};
-    const double rotation_stiffness{50.0};
+    const double translation_stiffness{300.0};
+    const double rotation_stiffness{100.0};
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_i = Eigen::MatrixXd::Identity(6, 6); 
@@ -87,7 +88,7 @@ int main() {
       // Time for the loop
     double time = 0.0;
     double time_max = 8;
-    double time_acc = 4;
+    double time_acc = 5;
     double time_dec = 0.5; // time for decceleration, to stop abrubt braking
     double sampling_interval = 0.1;
     double next_sampling_time = 0;
@@ -107,7 +108,7 @@ int main() {
       // Desired Rotation, created with quaternions
     // Flexion (Rotation around y in local CoSy) 
     double angle_flexion = M_PI/9;
-    Eigen::Vector3d axis_flexion(1,0,0);
+    Eigen::Vector3d axis_flexion(0,0,1);
     Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
     Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
     // Varus-Valgus (Rotation around z in local CoSy) 
@@ -216,7 +217,8 @@ int main() {
       // Calculate forces directly from torque sensor: F = J * tau
       std::array<double, 42> body_jacobian_array = model.bodyJacobian(franka::Frame::kEndEffector, robot_state);
       Eigen::Map<const Eigen::Matrix<double, 6,7>> body_jacobian(body_jacobian_array.data());
-      Eigen::Matrix<double, 6, 1> force_tau = body_jacobian * tau_filter; 
+      Eigen::MatrixXd bodyJacob_T = body_jacobian.transpose();
+      Eigen::Matrix<double, 6, 1> force_tau = bodyJacob_T.completeOrthogonalDecomposition().pseudoInverse() * tau_filter; 
 
       // Map the position and error to an array (I cant add Eigen vectors to arrays)
       std::array<double, 3> pos_array{}; 
