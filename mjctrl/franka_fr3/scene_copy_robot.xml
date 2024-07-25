@@ -1,5 +1,5 @@
 <mujoco model="fr3 scene">
-  <include file="fr3_joint_actuator.xml"/>
+  <include file="fr3_copy_robot.xml"/>
 
   <statistic center="0.2 0 0.4" extent=".8"/>
 

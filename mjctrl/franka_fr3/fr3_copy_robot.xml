@@ -211,15 +211,15 @@
   </worldbody>
 
   <actuator>
-    <position class="fr3" name="joint1" joint="joint1" kp="4500" kv="450"/>
-    <position class="fr3" name="joint2" joint="joint2" kp="4500" kv="450"/>
-    <position class="fr3" name="joint3" joint="joint3" kp="3500" kv="350"/>
-    <position class="fr3" name="joint4" joint="joint4" kp="3500" kv="350"/>
-    <position class="fr3" name="joint5" joint="joint5" kp="2000" kv="200"/>
-    <position class="fr3" name="joint6" joint="joint6" kp="2000" kv="200"/>
-    <position class="fr3" name="joint7" joint="joint7" kp="2000" kv="200"/>
+    <motor class="fr3" name="joint1" joint="joint1"/>
+    <motor class="fr3" name="joint2" joint="joint2"/>
+    <motor class="fr3" name="joint3" joint="joint3"/>
+    <motor class="fr3" name="joint4" joint="joint4"/>
+    <motor class="fr3" name="joint5" joint="joint5"/>
+    <motor class="fr3" name="joint6" joint="joint6"/>
+    <motor class="fr3" name="joint7" joint="joint7"/>
   </actuator>
-
+  
   <keyframe>
     <key name="home" qpos="2.62 -0.22  0.24 -2.23 -0.01  2.05  0.46" ctrl="2.62 -0.22  0.24 -2.23 -0.01  2.05  0.46"/>
   </keyframe>

@@ -69,12 +69,26 @@ def main() -> None:
     mocap_name = "target"
     mocap_id = model.body(mocap_name).mocapid[0]
 
-    q_test = np.array([1.57079, 0.06, 0.00, -2.11, 0.0, 2.19, 0.84])
-    q = np.loadtxt("joint_position_data_20240725_140746.txt", delimiter=",")
-    step_start = 0
-    time_debug = 0.5
-    time_sample = 0.5
+    # Initial positions
+    q = np.loadtxt("joint_position_data_20240725_140746.txt", delimiter=",")    # Position of the joints of the robot
+    desired_angle = np.deg2rad(20)
+    rotation_axis = np.array([0,1,0])
+
+    # Pre-allocation
+    rotation_init = np.zeros(4)
+    desired_quat = np.zeros(4) 
+    desired_quat_conj = np.zeros(4)
+
+    # Time variables
     time_max = (np.shape(q)[0]/1000)-0.005
+    step_start = 0
+    set_mocap_pos = True
+    # Debug
+    time_debug = 0.1
+    time_sample = time_debug
+    # Framerate
+    time_between_frames = 0.0000125
+    time_next_frame = time_between_frames
 
     with mujoco.viewer.launch_passive(
         model=model,
@@ -91,24 +105,43 @@ def main() -> None:
         # Enable site frame visualization.
         viewer.opt.frame = mujoco.mjtFrame.mjFRAME_SITE
 
-        while viewer.is_running() and data.time<time_max: # 
+        # Set initial position of the robot
+        data.qpos = q[0,:]
+
+        while viewer.is_running(): # 
             if step_start==0:
                 t_init = time.time()
-
             step_start = time.time()
+
+            if (time.time()-t_init)>0.01 and set_mocap_pos:
+                # This line only exists cause I dont know how to run this loop only once
+                set_mocap_pos = False   
+
+                    # Calculate desired rotation of mocap body
+                # Get initial orientation
+                mujoco.mju_mat2Quat(rotation_init, data.site(site_id).xmat)
+                # Rotate to the desired configuration
+                mujoco.mju_axisAngle2Quat(desired_quat, rotation_axis, desired_angle);
+                mujoco.mju_negQuat(desired_quat_conj, desired_quat)
+                mujoco.mju_mulQuat(data.mocap_quat[mocap_id], rotation_init, desired_quat_conj)
+                data.mocap_pos[mocap_id] = data.site(site_id).xpos
+                print("Here: ", data.site(site_id).xpos)
+            
 
             # Set the control signal and step the simulation.
             step_current = round(data.time/model.opt.timestep)
 
-            data.ctrl[actuator_ids] = q[step_current, dof_ids]
+            if step_current>np.shape(q)[0]:
+                data.ctrl[actuator_ids] = q[-1, dof_ids]
+            else: 
+                data.ctrl[actuator_ids] = q[step_current-1, dof_ids]
             mujoco.mj_step(model, data)
 
-            # if (time.time()-t_init)>time_debug:
-            #     time_pc = round(1000*(time.time()-t_init))
-            #     time_data = round(1000*data.time)
-            #     print(f"Current step: {step_current}; Time wall: {time_pc}ms; Time data:{time_data}")
-
-            #     time_debug += time_sample
+            if (time.time()-t_init)>time_debug:
+                time_pc = round(1000*(time.time()-t_init))
+                time_data = round(1000*data.time)
+                print(f"Current step: {step_current}; Time wall: {time_pc}ms; Time data:{time_data}")
+                time_debug += time_sample
 
             viewer.sync()
             time_until_next_step = dt - (time.time() - step_start)
