@@ -96,6 +96,7 @@ def main() -> None:
     time_acc = 5
     step_start = 0
     set_mocap_pos = True
+    end_of_file = False
 
     # Lists to collect force and torque data
     force_data_list = []
@@ -105,8 +106,8 @@ def main() -> None:
     with mujoco.viewer.launch_passive(
         model=model,
         data=data,
-        show_left_ui=True,
-        show_right_ui=True,
+        show_left_ui=False,
+        show_right_ui=False,
     ) as viewer:
         # Reset the simulation.
         mujoco.mj_resetDataKeyframe(model, data, key_id)
@@ -116,6 +117,9 @@ def main() -> None:
 
         # Enable site frame visualization.
         viewer.opt.frame = mujoco.mjtFrame.mjFRAME_SITE
+
+        # Set initial position to the same as the robot
+        data.qpos = q[0,:]
 
         while viewer.is_running():
             # Get starting time
@@ -174,6 +178,10 @@ def main() -> None:
             # force_data_list.append(data.sensor("ForceSensor").data.copy())
             # time_list.append(data.time)
 
+            if round((data.time)*1000)>np.shape(q)[0] and end_of_file==False:
+                print(f"Time reached: Data time: {round(data.time,2)}, Wallclock: {round(time.time()-t_init,2)}")
+                end_of_file=True
+
             viewer.sync()
             time_until_next_step = dt - (time.time() - step_start)
             if time_until_next_step > 0:
@@ -182,9 +190,6 @@ def main() -> None:
         # force_data = np.vstack(force_data_list)
         # torque_data = np.vstack(torque_data_list)
         # time_data = np.array(time_list)
-
-        # Plot force and torque data
-        plt.figure(figsize=(12, 6))
 
 
 if __name__ == "__main__":

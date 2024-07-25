@@ -86,8 +86,9 @@ def main() -> None:
     # Debug
     time_debug = 0.1
     time_sample = time_debug
+    end_of_file = False
     # Framerate
-    time_between_frames = 0.0000125
+    time_between_frames = 0.0000125*2
     time_next_frame = time_between_frames
 
     with mujoco.viewer.launch_passive(
@@ -108,7 +109,7 @@ def main() -> None:
         # Set initial position of the robot
         data.qpos = q[0,:]
 
-        while viewer.is_running(): # 
+        while viewer.is_running(): 
             if step_start==0:
                 t_init = time.time()
             step_start = time.time()
@@ -125,28 +126,29 @@ def main() -> None:
                 mujoco.mju_negQuat(desired_quat_conj, desired_quat)
                 mujoco.mju_mulQuat(data.mocap_quat[mocap_id], rotation_init, desired_quat_conj)
                 data.mocap_pos[mocap_id] = data.site(site_id).xpos
-                print("Here: ", data.site(site_id).xpos)
             
+            # # Loop that gets called every time_debug seconds
+            # step_current = round(data.time/model.opt.timestep)
+            # if (time.time()-t_init)>time_debug:
+            #     time_pc = round(1000*(time.time()-t_init))
+            #     time_data = round(1000*data.time)
+            #     print(f"Current step: {step_current}; Time wall: {time_pc}ms; Time data:{time_data}")
+            #     time_debug += time_sample
 
             # Set the control signal and step the simulation.
-            step_current = round(data.time/model.opt.timestep)
+            if (time.time()-t_init)>time_next_frame:
+                time_now = round((time.time()-t_init)*1000)
+                if time_now>np.shape(q)[0]:
+                    data.ctrl[actuator_ids] = q[-1, dof_ids]
+                    if end_of_file==False:
+                        print("End of file reached")
+                        end_of_file=True
+                else: 
+                    data.ctrl[actuator_ids] = q[time_now-1, dof_ids]
+                mujoco.mj_step(model, data)
+                viewer.sync()
+                time_next_frame += time_between_frames
 
-            if step_current>np.shape(q)[0]:
-                data.ctrl[actuator_ids] = q[-1, dof_ids]
-            else: 
-                data.ctrl[actuator_ids] = q[step_current-1, dof_ids]
-            mujoco.mj_step(model, data)
-
-            if (time.time()-t_init)>time_debug:
-                time_pc = round(1000*(time.time()-t_init))
-                time_data = round(1000*data.time)
-                print(f"Current step: {step_current}; Time wall: {time_pc}ms; Time data:{time_data}")
-                time_debug += time_sample
-
-            viewer.sync()
-            time_until_next_step = dt - (time.time() - step_start)
-            if time_until_next_step > 0:
-                time.sleep(time_until_next_step)
         # print(f"Time wall: {(time.time()-t_init)}ms; Time data:{time_max}")
 
 if __name__ == "__main__":
