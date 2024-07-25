@@ -1,3 +1,4 @@
+#%%
 import mujoco
 import mujoco.viewer
 import numpy as np
@@ -28,7 +29,7 @@ Kn = np.asarray([10.0, 10.0, 10.0, 10.0, 5.0, 5.0, 5.0])
 # Maximum allowable joint velocity in rad/s.
 max_angvel = 0.785
 
-
+#%%
 def main() -> None:
     assert mujoco.__version__ >= "3.1.0", "Please upgrade to mujoco 3.1.0 or later."
 
@@ -69,10 +70,11 @@ def main() -> None:
     mocap_id = model.body(mocap_name).mocapid[0]
 
     q_test = np.array([1.57079, 0.06, 0.00, -2.11, 0.0, 2.19, 0.84])
+    q = np.loadtxt("joint_position_data_20240725_140746.txt", delimiter=",")
     step_start = 0
     time_debug = 0.5
     time_sample = 0.5
-    time_max = 5
+    time_max = (np.shape(q)[0]/1000)-0.005
 
     with mujoco.viewer.launch_passive(
         model=model,
@@ -89,32 +91,30 @@ def main() -> None:
         # Enable site frame visualization.
         viewer.opt.frame = mujoco.mjtFrame.mjFRAME_SITE
 
-        while viewer.is_running() and data.time<time_max: 
+        while viewer.is_running() and data.time<time_max: # 
             if step_start==0:
                 t_init = time.time()
 
             step_start = time.time()
 
-#            np.clip(q, *model.jnt_range.T, out=q)
-
             # Set the control signal and step the simulation.
+            step_current = round(data.time/model.opt.timestep)
 
-            data.ctrl[actuator_ids] = q_test[dof_ids]
+            data.ctrl[actuator_ids] = q[step_current, dof_ids]
             mujoco.mj_step(model, data)
 
-            if (time.time()-t_init)>time_debug:
-                step_current = round(data.time/model.opt.timestep)
-                time_pc = round(1000*(time.time()-t_init))
-                time_data = round(1000*data.time)
-                print(f"Current step: {step_current}; Time wall: {time_pc}ms; Time data:{time_data}")
+            # if (time.time()-t_init)>time_debug:
+            #     time_pc = round(1000*(time.time()-t_init))
+            #     time_data = round(1000*data.time)
+            #     print(f"Current step: {step_current}; Time wall: {time_pc}ms; Time data:{time_data}")
 
-                time_debug += time_sample
+            #     time_debug += time_sample
 
             viewer.sync()
             time_until_next_step = dt - (time.time() - step_start)
             if time_until_next_step > 0:
                 time.sleep(time_until_next_step)
-
+        # print(f"Time wall: {(time.time()-t_init)}ms; Time data:{time_max}")
 
 if __name__ == "__main__":
     main()

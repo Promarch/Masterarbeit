@@ -81,6 +81,7 @@
 
     <mesh name="tibia_mesh" file="tibia.stl" scale="0.001 0.001 0.001"/>
     <mesh name="femur_mesh" file="femur.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="femur_block_mesh" file="femur.stl"/>
 
     <mesh name="link0_coll" file="link0.stl"/>
     <mesh name="link1_coll" file="link1.stl"/>
@@ -193,6 +194,9 @@
                             <geom type="cylinder" size="0.01 0.1125" material="light_blue"/>
                             <body name="attachment" pos="0 0 0.1125" quat="0 0 0 1">
                               <site name="attachment_site" rgba="1 0 0 1" size="0.01" group="1" quat="0 0 0 1"/>
+                            </body>
+                            <body name="femur" pos="0 0 0" quat="0 0 0 1">
+                              <geom class="visual" euler="0 0 0" mesh="tibia_mesh" pos="0 0 0" type="mesh" material="off_white"/>
                             </body>
 <!--                            <body name="cylinder_bottom" pos="0 0 0.1125" quat="1 0 0 0">
                               <joint name="knee_joint" type="ball" axis="0 1 0" stiffness="20"/>
