@@ -57,7 +57,7 @@ void writeDataToFileImpl(const std::vector<std::array<double, N>>& data, const s
 int main() {
 
   // Variables to store the torque or position of the robot during the movement
-  std::vector<std::array<double, 7>> tau_data; // Vector to store the torque
+  std::vector<std::array<double, 7>> tau_data, joint_position_data; // Vector to store the torque
   std::vector<std::array<double, 3>> position_data, rotation_data; // Vector to store the torque
   std::vector<std::array<double, 6>> force_data, tau_force_data; // Vector to store the force and torque on the EE
   
@@ -108,7 +108,7 @@ int main() {
       // Desired Rotation, created with quaternions
     // Flexion (Rotation around y in local CoSy) 
     double angle_flexion = M_PI/9;
-    Eigen::Vector3d axis_flexion(0,0,1);
+    Eigen::Vector3d axis_flexion(0,1,0);
     Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
     Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
     // Varus-Valgus (Rotation around z in local CoSy) 
@@ -233,6 +233,7 @@ int main() {
       rotation_data.push_back({(roll_init+angle_internal-roll)/M_PI*180, (pitch-pitch_init+angle_flexion)/M_PI*180, (yaw-yaw_init)/M_PI*180});
       force_data.push_back(robot_state.K_F_ext_hat_K);
       tau_force_data.push_back(force_tau_array);
+      joint_position_data.push_back(robot_state.q);
 
       // Send desired tau to the robot
       return tau_d;
@@ -247,6 +248,7 @@ int main() {
     writeDataToFile(rotation_data);
     writeDataToFile(force_data);
     writeDataToFile(tau_force_data);
+    writeDataToFile(joint_position_data);
   }
   // Catches Exceptions caused within the execution of a program (I think)
   catch (const franka::ControlException& e) {
@@ -255,6 +257,7 @@ int main() {
     writeDataToFile(position_data);
     writeDataToFile(rotation_data);
     writeDataToFile(force_data);
+    writeDataToFile(joint_position_data);
     return -1;
   }
   // General exceptions
