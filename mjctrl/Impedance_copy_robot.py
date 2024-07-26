@@ -29,7 +29,7 @@ def main() -> None:
     assert mujoco.__version__ >= "3.1.0", "Please upgrade to mujoco 3.1.0 or later."
 
     # Load the model and data.
-    model = mujoco.MjModel.from_xml_path("franka_fr3/scene.xml")
+    model = mujoco.MjModel.from_xml_path("franka_fr3/scene_copy_robot.xml")
     data = mujoco.MjData(model)
 
     # Enable gravity compensation. Set to 0.0 to disable.
@@ -71,25 +71,32 @@ def main() -> None:
     K_p = np.diag(K_p_values)
     K_d = np.diag(np.sqrt(K_p_values))
 
-    # Pre-allocate numpy arrays.
+    # Initial positions
+    q = np.loadtxt("joint_position_data_20240725_140746.txt", delimiter=",")    # Position of the joints of the robot
+    desired_angle = np.deg2rad(20)
+    rotation_axis = np.array([0,1,0])
+
+
+        # Pre-allocate numpy arrays.
+    # Jacobian
     jac = np.zeros((6, model.nv))
-    diag = damping * np.eye(6)
+    # Initial position/orientation
+    rotation_init = np.zeros(4)
+    desired_quat = np.zeros(4) 
+    desired_quat_conj = np.zeros(4)
+    # Error position/orientation
     error = np.zeros(6)
     error_pos = error[:3]
     error_ori = error[3:]
     site_quat = np.zeros(4)
     site_quat_conj = np.zeros(4)
     error_quat = np.zeros(4)
-    M_inv = np.zeros((model.nv, model.nv))
-    Mx = np.zeros((6, 6))
-
-    # Desired position
-    pos_init = [-0.000124617, 0.55703, 0.06149]
-    quat_init = [0, 0.7071068, 0.7071068, 0] #[ 0.6830127, -0.6830127, -0.1830127, -0.1830127 ]
 
     # Time variables
     time_acc = 5
     step_start = 0
+    set_mocap_pos = True
+    end_of_file = False
 
     # Lists to collect force and torque data
     force_data_list = []
@@ -99,8 +106,8 @@ def main() -> None:
     with mujoco.viewer.launch_passive(
         model=model,
         data=data,
-        show_left_ui=True,
-        show_right_ui=True,
+        show_left_ui=False,
+        show_right_ui=False,
     ) as viewer:
         # Reset the simulation.
         mujoco.mj_resetDataKeyframe(model, data, key_id)
@@ -111,11 +118,29 @@ def main() -> None:
         # Enable site frame visualization.
         viewer.opt.frame = mujoco.mjtFrame.mjFRAME_SITE
 
+        # Set initial position to the same as the robot
+        data.qpos = q[0,:]
+
         while viewer.is_running():
+            # Get starting time
             if step_start==0:
                 t_init = time.time()
-
             step_start = time.time()
+
+            # Set correct desired position and orientation
+            if (time.time()-t_init)>0.01 and set_mocap_pos:
+                    # Calculate desired rotation/position of mocap body
+                # Set starting position
+                data.mocap_pos[mocap_id] = data.site(site_id).xpos
+                # Get initial orientation
+                mujoco.mju_mat2Quat(rotation_init, data.site(site_id).xmat)
+                # Rotate to the desired configuration
+                mujoco.mju_axisAngle2Quat(desired_quat, rotation_axis, desired_angle);
+                mujoco.mju_negQuat(desired_quat_conj, desired_quat)
+                mujoco.mju_mulQuat(data.mocap_quat[mocap_id], rotation_init, desired_quat_conj)
+
+                # This line only exists cause I dont know how to run this loop only once
+                set_mocap_pos = False   
 
             # Position error.
             error_pos[:] = data.mocap_pos[mocap_id] - data.site(site_id).xpos
@@ -144,60 +169,27 @@ def main() -> None:
             F = K_p @ error -  K_d @ vel
             tau = jac.T @ (F*factor_filter)
 
-                # Damped least squares control
-            # tau = jac.T @ (np.linalg.solve(jac @ jac.T + diag, error))
-
-                # Operational space
-            # Compute the task-space inertia matrix.
-            mujoco.mj_solveM(model, data, M_inv, np.eye(model.nv))
-            Mx_inv = jac @ M_inv @ jac.T
-            if abs(np.linalg.det(Mx_inv)) >= 1e-2:
-                Mx = np.linalg.inv(Mx_inv)
-            else:
-                Mx = np.linalg.pinv(Mx_inv, rcond=1e-2)
-            # Compute generalized forces.
-            # tau = jac.T @ Mx @ ((K_p @ error - K_d @ (jac[:,dof_ids] @ data.qvel[dof_ids]))*factor_filter)
-
             # Set the control signal and step the simulation.
             data.ctrl[actuator_ids] = tau[dof_ids]
             mujoco.mj_step(model, data)
 
-            # Get sensor data
-            torque_data_list.append(data.sensor("TorqueSensor").data.copy())
-            force_data_list.append(data.sensor("ForceSensor").data.copy())
-            time_list.append(data.time)
+            # # Get sensor data
+            # torque_data_list.append(data.sensor("TorqueSensor").data.copy())
+            # force_data_list.append(data.sensor("ForceSensor").data.copy())
+            # time_list.append(data.time)
+
+            if round((data.time)*1000)>np.shape(q)[0] and end_of_file==False:
+                print(f"Time reached: Data time: {round(data.time,2)}, Wallclock: {round(time.time()-t_init,2)}")
+                end_of_file=True
 
             viewer.sync()
             time_until_next_step = dt - (time.time() - step_start)
             if time_until_next_step > 0:
                 time.sleep(time_until_next_step)
-        force_data = np.vstack(force_data_list)
-        torque_data = np.vstack(torque_data_list)
-        time_data = np.array(time_list)
 
-        # Plot force and torque data
-        plt.figure(figsize=(12, 6))
-
-        plt.subplot(2, 1, 1)
-        plt.plot(time_data, force_data)
-        plt.title("Force at Attachment Site")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Force (N)")
-        plt.grid(0.25)
-        plt.legend(['Fx', 'Fy', 'Fz'])
-
-        plt.subplot(2, 1, 2)
-        plt.plot(time_data, torque_data)
-        plt.title("Torque at Attachment Site")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Torque (Nm)")
-        plt.grid(0.25)
-        plt.legend(['Tx', 'Ty', 'Tz'])
-
-        plt.tight_layout()
-        plt.show()
-        
-        print("Last line")
+        # force_data = np.vstack(force_data_list)
+        # torque_data = np.vstack(torque_data_list)
+        # time_data = np.array(time_list)
 
 
 if __name__ == "__main__":
