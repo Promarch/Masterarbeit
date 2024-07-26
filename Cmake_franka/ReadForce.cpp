@@ -63,16 +63,19 @@ int main() {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector
-    // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.225, 1.0});
-    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.245, 1.0});
+    robot.setK({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -0.245, 1.0});
+    // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
+    // robot.setK({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
+    
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
     franka::RobotState initial_state = robot.readOnce();
 
     // Variables to control loop time
     double time{0};
-    double time_max{2};
-    double sampling_interval = 0.1; // Interval at which the console outputs the current error
+    double time_max{5};
+    double sampling_interval = 0.25; // Interval at which the console outputs the current error
     double next_sampling_time = 0;  // Needed for the sampling interval
 
 
@@ -82,7 +85,7 @@ int main() {
 
         // Get state variables
       // Jacobian
-      std::array<double, 42> jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
+      std::array<double, 42> jacobian_array = model.bodyJacobian(franka::Frame::kEndEffector, robot_state);
       Eigen::Map<const Eigen::Matrix<double, 6, 7>> jacobian(jacobian_array.data());
       // Tau with gravity
       std::array<double, 7> tau_j_array = robot_state.tau_J; 
@@ -96,30 +99,24 @@ int main() {
       
         // Compute stuff
       Eigen::Matrix<double, 7, 1> tau_grav = tau_J-gravity;
-      Eigen::Matrix<double, 6, 1> F_tau_filter = jacobian * tau_filter; 
-      Eigen::Matrix<double, 6, 1> F_tau_grav = jacobian * tau_grav; 
-      Eigen::Matrix<double, 6, 1> F_grav = jacobian * gravity; 
+      Eigen::Matrix<double, 6, 1> F_tau_filter = jacobian.transpose().completeOrthogonalDecomposition().pseudoInverse() * tau_filter; 
 
         // Map the Eigen vectors to an array
       std::array<double, 7> tau_grav_array{}; 
-      std::array<double, 6> F_tau_filter_array{}, F_tau_grav_array{}, F_grav_array{}; 
+      std::array<double, 6> F_tau_filter_array{}; 
       Eigen::VectorXd::Map(&tau_grav_array[0], 7) = tau_grav;
       Eigen::VectorXd::Map(&F_tau_filter_array[0], 6) = F_tau_filter;
-      Eigen::VectorXd::Map(&F_tau_grav_array[0], 6) = F_tau_grav;
-      Eigen::VectorXd::Map(&F_grav_array[0], 6) = F_grav;
 
         // Add current measurements to the vector      
       tau_grav_data.push_back(tau_grav_array);
       tau_filter_data.push_back(tau_filter_array);
-      F_tau_grav_data.push_back(F_tau_grav_array);
       F_tau_filter_data.push_back(F_tau_filter_array);
       F_ext_data.push_back(robot_state.K_F_ext_hat_K);
-      F_grav_data.push_back(F_grav_array);
 
       // Print current wrench, time, and absolute positional error
       if (time >= next_sampling_time) {
         std::cout << std::fixed << std::setprecision(3);
-        std::cout << "Time: " << time << std::endl; 
+        std::cout << "Time: " << time << "\n"; 
         next_sampling_time += sampling_interval;
       }
 

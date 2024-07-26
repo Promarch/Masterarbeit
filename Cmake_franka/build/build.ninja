@@ -73,6 +73,39 @@ build libexamples_common.a: CXX_STATIC_LIBRARY_LINKER__examples_common_Debug CMa
   TARGET_PDB = examples_common.a.dbg
 
 # =============================================================================
+# Object build statements for EXECUTABLE target JointPositions2
+
+
+#############################################
+# Order-only phony target for JointPositions2
+
+build cmake_object_order_depends_target_JointPositions2: phony || cmake_object_order_depends_target_examples_common
+
+build CMakeFiles/JointPositions2.dir/JointPositions2.cpp.o: CXX_COMPILER__JointPositions2_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/JointPositions2.cpp || cmake_object_order_depends_target_JointPositions2
+  DEP_FILE = CMakeFiles/JointPositions2.dir/JointPositions2.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/JointPositions2.dir
+  OBJECT_FILE_DIR = CMakeFiles/JointPositions2.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target JointPositions2
+
+
+#############################################
+# Link the executable JointPositions2
+
+build JointPositions2: CXX_EXECUTABLE_LINKER__JointPositions2_Debug CMakeFiles/JointPositions2.dir/JointPositions2.cpp.o | libexamples_common.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/JointPositions2.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = JointPositions2
+  TARGET_PDB = JointPositions2.dbg
+
+# =============================================================================
 # Object build statements for EXECUTABLE target Waypoints
 
 
@@ -447,7 +480,7 @@ build examples_common: phony libexamples_common.a
 #############################################
 # Folder: /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
-build all: phony libexamples_common.a Waypoints HalfCircle CircleExplore JointImpedanceControl_example CartesianImpedance_example GetPosition ForceControl ImpedanceControl ReadForce
+build all: phony libexamples_common.a JointPositions2 Waypoints HalfCircle CircleExplore JointImpedanceControl_example CartesianImpedance_example GetPosition ForceControl ImpedanceControl ReadForce
 
 # =============================================================================
 # Built-in targets
