@@ -107,7 +107,7 @@ def main() -> None:
         data.qpos = q[0,:]
 
         t_init = time.time()
-        while (time.time()-t_init)<5:
+        while (time.time()-t_init)<time_max:
 
             if (time.time()-t_init)>0.01 and set_mocap_pos:
                 # This line only exists cause I dont know how to run this loop only once
@@ -140,7 +140,7 @@ def main() -> None:
                         end_of_file=True
                 else: 
                     data.ctrl[actuator_ids] = q[time_now-1, dof_ids]
-                    renderer.update_scene(data)
+                    renderer.update_scene(data, camera="closeup")
                     pixels = renderer.render()
                     image = Image.fromarray((pixels).astype(np.uint8))
                     frames.append(image)

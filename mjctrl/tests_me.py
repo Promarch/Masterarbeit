@@ -21,8 +21,7 @@ if not cap.isOpened():
 fps = cap.get(cv2.CAP_PROP_FPS)
 total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-#%%
-import os
+# Extract frames
 frame_count = 0
 frames = []
 while True:
@@ -33,9 +32,6 @@ while True:
     if not ret:
         break
 
-    # Save the frame as an image file
-    frame_path = os.path.join("/home/alexandergerard/Masterarbeit/mjctrl/img/", f'frame_{frame_count:04d}.png')
-    # cv2.imwrite(frame_path, frame)
     frames.append(frame)
     frame_count += 1
 
@@ -43,43 +39,52 @@ while True:
 cap.release()
 print(f"Extracted {frame_count} frames")
 #%% 
-
-
-
-#%%
+# Plot img
 wrench = np.loadtxt("force_data_20240725_140746.txt", delimiter=",")
 
-# Create the figure and the two subplots
-fig, (ax_img, ax_force) = plt.subplots(2, 1, figsize=(10, 8))
-
-
-# Placeholder for the video frame
-ret, frame = cap.read()
-if not ret:
-    print("Error: Could not read the first frame.")
-    exit()
-# frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-im = ax_img.imshow(frames[0])
-
+fig, (ax_img, ax_force) = plt.subplots(2,1)
+# Plot img
 ax_img.axis('off')
 ax_img.set_title('Video of Motion')
 
-axamp = plt.axes([0.25, .03, 0.50, 0.02])
+# Plot force
+ax_force.plot(wrench[:,3], label=r"$\tau_x$")
+ax_force.plot(wrench[:,4], label=r"$\tau_y$")
+ax_force.plot(wrench[:,5], label=r"$\tau_z$")
+vert_line = ax_force.axvline(x=0, color = "r")
 
-time = np.arange(0,np.shape(wrench)[0])
-force = wrench[:,0]
-# Plot the force data
-ax_force.plot(time, force)
-ax_force.set_title('Force during Motion')
-ax_force.set_xlabel('Time (s)')
-ax_force.set_ylabel('Force (N)')
+#pos_tau_x, = ax_force.plot(0,wrench[0,3], 'o')
+ax_force.legend(loc = "upper right")
 
+ax_force.set_title('Torque during Motion')
+ax_force.set_xlabel('Time [s]')
+ax_force.set_ylabel('Torque [Nm]')
+ax_force.grid(True)
 
-plt.tight_layout()
+# Slider
+ax_slider = plt.axes([0.25, .03, 0.50, 0.02])
+t_max = np.shape(wrench)[0]-1
+slider = Slider(ax_slider, 'T [ms]', 0, t_max, valinit=0)
+
+def update(val):
+    t = round(slider.val)
+    frame_id = round((t/t_max) * len(frames))
+    print("Frame id: ", frame_id)
+    # update img
+    ax_img.imshow(frames[frame_id])
+    # update force
+    vert_line.set_xdata(t)
+
+    # redraw canvas while idle
+    fig.canvas.draw_idle()
+
+# call update function on slider value change
+slider.on_changed(update)
+
 plt.show()
 
-cap.release()
 #%%
+
 TWOPI = 2*np.pi
 wrench = np.loadtxt("force_data_20240725_140746.txt", delimiter=",")
 
@@ -112,4 +117,4 @@ def update(val):
 # call update function on slider value change
 samp.on_changed(update)
 
-plt.show()
+# plt.show()
