@@ -15,12 +15,12 @@ damping_ratio = 1.0
 
 # Gains for the twist computation. These should be between 0 and 1. 0 means no
 # movement, 1 means move the end-effector to the target in one integration step.
-Kpos: float = 0.95
+Kpos: float = 1
 
 # Gain for the orientation component of the twist computation. This should be
 # between 0 and 1. 0 means no movement, 1 means move the end-effector to the target
 # orientation in one integration step.
-Kori: float = 0.95
+Kori: float = 1
 
 # Integration timestep in seconds.
 integration_dt: float = 1.0

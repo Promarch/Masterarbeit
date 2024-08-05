@@ -2,10 +2,10 @@
 # Imports
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 from matplotlib.widgets import Slider
-from matplotlib.widgets import Cursor
 import cv2
+import glob 
+import os 
 
 #%%
 # Load video file
@@ -27,11 +27,10 @@ frames = []
 while True:
     # Read a frame from the video
     ret, frame = cap.read()
-
     # If the frame was not read successfully, break the loop
     if not ret:
         break
-
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     frames.append(frame)
     frame_count += 1
 
@@ -40,14 +39,17 @@ cap.release()
 print(f"Extracted {frame_count} frames")
 #%% 
 # Plot img
-wrench = np.loadtxt("force_data_20240725_140746.txt", delimiter=",")
-
 fig, (ax_img, ax_force) = plt.subplots(2,1)
 # Plot img
 ax_img.axis('off')
 ax_img.set_title('Video of Motion')
 
-# Plot force
+    # Plot force
+# Get latest data
+list_of_files_wrench = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_data*')
+filePath_wrench = max(list_of_files_wrench, key=os.path.getctime)
+wrench = np.loadtxt(filePath_wrench, delimiter=",")
+# plot and annotate
 ax_force.plot(wrench[:,3], label=r"$\tau_x$")
 ax_force.plot(wrench[:,4], label=r"$\tau_y$")
 ax_force.plot(wrench[:,5], label=r"$\tau_z$")

@@ -65,7 +65,7 @@ def main() -> None:
     mocap_id = model.body(mocap_name).mocapid[0]
 
     # Stiffness matrix and stuff
-    translation_stiffness = 500
+    translation_stiffness = 300
     rotation_stiffness = 100
     K_p_values = np.array([translation_stiffness, translation_stiffness, translation_stiffness, rotation_stiffness, rotation_stiffness, rotation_stiffness])
     K_p = np.diag(K_p_values)
