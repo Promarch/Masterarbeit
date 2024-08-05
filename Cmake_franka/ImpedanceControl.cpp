@@ -107,8 +107,8 @@ int main() {
     
       // Desired Rotation, created with quaternions
     // Flexion (Rotation around y in local CoSy) 
-    double angle_flexion = M_PI/9;
-    Eigen::Vector3d axis_flexion(0,1,0);
+    double angle_flexion = -M_PI/9;
+    Eigen::Vector3d axis_flexion(1,0,0);
     Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
     Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
     // Varus-Valgus (Rotation around z in local CoSy) 

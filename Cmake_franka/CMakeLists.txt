@@ -31,6 +31,7 @@ SET(PROGRAM_files
   GetPosition
   ForceControl
   ImpedanceControl
+  OperationalSpaceControl
   ReadForce
 )
 
