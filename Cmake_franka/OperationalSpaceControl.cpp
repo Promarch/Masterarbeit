@@ -80,16 +80,6 @@ int main() {
     Kp.bottomRows(3) *= rotation_stiffness;
     Kd.topRows(3) *= 2 * sqrt(translation_stiffness);
     Kd.bottomRows(3) *= 2 * sqrt(rotation_stiffness);
-    
-    Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
-    K_p.topLeftCorner(3,3) *= translation_stiffness; 
-    K_p.bottomRightCorner(3,3) *= rotation_stiffness; 
-    Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6);
-    K_d.topLeftCorner(3,3) *= 2 * sqrt(translation_stiffness);
-    K_d.bottomRightCorner(3,3) *= 2 * sqrt(rotation_stiffness);
-    // Eigen::MatrixXd K_i = Eigen::MatrixXd::Identity(6, 6); 
-    // K_i.topLeftCorner(3,3) *= 2 * sqrt(translation_stiffness);
-    // K_i.bottomRightCorner(3,3) *= 2 * sqrt(rotation_stiffness); 
 
       // Time for the loop
     double time = 0.0;
@@ -185,7 +175,13 @@ int main() {
       // Transform to base frame
       error.tail(3) << transform.linear() * error.tail(3);
       // Calculate twist
-      twist = twist/dt;
+      if (dt==0) {
+        twist = error/0.001;
+      }
+      else {
+        twist = error/dt;
+      }
+      
       // Calculate current velocity
       Eigen::Matrix<double, 6,1> v_e = jacobian * dq;
       
@@ -196,21 +192,16 @@ int main() {
       Eigen::MatrixXd jacobian_inv = jacobian.completeOrthogonalDecomposition().pseudoInverse();
       // Calculate inertia matrix
       Eigen::MatrixXd Mx = jacobian_T_inv * mass_matrix * jacobian_inv;
-
-        // Calculate torque sent to robot
-      Eigen::Matrix<double, 6,1> wrench = Kp.cwiseProduct(twist) - Kd.cwiseProduct(v_e);
+      
+        // Calculate torque and map to an array
+      Eigen::Matrix<double, 6,1> wrench = Kp.cwiseProduct(error) - Kd.cwiseProduct(v_e);
       std::array<double, 7> tau_test{};
       Eigen::VectorXd::Map(&tau_test[0], 7) = jacobian_T * Mx * wrench.cwiseProduct(factor_filter);
-      
-      // // Calculate the necessary wrench, from Handbook of robotics, Chap. 7
-      // Eigen::Matrix<double, 6,1> h_c; h_c.setZero();
-      // Eigen::Matrix<double, 6,1> v_e = jacobian * dq;
 
-      // h_c = K_p * error - K_d * v_e ; 
-
-      // // Calculate torque and map to an array
-      // std::array<double, 7> tau_d{};
-      // Eigen::VectorXd::Map(&tau_d[0], 7) = jacobian.transpose() * h_c.cwiseProduct(factor_filter); // 
+      //   // Print some variables for debugging
+      // std::cout << std::fixed << std::setprecision(3);
+      // std::cout << "\nJacobian_T: \n" << jacobian_T << "\nJacobian_T inverse: \n" << jacobian_T_inv << "\nJacobian inverse: \n" << jacobian_inv << "\nMx: \n" << Mx << std::endl; 
+      // std::cout << "\nWrench: \n" << wrench << "\nTau: \n" << jacobian_T * Mx * wrench.cwiseProduct(factor_filter) << std::endl;      
 
       // Calculate positional error for tests
       double distance = (pos_d-position).norm(); 
@@ -225,11 +216,11 @@ int main() {
       }
 
       // Print current wrench, time, and absolute positional error
-      // if (time >= next_sampling_time) {
-      //   std::cout << std::fixed << std::setprecision(3);
-      //   std::cout << "Time: " << time << std::endl << "Error: " << std::endl << error << std::endl << "Position error: " << distance << std::endl<< std::endl; 
-      //   next_sampling_time += sampling_interval;
-      // }
+      if (time >= next_sampling_time) {
+        std::cout << std::fixed << std::setprecision(3);
+        std::cout << "Time: " << time << ", dt: " << dt << "\nError: \n" << error << "\nAbsolute position error: " << distance << "\n" << std::endl; 
+        next_sampling_time += sampling_interval;
+      }
 
       // Map the position and error to an array (I cant add Eigen vectors to arrays)
       std::array<double, 3> pos_array{}; 
@@ -244,6 +235,7 @@ int main() {
       joint_position_data.push_back(robot_state.q);
 
       // Send desired tau to the robot
+      // tau_test = {0,0,0,0,0,0,0};
       return tau_test;
 
     };
@@ -258,7 +250,7 @@ int main() {
   }
   // Catches Exceptions caused within the execution of a program (I think)
   catch (const franka::ControlException& e) {
-    std::cout << e.what() << std::endl;
+    std::cout << "Control Exception: \n" << e.what() << std::endl;
     writeDataToFile(tau_data);
     writeDataToFile(position_data);
     writeDataToFile(force_data);
@@ -267,7 +259,7 @@ int main() {
   }
   // General exceptions
   catch (const franka::Exception& e) {
-    std::cout << e.what() << std::endl;
+    std::cout << "Other Exception: \n" << e.what() << std::endl;
     writeDataToFile(tau_data);
     return -1;
   }
