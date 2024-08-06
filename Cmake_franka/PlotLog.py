@@ -183,7 +183,7 @@ filePath_tau = max(list_of_files_tau, key=os.path.getctime)
 df_orig_tau = pd.read_csv(filePath_tau, header=None)
 df_tau = df_orig_tau.copy()
 
-# plot_torque(df_tau)
+plot_torque(df_tau)
 
 # %%
 # Plot orientation error

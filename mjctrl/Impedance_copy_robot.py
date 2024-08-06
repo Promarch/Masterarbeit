@@ -117,6 +117,8 @@ def main() -> None:
     # Time variables
     time_acc = 5
     step_start = 0
+    next_sampling_time = 0.01
+    sampling_interval = 0.2
     set_mocap_pos = True
     end_of_file = False
 
@@ -187,9 +189,9 @@ def main() -> None:
             factor_filter = np.ones(6)
             factor_filter[3:] = factor_rot
 
-                # Impedance control
-            F = K_p @ error -  K_d @ vel
-            tau = jac.T @ (F*factor_filter)
+            #     # Impedance control
+            # F = K_p @ error -  K_d @ vel
+            # tau = jac.T @ (F*factor_filter)
 
                 # Operational space control
             # Spatial velocity
@@ -202,7 +204,7 @@ def main() -> None:
             else:
                 Mx = np.linalg.pinv(Mx_inv, rcond=1e-2)
             # Compute generalized forces.
-            tau = jac.T @ Mx @ ((Kp * twist - Kd * (jac @ data.qvel[dof_ids]))*factor_filter)
+            tau = jac.T @ Mx @ ((Kp * error - Kd * (jac @ data.qvel[dof_ids]))*factor_filter)
 
             # Set the control signal and step the simulation.
             data.ctrl[actuator_ids] = tau[dof_ids]
@@ -217,11 +219,21 @@ def main() -> None:
                 print(f"Time reached: Data time: {round(data.time,2)}, Wallclock: {round(time.time()-t_init,2)}")
                 end_of_file=True
 
+            if (time.time()-t_init) >= next_sampling_time:
+                np.set_printoptions(suppress=True)
+                print("\nTime: ", time.time()-t_init)
+                print(f"Kp Anteil: \n{np.round(Kp*error,3)}")
+                print(f"Kd Anteil: \n{np.round(Kd* (jac @ data.qvel),3)}")
+                print(f"Mx: \n{np.round(Mx,3)}")
+                print(f"Tau: \n{tau}")
+                next_sampling_time += sampling_interval
+
             viewer.sync()
             time_until_next_step = dt - (time.time() - step_start)
             if time_until_next_step > 0:
                 time.sleep(time_until_next_step)
-
+            if time.time()-t_init>8:
+                break
         # force_data = np.vstack(force_data_list)
         # torque_data = np.vstack(torque_data_list)
         # time_data = np.array(time_list)

@@ -165,7 +165,7 @@ def main() -> None:
                 time_next_frame += time_between_frames
 
         image_arrays = [np.array(img) for img in frames]
-        with imageio.get_writer(f'video.mp4', mode='I', fps=fps) as writer:
+        with imageio.get_writer(f'copy_robot/video.mp4', mode='I', fps=fps) as writer:
             for image_array in image_arrays:
                 writer.append_data(image_array)
 

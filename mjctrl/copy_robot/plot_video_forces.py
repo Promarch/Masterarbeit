@@ -9,7 +9,7 @@ import os
 
 #%%
 # Load video file
-video_path = 'video.mp4'
+video_path = 'copy_robot/video.mp4'
 cap = cv2.VideoCapture(video_path)
 
 # Check if the video was successfully loaded

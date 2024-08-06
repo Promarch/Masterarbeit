@@ -78,16 +78,16 @@ int main() {
     Eigen::Matrix<double, 6,1> Kp, Kd; Kp.setOnes(); Kd.setOnes();
     Kp.topRows(3) *= translation_stiffness;
     Kp.bottomRows(3) *= rotation_stiffness;
-    Kd.topRows(3) *= 2 * sqrt(translation_stiffness);
-    Kd.bottomRows(3) *= 2 * sqrt(rotation_stiffness);
+    Kd.topRows(3) *= 1 * sqrt(translation_stiffness);
+    Kd.bottomRows(3) *= 1 * sqrt(rotation_stiffness);
 
       // Time for the loop
     double time = 0.0;
     double time_max = 8;
     double time_acc = 5;
     double time_dec = 0.5; // time for decceleration, to stop abrubt braking
-    double sampling_interval = 0.1;
-    double next_sampling_time = 0;
+    double sampling_interval = 0.2;
+    double next_sampling_time = 0.01;
     Eigen::Matrix<double, 6,1> int_error; int_error.setZero();
     double dt = 0;
     
@@ -96,10 +96,6 @@ int main() {
     Eigen::Vector3d position_init(transform_init.translation());
     Eigen::Quaterniond rotation_init(transform_init.linear());
     Eigen::Matrix3d rot_matrix_init = rotation_init.toRotationMatrix();
-      // Compute current rotation in angles for plots
-    double roll_init = std::atan2(rot_matrix_init(2, 1), rot_matrix_init(2, 2));
-    double pitch_init = std::asin(-rot_matrix_init(2, 0));
-    double yaw_init = std::atan2(rot_matrix_init(1, 0), rot_matrix_init(0, 0));
     
       // Desired Rotation, created with quaternions
     // Flexion (Rotation around x in local CoSy) 
@@ -169,9 +165,18 @@ int main() {
       if (rot_d.coeffs().dot(rotation.coeffs()) < 0.0) {
         rotation.coeffs() << -rotation.coeffs();
       }
-      // Difference quaternion
+
+        // Difference quaternion
       Eigen::Quaterniond error_quaternion(rotation.inverse() * rot_d);
-      error.tail(3) << error_quaternion.x(), error_quaternion.y(), error_quaternion.z();
+      // Convert quaternion to angular velocity
+      
+      Eigen::Vector3d axis_error = error_quaternion.vec(); 
+      double sin_a_2 = axis_error.norm();
+      axis_error.normalize();
+      double theta = 2.0 * std::atan2(sin_a_2, error_quaternion.w());
+      Eigen::Vector3d angular_velocity = theta*axis_error;
+
+      error.tail(3) << angular_velocity;
       // Transform to base frame
       error.tail(3) << transform.linear() * error.tail(3);
       // Calculate twist
@@ -187,39 +192,35 @@ int main() {
       
         // Calculate task space inertia matrix
       // Calculate the inverses first since that takes a lot of time to build if done in one line
+      Eigen::MatrixXd mass_matrix_inv = mass_matrix.partialPivLu().inverse();
       Eigen::MatrixXd jacobian_T = jacobian.transpose();
-      Eigen::MatrixXd jacobian_T_inv = jacobian_T.completeOrthogonalDecomposition().pseudoInverse();
-      Eigen::MatrixXd jacobian_inv = jacobian.completeOrthogonalDecomposition().pseudoInverse();
       // Calculate inertia matrix
-      Eigen::MatrixXd Mx = jacobian_T_inv * mass_matrix * jacobian_inv;
+      Eigen::MatrixXd Mx_inv = jacobian * mass_matrix_inv * jacobian_T;
       
         // Calculate torque and map to an array
       Eigen::Matrix<double, 6,1> wrench = Kp.cwiseProduct(error) - Kd.cwiseProduct(v_e);
-      std::array<double, 7> tau_test{};
-      Eigen::VectorXd::Map(&tau_test[0], 7) = jacobian_T * Mx * wrench.cwiseProduct(factor_filter);
-
-      //   // Print some variables for debugging
-      // std::cout << std::fixed << std::setprecision(3);
-      // std::cout << "\nJacobian_T: \n" << jacobian_T << "\nJacobian_T inverse: \n" << jacobian_T_inv << "\nJacobian inverse: \n" << jacobian_inv << "\nMx: \n" << Mx << std::endl; 
-      // std::cout << "\nWrench: \n" << wrench << "\nTau: \n" << jacobian_T * Mx * wrench.cwiseProduct(factor_filter) << std::endl;      
+      Eigen::Matrix<double, 7,1> tau = jacobian_T * wrench.cwiseProduct(factor_filter); // Mx_inv.colPivHouseholderQr().solve(
+      std::array<double, 7> tau_array{};
+      Eigen::VectorXd::Map(&tau_array[0], 7) = tau;
 
       // Calculate positional error for tests
       double distance = (pos_d-position).norm(); 
 
+      // Print variables at regular interval (for debugging)
+      if (time >= next_sampling_time) {
+        std::cout << std::fixed << std::setprecision(3);
+        std::cout << "\nTime: " << time << "\nError: \n" << error << "\nAbsolute position error: " << distance << "\n" << std::endl; 
+        std::cout << "Kp Anteil: \n" << Kp.cwiseProduct(error) << "\nKd Anteil: \n" << Kd.cwiseProduct(v_e) << std::endl; //"\nTau: \n" << tau << 
+        next_sampling_time += sampling_interval;
+      }
+
       // Stop if time is reached
       if (time >= time_max) {
         std::cout << std::fixed << std::setprecision(3);
-        std::cout << "Time: " << time << std::endl << "Error: " << std::endl << error << std::endl << "Position error: " << distance << std::endl << std::endl; 
+        std::cout << "Time: " << time << "\nError: \n" << error << "\nPosition error: " << distance << "\n" << std::endl; 
         std::cout << std::endl << "Finished motion, shutting down example" << std::endl;
-        franka::Torques output = tau_test;
+        franka::Torques output = tau_array;
         return franka::MotionFinished(output);
-      }
-
-      // Print current wrench, time, and absolute positional error
-      if (time >= next_sampling_time) {
-        std::cout << std::fixed << std::setprecision(3);
-        std::cout << "Time: " << time << ", dt: " << dt << "\nError: \n" << error << "\nAbsolute position error: " << distance << "\n" << std::endl; 
-        next_sampling_time += sampling_interval;
       }
 
       // Map the position and error to an array (I cant add Eigen vectors to arrays)
@@ -229,14 +230,14 @@ int main() {
       Eigen::VectorXd::Map(&error_array[0], 6) = error;
       
       // Add the current data to the array
-      tau_data.push_back(tau_test);
+      tau_data.push_back(tau_array);
       position_data.push_back(pos_array);
       force_data.push_back(robot_state.K_F_ext_hat_K);
       joint_position_data.push_back(robot_state.q);
 
       // Send desired tau to the robot
       // tau_test = {0,0,0,0,0,0,0};
-      return tau_test;
+      return tau_array;
 
     };
 
