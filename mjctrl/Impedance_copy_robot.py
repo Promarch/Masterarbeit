@@ -221,11 +221,11 @@ def main() -> None:
 
             if (time.time()-t_init) >= next_sampling_time:
                 np.set_printoptions(suppress=True)
-                print("\nTime: ", time.time()-t_init)
-                print(f"Kp Anteil: \n{np.round(Kp*error,3)}")
-                print(f"Kd Anteil: \n{np.round(Kd* (jac @ data.qvel),3)}")
-                print(f"Mx: \n{np.round(Mx,3)}")
-                print(f"Tau: \n{tau}")
+                print("\nTime: ", np.round(time.time()-t_init,3))
+                # print(f"Kp Anteil: \n{np.round(Kp*error,3)}")
+                # print(f"Kd Anteil: \n{np.round(Kd* (jac @ data.qvel),3)}")
+                print(f"weighted wrench: \n{np.round(Mx @ ((Kp * error - Kd * (jac @ data.qvel[dof_ids]))*factor_filter),3)}")
+                # print(f"Tau: \n{tau}")
                 next_sampling_time += sampling_interval
 
             viewer.sync()

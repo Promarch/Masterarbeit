@@ -71,7 +71,7 @@ slider = Slider(ax_slider, 'T [ms]', 0, t_max, valinit=0)
 def update(val):
     t = round(slider.val)
     frame_id = round((t/t_max) * len(frames))
-    print("Frame id: ", frame_id)
+    # print("Frame id: ", frame_id)
     # update img
     ax_img.imshow(frames[frame_id])
     # update force

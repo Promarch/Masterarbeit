@@ -78,6 +78,7 @@ int main() {
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_i = Eigen::MatrixXd::Identity(6, 6); 
+    Eigen::VectorXd Kn(7); Kn << 10, 10, 10, 10, 5, 5, 5;
     K_p.topLeftCorner(3,3) *= translation_stiffness; 
     K_p.bottomRightCorner(3,3) *= rotation_stiffness; 
     K_d.topLeftCorner(3,3) *= 1 * sqrt(translation_stiffness);
@@ -96,14 +97,11 @@ int main() {
     double dt = 0;
     
     // Initial orientation
+    Eigen::Map<const Eigen::Matrix<double, 7,1>> q_init(initial_state.q.data());
     Eigen::Affine3d transform_init(Eigen::Matrix4d::Map(initial_state.O_T_EE.data()));
     Eigen::Vector3d position_init(transform_init.translation());
     Eigen::Quaterniond rotation_init(transform_init.linear());
     Eigen::Matrix3d rot_matrix_init = rotation_init.toRotationMatrix();
-      // Compute current rotation in angles for plots
-    double roll_init = std::atan2(rot_matrix_init(2, 1), rot_matrix_init(2, 2));
-    double pitch_init = std::asin(-rot_matrix_init(2, 0));
-    double yaw_init = std::atan2(rot_matrix_init(1, 0), rot_matrix_init(0, 0));
     
       // Desired Rotation, created with quaternions
     // Flexion (Rotation around y in local CoSy) 
@@ -155,17 +153,12 @@ int main() {
       std::array<double, 42> jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
       Eigen::Map<const Eigen::Matrix<double, 6,7>> jacobian(jacobian_array.data());
       Eigen::Map<const Eigen::Matrix<double, 7,1>> dq(robot_state.dq.data()); 
+      Eigen::Map<const Eigen::Matrix<double, 7,1>> q(robot_state.q.data());
         // Get current position
       Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
       Eigen::Vector3d position(transform.translation());
       Eigen::Quaterniond rotation(transform.linear());
       Eigen::Matrix3d rot_matrix = rotation.toRotationMatrix();
-        // Get current filtered torque for measurements
-      Eigen::Map<const Eigen::Matrix<double, 7, 1>> tau_filter(robot_state.tau_ext_hat_filtered.data());
-        // Compute current rotation in angles for plots
-      double roll = std::atan2(rot_matrix(2, 1), rot_matrix(2, 2));
-      double pitch = std::asin(-rot_matrix(2, 0));
-      double yaw = std::atan2(rot_matrix(1, 0), rot_matrix(0, 0));
 
         // Compute trajectory between current and desired orientation
       // Positional error
@@ -184,15 +177,15 @@ int main() {
       // Calculate the necessary wrench, from Handbook of robotics, Chap. 7
       Eigen::Matrix<double, 6,1> h_c; h_c.setZero();
       Eigen::Matrix<double, 6,1> v_e = jacobian * dq;
+      h_c = K_p * error - K_d * v_e ; 
 
-      // integrate error using forward euler
-      int_error += dt*error;
-
-      h_c = K_p * error - K_d * v_e ; // + K_i * int_error
+      // Add nullspace control to stay in fixed position
+      Eigen::MatrixXd pseudo_inv = jacobian.completeOrthogonalDecomposition().pseudoInverse();
+      Eigen::MatrixXd h_null = (Eigen::MatrixXd::Identity(7,7) - pseudo_inv * jacobian) * Kn.cwiseProduct(q_init-q)*5;
 
       // Calculate torque and map to an array
       std::array<double, 7> tau_d{};
-      Eigen::VectorXd::Map(&tau_d[0], 7) = jacobian.transpose() * h_c.cwiseProduct(factor_filter); // 
+      Eigen::VectorXd::Map(&tau_d[0], 7) = jacobian.transpose() * h_c.cwiseProduct(factor_filter) + h_null; // 
 
       // Calculate positional error for tests
       double distance = (pos_d-position).norm(); 
@@ -213,26 +206,16 @@ int main() {
         next_sampling_time += sampling_interval;
       }
 
-        // Calculate and print data for plots 
-      // Calculate forces directly from torque sensor: F = J * tau
-      std::array<double, 42> body_jacobian_array = model.bodyJacobian(franka::Frame::kEndEffector, robot_state);
-      Eigen::Map<const Eigen::Matrix<double, 6,7>> body_jacobian(body_jacobian_array.data());
-      Eigen::MatrixXd bodyJacob_T = body_jacobian.transpose();
-      Eigen::Matrix<double, 6, 1> force_tau = bodyJacob_T.completeOrthogonalDecomposition().pseudoInverse() * tau_filter; 
-
       // Map the position and error to an array (I cant add Eigen vectors to arrays)
       std::array<double, 3> pos_array{}; 
-      std::array<double, 6> error_array{}, force_tau_array{}; 
+      std::array<double, 6> error_array{}; 
       Eigen::VectorXd::Map(&pos_array[0], 3) = position;
       Eigen::VectorXd::Map(&error_array[0], 6) = error;
-      Eigen::VectorXd::Map(&force_tau_array[0], 6) = force_tau;
       
       // Add the current data to the array
       tau_data.push_back(tau_d);
       position_data.push_back(pos_array);
-      rotation_data.push_back({(roll_init+angle_internal-roll)/M_PI*180, (pitch-pitch_init+angle_flexion)/M_PI*180, (yaw-yaw_init)/M_PI*180});
       force_data.push_back(robot_state.K_F_ext_hat_K);
-      tau_force_data.push_back(force_tau_array);
       joint_position_data.push_back(robot_state.q);
 
       // Send desired tau to the robot
@@ -245,25 +228,24 @@ int main() {
     // Write Data to .txt file
     writeDataToFile(tau_data);
     writeDataToFile(position_data);
-    writeDataToFile(rotation_data);
     writeDataToFile(force_data);
-    writeDataToFile(tau_force_data);
     writeDataToFile(joint_position_data);
   }
   // Catches Exceptions caused within the execution of a program (I think)
   catch (const franka::ControlException& e) {
-    std::cout << e.what() << std::endl;
+    std::cout << "Control Exception: \n" << e.what() << std::endl;
     writeDataToFile(tau_data);
     writeDataToFile(position_data);
-    writeDataToFile(rotation_data);
     writeDataToFile(force_data);
     writeDataToFile(joint_position_data);
     return -1;
   }
   // General exceptions
   catch (const franka::Exception& e) {
-    std::cout << e.what() << std::endl;
+    std::cout << "Other Exception: \n" << e.what() << std::endl;
+    writeDataToFile(tau_data);
     return -1;
   }
+  
   
 }

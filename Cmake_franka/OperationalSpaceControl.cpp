@@ -73,8 +73,8 @@ int main() {
     franka::RobotState initial_state = robot.readOnce();
 
       // Damping/Stifness
-    const double translation_stiffness{100.0};
-    const double rotation_stiffness{50.0};
+    const double translation_stiffness{500.0};
+    const double rotation_stiffness{100.0};
     Eigen::Matrix<double, 6,1> Kp, Kd; Kp.setOnes(); Kd.setOnes();
     Kp.topRows(3) *= translation_stiffness;
     Kp.bottomRows(3) *= rotation_stiffness;
@@ -199,7 +199,8 @@ int main() {
       
         // Calculate torque and map to an array
       Eigen::Matrix<double, 6,1> wrench = Kp.cwiseProduct(error) - Kd.cwiseProduct(v_e);
-      Eigen::Matrix<double, 7,1> tau = jacobian_T * wrench.cwiseProduct(factor_filter); // Mx_inv.colPivHouseholderQr().solve(
+      Eigen::Matrix<double, 6,1> weighted_wrench = Mx_inv.partialPivLu().solve(wrench.cwiseProduct(factor_filter));
+      Eigen::Matrix<double, 7,1> tau = jacobian_T * weighted_wrench; // Mx_inv.partialPivLu().solve(
       std::array<double, 7> tau_array{};
       Eigen::VectorXd::Map(&tau_array[0], 7) = tau;
 
@@ -209,8 +210,8 @@ int main() {
       // Print variables at regular interval (for debugging)
       if (time >= next_sampling_time) {
         std::cout << std::fixed << std::setprecision(3);
-        std::cout << "\nTime: " << time << "\nError: \n" << error << "\nAbsolute position error: " << distance << "\n" << std::endl; 
-        std::cout << "Kp Anteil: \n" << Kp.cwiseProduct(error) << "\nKd Anteil: \n" << Kd.cwiseProduct(v_e) << std::endl; //"\nTau: \n" << tau << 
+        std::cout << "\nTime: " << time << "\nWeighted_wrench: \n" << weighted_wrench << "\nAbsolute position error: " << distance << "\n" << std::endl; 
+        // std::cout << "Kp Anteil: \n" << Kp.cwiseProduct(error) << "\nKd Anteil: \n" << Kd.cwiseProduct(v_e) << std::endl; //"\nTau: \n" << tau << 
         next_sampling_time += sampling_interval;
       }
 
@@ -218,7 +219,7 @@ int main() {
       if (time >= time_max) {
         std::cout << std::fixed << std::setprecision(3);
         std::cout << "Time: " << time << "\nError: \n" << error << "\nPosition error: " << distance << "\n" << std::endl; 
-        std::cout << std::endl << "Finished motion, shutting down example" << std::endl;
+        std::cout << std::endl << "Finished motion, shutting down example" << std::endl; 
         franka::Torques output = tau_array;
         return franka::MotionFinished(output);
       }
