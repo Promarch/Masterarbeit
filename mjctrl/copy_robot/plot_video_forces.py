@@ -49,10 +49,18 @@ ax_img.set_title('Video of Motion')
 list_of_files_wrench = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_data*')
 filePath_wrench = max(list_of_files_wrench, key=os.path.getctime)
 wrench = np.loadtxt(filePath_wrench, delimiter=",")
+# Get latest data
+list_of_files_EE_acc = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_tau*')
+filePath_EE_acc = max(list_of_files_EE_acc, key=os.path.getctime)
+EE_acc = np.loadtxt(filePath_EE_acc, delimiter=",")
 # plot and annotate
 ax_force.plot(wrench[:,3], label=r"$\tau_x$")
 ax_force.plot(wrench[:,4], label=r"$\tau_y$")
 ax_force.plot(wrench[:,5], label=r"$\tau_z$")
+ax_force.plot(EE_acc[:,3], "--", label=r"$Acc \tau_x$")
+ax_force.plot(EE_acc[:,4], "--", label=r"$Acc \tau_y$")
+ax_force.plot(EE_acc[:,5], "--", label=r"$Acc \tau_z$")
+
 vert_line = ax_force.axvline(x=0, color = "r")
 
 #pos_tau_x, = ax_force.plot(0,wrench[0,3], 'o')

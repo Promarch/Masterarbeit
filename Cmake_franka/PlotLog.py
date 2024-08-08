@@ -7,28 +7,45 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Function to create 7 Subplots from a dataframe
-def plot_torque(df, columns = None):
-    if "time" in df.columns:
-        x = df["time"]
+def plot_torque(df_tau, df_filter, df_q, columns = None):
+    if "time" in df_tau.columns:
+        x = df_tau["time"]
     else:
-        x = df.index.values
+        x = df_tau.index.values
 
     if columns == None:
         columns = np.arange(7)
     
+    # Get min and max of torque
+    min_tau = np.min([df_tau, df_filter]) # , df_mass
+    max_tau = np.max([df_tau, df_filter]) # , df_mass
+
+    # Get max difference between min and max in q
+    max_range = np.max(np.max(df_q,0)-np.min(df_q,0)) * 1.1
+    
+
     fig, axs = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
     
     for i, col in enumerate(columns):
-        axs[i].plot(x, df[col].to_numpy())
-        axs[i].set_ylabel(col)
+        axs[i].plot(x, df_tau[col].to_numpy(), label = r"$\tau_d$")
+        axs[i].plot(x, df_filter[col].to_numpy(), label = r"$\tau_{filter}$")
+        # axs[i].plot(x, df_mass[col].to_numpy(), label = r"$\tau_{mass}$")
+        axs[i].set_ylabel(col+1)
+        axs[i].set_ylim(min_tau, max_tau)
         axs[i].grid(True)
-        #axs[i].set_ylim([df[useCols[1:]].min().min(), df[useCols[1:]].max().max()])
-
-
+        
+        axs[i].legend()
+        ax_twin = axs[i].twinx()
+        ax_twin.plot(x, df_q[col].to_numpy(), "r--", label = r"$q_{pos}$")
+        ax_twin.legend()
+        # Set y_lim so that you always have the same tick range
+        y_lim_min = (np.max(df_q[col])+np.min(df_q[col]))/2 - max_range/2
+        y_lim_max = (np.max(df_q[col])+np.min(df_q[col]))/2 + max_range/2
+        ax_twin.set_ylim(y_lim_min, y_lim_max)
+    
     axs[-1].set_xlabel('Time')
     # Adjust layout
     plt.tight_layout()
-
     # Show the plot
     plt.show()
 # Plot position history in 3D and absolute distance 
@@ -176,6 +193,27 @@ def plot_force_error(df_error):
     plt.suptitle("Force Error")
     plt.show()
 
+def plot7(df_array):
+    # If array is of size one make it iteratable
+    num_df = len(df_array)
+    if num_df > 10:
+        df_array = [df_array]
+
+    x = df_array[0].index.values
+    # Get min and max of torque
+    min_tau = np.min(df_array)
+    max_tau = np.max(df_array)
+
+    fig, axs = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
+    for i in range(7):
+        for j, df in enumerate(df_array):
+            axs[i].plot(x, df.iloc[:,i].to_numpy(), label = f"df{j}")
+        axs[i].set_ylabel(i+1)
+        axs[i].set_ylim(min_tau-.2, max_tau+.2)
+        axs[i].grid(True)
+        axs[i].legend(loc = "upper right")
+    plt.show()
+        
 # %%
 # Plot torques
 list_of_files_tau = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/tau_da*')
@@ -183,7 +221,23 @@ filePath_tau = max(list_of_files_tau, key=os.path.getctime)
 df_orig_tau = pd.read_csv(filePath_tau, header=None)
 df_tau = df_orig_tau.copy()
 
-plot_torque(df_tau)
+list_of_files_tau_filter = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/tau_filter*')
+filePath_tau_filter = max(list_of_files_tau_filter, key=os.path.getctime)
+df_orig_tau_filter = pd.read_csv(filePath_tau_filter, header=None)
+df_tau_filter = df_orig_tau_filter.copy()
+
+# list_of_files_tau_mass = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/tau_mass*')
+# filePath_tau_mass = max(list_of_files_tau_mass, key=os.path.getctime)
+# df_orig_tau_mass = pd.read_csv(filePath_tau_mass, header=None)
+# df_tau_mass = df_orig_tau_mass.copy()
+
+list_of_files_q = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/joint_pos*')
+filePath_q = max(list_of_files_q, key=os.path.getctime)
+df_orig_q = pd.read_csv(filePath_q, header=None)
+df_q = df_orig_q.copy()
+
+plot7([df_tau, df_tau_filter, df_tau-df_tau_filter])
+# plot_torque(df_tau, df_tau_filter, df_q)
 
 # %%
 # Plot orientation error
@@ -199,7 +253,7 @@ df_orig_rot = pd.read_csv(filePath_rot, header=None)
 df_rot = df_orig_rot.copy()
 
 # Plot error
-plot_orientation_error(df_pos, df_rot)
+# plot_orientation_error(df_pos, df_rot)
 
 # %%
     # Get external force data
@@ -215,7 +269,7 @@ df_orig_force_tau = pd.read_csv(filePath_force_tau, header=None)
 df_force_tau = df_orig_force_tau.copy()
 
     # Plot Force
-plot_force_F_T(df_force_ext)
+# plot_force_F_T(df_force_ext)
 # %%
     # Get force error data
 list_of_files_error = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/error*')

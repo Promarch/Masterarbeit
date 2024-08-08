@@ -21,7 +21,7 @@ void setDefaultBehavior(franka::Robot &robot) {
         {{20.0, 20.0, 18.0, 18.0, 16.0, 14.0, 12.0}}, {{20.0, 20.0, 18.0, 18.0, 16.0, 14.0, 12.0}},
         {{20.0, 20.0, 20.0, 25.0, 25.0, 25.0}}, {{20.0, 20.0, 20.0, 25.0, 25.0, 25.0}},
         {{20.0, 20.0, 20.0, 25.0, 25.0, 25.0}}, {{20.0, 20.0, 20.0, 25.0, 25.0, 25.0}});
-    robot.setJointImpedance({{3000, 3000, 3000, 2500, 2500, 2000, 2000}});
+    robot.setJointImpedance({{3000, 3000, 3000, 3000, 3000, 3000, 3000}});
     robot.setCartesianImpedance({{3000, 3000, 3000, 300, 300, 300}});
 };
 
@@ -57,9 +57,9 @@ void writeDataToFileImpl(const std::vector<std::array<double, N>>& data, const s
 int main() {
 
   // Variables to store the torque or position of the robot during the movement
-  std::vector<std::array<double, 7>> tau_data, joint_position_data; // Vector to store the torque
-  std::vector<std::array<double, 3>> position_data, rotation_data; // Vector to store the torque
-  std::vector<std::array<double, 6>> force_data, tau_force_data; // Vector to store the force and torque on the EE
+  std::vector<std::array<double, 7>> tau_data, tau_filter_data, tau_desired_data, joint_position_data; // Vector to store the torque
+  std::vector<std::array<double, 3>> position_data; // Vector to store the torque
+  std::vector<std::array<double, 6>> force_data, force_tau_d_data; // Vector to store the force and torque on the EE
   
   try {
     // Set Up basic robot function
@@ -73,7 +73,7 @@ int main() {
     franka::RobotState initial_state = robot.readOnce();
 
       // Damping/Stifness
-    const double translation_stiffness{300.0};
+    const double translation_stiffness{500.0};
     const double rotation_stiffness{100.0};
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6);
@@ -125,7 +125,6 @@ int main() {
     // Other variables
     double factor_rot{0};
     double factor_pos{0};
-
 
     auto force_control_callback = [&] (const franka::RobotState& robot_state, franka::Duration period) -> franka::Torques {
       dt = period.toSec();
@@ -181,11 +180,13 @@ int main() {
 
       // Add nullspace control to stay in fixed position
       Eigen::MatrixXd pseudo_inv = jacobian.completeOrthogonalDecomposition().pseudoInverse();
-      Eigen::MatrixXd h_null = (Eigen::MatrixXd::Identity(7,7) - pseudo_inv * jacobian) * Kn.cwiseProduct(q_init-q)*5;
+      Eigen::Matrix<double, 6,1> error_null = error; error_null.tail(3) << 0,0,0;
+      Eigen::MatrixXd h_null = (Eigen::MatrixXd::Identity(7,7) - pseudo_inv * jacobian) * Kn.cwiseProduct(jacobian.transpose() * error_null);
 
       // Calculate torque and map to an array
-      std::array<double, 7> tau_d{};
-      Eigen::VectorXd::Map(&tau_d[0], 7) = jacobian.transpose() * h_c.cwiseProduct(factor_filter) + h_null; // 
+      Eigen::MatrixXd tau_d = jacobian.transpose() * h_c.cwiseProduct(factor_filter) + h_null;
+      std::array<double, 7> tau_d_array{};
+      Eigen::VectorXd::Map(&tau_d_array[0], 7) =  tau_d;
 
       // Calculate positional error for tests
       double distance = (pos_d-position).norm(); 
@@ -195,7 +196,7 @@ int main() {
         std::cout << std::fixed << std::setprecision(3);
         std::cout << "Time: " << time << std::endl << "Error: " << std::endl << error << std::endl << "Position error: " << distance << std::endl << std::endl; 
         std::cout << std::endl << "Finished motion, shutting down example" << std::endl;
-        franka::Torques output = tau_d;
+        franka::Torques output = tau_d_array;
         return franka::MotionFinished(output);
       }
 
@@ -206,20 +207,28 @@ int main() {
         next_sampling_time += sampling_interval;
       }
 
+      // Calculate stupid stuff once again
+      std::array<double, 42> body_jacobian_array = model.bodyJacobian(franka::Frame::kEndEffector, robot_state);
+      Eigen::Map<const Eigen::Matrix<double, 6,7>> body_jacobian(body_jacobian_array.data());
+      Eigen::Matrix<double, 6, 1> F_tau_d = body_jacobian.transpose().completeOrthogonalDecomposition().pseudoInverse() * tau_d; 
+
       // Map the position and error to an array (I cant add Eigen vectors to arrays)
       std::array<double, 3> pos_array{}; 
-      std::array<double, 6> error_array{}; 
+      std::array<double, 6> error_array{}, F_tau_d_array{}; 
       Eigen::VectorXd::Map(&pos_array[0], 3) = position;
       Eigen::VectorXd::Map(&error_array[0], 6) = error;
+      Eigen::VectorXd::Map(&F_tau_d_array[0], 6) = F_tau_d;
       
       // Add the current data to the array
-      tau_data.push_back(tau_d);
+      tau_data.push_back(tau_d_array);
+      tau_filter_data.push_back(robot_state.tau_ext_hat_filtered);
+      force_tau_d_data.push_back(F_tau_d_array);
       position_data.push_back(pos_array);
       force_data.push_back(robot_state.K_F_ext_hat_K);
       joint_position_data.push_back(robot_state.q);
 
       // Send desired tau to the robot
-      return tau_d;
+      return tau_d_array;
 
     };
 
@@ -227,6 +236,8 @@ int main() {
     robot.control(force_control_callback);
     // Write Data to .txt file
     writeDataToFile(tau_data);
+    writeDataToFile(tau_filter_data);
+    writeDataToFile(force_tau_d_data);
     writeDataToFile(position_data);
     writeDataToFile(force_data);
     writeDataToFile(joint_position_data);
@@ -235,6 +246,7 @@ int main() {
   catch (const franka::ControlException& e) {
     std::cout << "Control Exception: \n" << e.what() << std::endl;
     writeDataToFile(tau_data);
+    writeDataToFile(tau_filter_data);
     writeDataToFile(position_data);
     writeDataToFile(force_data);
     writeDataToFile(joint_position_data);
@@ -246,6 +258,5 @@ int main() {
     writeDataToFile(tau_data);
     return -1;
   }
-  
   
 }
