@@ -1,0 +1,5 @@
+170329: Ohne nullspace
+170454: Mit Nullspace (kn=100)
+173340: Mit Nullspace (kn=400)
+173915: Mit Nullspace (kn=1000); Ist abgebrochen wegen geschwindigkeit
+180014: Mit Nullspace (kn=300); andere Startausrichtung des Roboters

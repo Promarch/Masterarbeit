@@ -92,7 +92,7 @@ def main() -> None:
     q = np.loadtxt(filePath_q, delimiter=",")
     # Set desired rotation
     desired_angle = np.deg2rad(-20)
-    rotation_axis = np.array([1,0,0])
+    rotation_axis = np.array([0,1,0])
 
 
         # Pre-allocate numpy arrays.

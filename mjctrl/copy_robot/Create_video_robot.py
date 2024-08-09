@@ -76,11 +76,12 @@ def main() -> None:
 
         # Initial positions
     # Get latest file
+    # /home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/joint_position_data_20240809_154101.txt
     list_of_files_q = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/joint_posi*')
     filePath_q = max(list_of_files_q, key=os.path.getctime)
     q = np.loadtxt(filePath_q, delimiter=",")
     desired_angle = np.deg2rad(-20)
-    rotation_axis = np.array([1,0,0])
+    rotation_axis = np.array([1,1,0])
 
     # Pre-allocation
     rotation_init = np.zeros(4)

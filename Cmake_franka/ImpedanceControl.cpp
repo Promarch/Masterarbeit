@@ -35,7 +35,7 @@ std::string getCurrentDateTime() {
 }
 template <std::size_t N>
 void writeDataToFileImpl(const std::vector<std::array<double, N>>& data, const std::string& var_name) {
-  std::string filename = "data_output/" + var_name + "_" + getCurrentDateTime() + ".txt";
+  std::string filename = "nullspace_test/" + var_name + "_" + getCurrentDateTime() + ".txt";
   std::ofstream data_file(filename);
   if (data_file.is_open()) {
     data_file << std::fixed << std::setprecision(4);
@@ -78,7 +78,7 @@ int main() {
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_i = Eigen::MatrixXd::Identity(6, 6); 
-    Eigen::VectorXd Kn(7); Kn << 10, 10, 10, 10, 5, 5, 5;
+    Eigen::VectorXd Kn(7); Kn << 0, 0, 0, 0, 0, 300, 0;
     K_p.topLeftCorner(3,3) *= translation_stiffness; 
     K_p.bottomRightCorner(3,3) *= rotation_stiffness; 
     K_d.topLeftCorner(3,3) *= 1 * sqrt(translation_stiffness);
@@ -111,7 +111,7 @@ int main() {
     Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
     // Varus-Valgus (Rotation around z in local CoSy) 
     double angle_internal = 0;
-    Eigen::Vector3d axis_internal(1,0,0);
+    Eigen::Vector3d axis_internal(0,1,0);
     Eigen::AngleAxisd angle_axis_internal(angle_internal, axis_internal);
     Eigen::Quaterniond quaternion_internal(angle_axis_internal);
     // Combine the rotations
@@ -181,10 +181,10 @@ int main() {
       // Add nullspace control to stay in fixed position
       Eigen::MatrixXd pseudo_inv = jacobian.completeOrthogonalDecomposition().pseudoInverse();
       Eigen::Matrix<double, 6,1> error_null = error; error_null.tail(3) << 0,0,0;
-      Eigen::MatrixXd h_null = (Eigen::MatrixXd::Identity(7,7) - pseudo_inv * jacobian) * Kn.cwiseProduct(jacobian.transpose() * error_null);
+      Eigen::MatrixXd h_null = (Eigen::MatrixXd::Identity(7,7) - pseudo_inv * jacobian) * Kn.cwiseProduct(q_init-q);
 
       // Calculate torque and map to an array
-      Eigen::MatrixXd tau_d = jacobian.transpose() * h_c.cwiseProduct(factor_filter) + h_null;
+      Eigen::MatrixXd tau_d = jacobian.transpose() * h_c.cwiseProduct(factor_filter) + h_null; // 
       std::array<double, 7> tau_d_array{};
       Eigen::VectorXd::Map(&tau_d_array[0], 7) =  tau_d;
 
@@ -208,21 +208,21 @@ int main() {
       }
 
       // Calculate stupid stuff once again
-      std::array<double, 42> body_jacobian_array = model.bodyJacobian(franka::Frame::kEndEffector, robot_state);
-      Eigen::Map<const Eigen::Matrix<double, 6,7>> body_jacobian(body_jacobian_array.data());
-      Eigen::Matrix<double, 6, 1> F_tau_d = body_jacobian.transpose().completeOrthogonalDecomposition().pseudoInverse() * tau_d; 
+      // std::array<double, 42> body_jacobian_array = model.bodyJacobian(franka::Frame::kEndEffector, robot_state);
+      // Eigen::Map<const Eigen::Matrix<double, 6,7>> body_jacobian(body_jacobian_array.data());
+      // Eigen::Matrix<double, 6, 1> F_tau_d = body_jacobian.transpose().completeOrthogonalDecomposition().pseudoInverse() * tau_d; 
 
       // Map the position and error to an array (I cant add Eigen vectors to arrays)
       std::array<double, 3> pos_array{}; 
       std::array<double, 6> error_array{}, F_tau_d_array{}; 
       Eigen::VectorXd::Map(&pos_array[0], 3) = position;
       Eigen::VectorXd::Map(&error_array[0], 6) = error;
-      Eigen::VectorXd::Map(&F_tau_d_array[0], 6) = F_tau_d;
+      // Eigen::VectorXd::Map(&F_tau_d_array[0], 6) = F_tau_d;
       
       // Add the current data to the array
       tau_data.push_back(tau_d_array);
       tau_filter_data.push_back(robot_state.tau_ext_hat_filtered);
-      force_tau_d_data.push_back(F_tau_d_array);
+      // force_tau_d_data.push_back(F_tau_d_array);
       position_data.push_back(pos_array);
       force_data.push_back(robot_state.K_F_ext_hat_K);
       joint_position_data.push_back(robot_state.q);
@@ -247,6 +247,7 @@ int main() {
     std::cout << "Control Exception: \n" << e.what() << std::endl;
     writeDataToFile(tau_data);
     writeDataToFile(tau_filter_data);
+    writeDataToFile(force_tau_d_data);
     writeDataToFile(position_data);
     writeDataToFile(force_data);
     writeDataToFile(joint_position_data);

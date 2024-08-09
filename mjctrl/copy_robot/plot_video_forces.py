@@ -38,6 +38,23 @@ while True:
 cap.release()
 print(f"Extracted {frame_count} frames")
 #%% 
+# # plot torque and try to find a relationship between tau_d and tau_filter
+# list_of_files_tau = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/tau_da*')
+# filePath_tau = max(list_of_files_tau, key=os.path.getctime)
+# tau_d = np.loadtxt(filePath_tau, delimiter=",")
+
+# list_of_files_tau_filter = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/tau_filter*')
+# filePath_tau_filter = max(list_of_files_tau_filter, key=os.path.getctime)
+# tau_filter = np.loadtxt(filePath_tau_filter, delimiter=",")
+
+# p = np.array([])
+# for i in range(7):
+#     p = np.append(p, np.polynomial.polynomial.polyfit(tau_d[:-500,i], tau_filter[:-500,i], 1))
+
+# print(p)
+# print("test")
+
+#%% 
 # Plot img
 fig, (ax_img, ax_force) = plt.subplots(2,1)
 # Plot img
@@ -46,20 +63,32 @@ ax_img.set_title('Video of Motion')
 
     # Plot force
 # Get latest data
+path =  "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_data_20240809_154101.txt"
 list_of_files_wrench = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_data*')
 filePath_wrench = max(list_of_files_wrench, key=os.path.getctime)
-wrench = np.loadtxt(filePath_wrench, delimiter=",")
+wrench = np.loadtxt(list_of_files_wrench, delimiter=",")
 # Get latest data
-list_of_files_EE_acc = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_tau*')
-filePath_EE_acc = max(list_of_files_EE_acc, key=os.path.getctime)
-EE_acc = np.loadtxt(filePath_EE_acc, delimiter=",")
+path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_tau_d_data_20240809_154101.txt"
+list_of_files_F_tau_d = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_tau*')
+filePath_F_tau_d = max(list_of_files_F_tau_d, key=os.path.getctime)
+F_tau_d = np.loadtxt(filePath_F_tau_d, delimiter=",")
+
+x = np.arange(len(wrench))
+p = np.array([])
+for i in range(3):
+    p = np.append(p, np.polynomial.polynomial.polyfit(F_tau_d[:-500,i+3], wrench[:-500,i+3], 1))
+print(p)
+# p = 0.4748 scheint zu funzen
+
 # plot and annotate
-ax_force.plot(wrench[:,3], label=r"$\tau_x$")
-ax_force.plot(wrench[:,4], label=r"$\tau_y$")
-ax_force.plot(wrench[:,5], label=r"$\tau_z$")
-ax_force.plot(EE_acc[:,3], "--", label=r"$Acc \tau_x$")
-ax_force.plot(EE_acc[:,4], "--", label=r"$Acc \tau_y$")
-ax_force.plot(EE_acc[:,5], "--", label=r"$Acc \tau_z$")
+ax_force.plot(wrench[:,3], "r", label=r"Filter $\tau_x$")
+ax_force.plot(wrench[:,4], "g", label=r"Filter $\tau_y$")
+ax_force.plot(wrench[:,5], "b", label=r"Filter $\tau_z$")
+ax_force.plot(F_tau_d[:,3] * 0.5, "r--", label=r"Des $\tau_x$")
+ax_force.plot(F_tau_d[:,4] * 0.5, "g--", label=r"Des $\tau_y$")
+ax_force.plot(F_tau_d[:,5] * 0.5, "b--", label=r"Des $\tau_z$")
+# ax_force.plot((F_tau_d[:,3]*p[0]), "k--", label=r"fit")
+
 
 vert_line = ax_force.axvline(x=0, color = "r")
 
@@ -92,39 +121,3 @@ def update(val):
 slider.on_changed(update)
 
 plt.show()
-
-#%%
-
-TWOPI = 2*np.pi
-wrench = np.loadtxt("force_data_20240725_140746.txt", delimiter=",")
-
-fig, ax = plt.subplots()
-
-t = np.arange(0.0, TWOPI, 0.001)
-initial_amp = .5
-s = np.sin(t)
-y_marker = np.sin(initial_amp)
-l, = plt.plot(t, s, lw=2)
-meh, = plt.plot(initial_amp,y_marker, 'o')
-vline = plt.axvline(x=initial_amp, color="r")
-ax = plt.axis([0,TWOPI,-1,1])
-
-axamp = plt.axes([0.25, .03, 0.50, 0.02])
-# Slider
-samp = Slider(axamp, 'Amp', 0, max(t), valinit=initial_amp)
-
-def update(val):
-    # amp is the current value of the slider
-    amp = samp.val
-    # update curve
-    meh.set_xdata(amp)
-    meh.set_ydata(np.sin(amp))
-    vline.set_xdata(amp)
-    plt.axvline(x=amp)
-    # redraw canvas while idle
-    fig.canvas.draw_idle()
-
-# call update function on slider value change
-samp.on_changed(update)
-
-# plt.show()

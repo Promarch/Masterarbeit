@@ -73,7 +73,8 @@ def main() -> None:
 
         # Initial positions
     # Get latest file
-    list_of_files_q = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/joint_posi*')
+    path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/joint_position_data_20240809_154101.txt"
+    list_of_files_q = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/nullspace_test/joint_posi*')
     filePath_q = max(list_of_files_q, key=os.path.getctime)
     q = np.loadtxt(filePath_q, delimiter=",")
     desired_angle = np.deg2rad(-20)

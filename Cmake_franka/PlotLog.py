@@ -236,8 +236,8 @@ filePath_q = max(list_of_files_q, key=os.path.getctime)
 df_orig_q = pd.read_csv(filePath_q, header=None)
 df_q = df_orig_q.copy()
 
-plot7([df_tau, df_tau_filter, df_tau-df_tau_filter])
-# plot_torque(df_tau, df_tau_filter, df_q)
+# plot7([df_tau, df_tau_filter])
+plot_torque(df_tau, df_tau_filter, df_q)
 
 # %%
 # Plot orientation error
