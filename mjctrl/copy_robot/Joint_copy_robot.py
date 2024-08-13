@@ -71,12 +71,18 @@ def main() -> None:
     mocap_name = "target"
     mocap_id = model.body(mocap_name).mocapid[0]
 
-        # Initial positions
-    # Get latest file
+        
+        # Get latest file
+    # Initial positions
     path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/joint_position_data_20240809_154101.txt"
-    list_of_files_q = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/nullspace_test/joint_posi*')
+    list_of_files_q = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/joint_posi*')
     filePath_q = max(list_of_files_q, key=os.path.getctime)
     q = np.loadtxt(filePath_q, delimiter=",")
+    # Desired rotation with time
+    list_of_files_rot_time = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/rotation_tim*')
+    filePath_rot_time = max(list_of_files_rot_time, key=os.path.getctime)
+    rot_time = np.loadtxt(filePath_rot_time, delimiter=",")
+    
     desired_angle = np.deg2rad(-20)
     rotation_axis = np.array([1,0,0])
 
@@ -135,7 +141,14 @@ def main() -> None:
                 # Rotate to the desired configuration
                 mujoco.mju_axisAngle2Quat(desired_quat, rotation_axis, desired_angle)
                 mujoco.mju_negQuat(desired_quat_conj, desired_quat)
-                mujoco.mju_mulQuat(model.body("target").quat, rotation_init, desired_quat_conj)
+                mujoco.mju_mulQuat(model.body("target").quat, desired_quat, rotation_init)
+                print("Init quat", rotation_init)
+                print("Desired quat", desired_quat)
+                print("Target quat", model.body("target").quat)
+
+
+                # model.body("target").quat = np.concatenate(([rot_time[0,0]], rot_time[0,1:-1]))
+
                                 
             # # Loop that gets called every time_debug seconds
             # step_current = round(data.time/model.opt.timestep)

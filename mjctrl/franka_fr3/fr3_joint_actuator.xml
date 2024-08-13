@@ -97,6 +97,7 @@
 
   <worldbody>
     <body name="base" childclass="fr3">
+    <site name="base_site" rgba="1 0 0 1" size="0.01" group="1"/>
       <body name="fr3_link0">
         <geom mesh="link0_0" material="black" class="visual"/>
         <geom mesh="link0_1" material="white" class="visual"/>
@@ -173,7 +174,7 @@
                         <body name="femur" pos="0.055 -0.055 0.095" quat="0 0 0 1">
                           <geom class="visual" euler="0 0 -1.5708" mesh="femur_block_mesh" pos="0 0 0" type="mesh" material="bone"/>
                           <body name="attachment" pos="0.055 -0.055 0.225" quat="0 0 0 1">
-                            <site name="attachment_site" rgba="1 0 0 1" size="0.01" group="1" quat="0 0 0 1"/>
+                            <site name="attachment_site" rgba="1 0 0 1" size="0.01" group="1"/>
                           </body>
                         </body>
                         <body name="left_finger" pos="0 0.033 0.0584">
