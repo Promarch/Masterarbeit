@@ -38,6 +38,10 @@ max_angvel = 0.785
 def main() -> None:
     assert mujoco.__version__ >= "3.1.0", "Please upgrade to mujoco 3.1.0 or later."
 
+    # ------------------------------------------------------------------------
+    # -----------             Set Up Mujoco Simulation            ------------
+    # ------------------------------------------------------------------------
+
     # Load the model and data.
     model = mujoco.MjModel.from_xml_path("/home/alexandergerard/Masterarbeit/mjctrl/franka_fr3/scene_joint_actuator.xml")
     data = mujoco.MjData(model)
@@ -74,12 +78,28 @@ def main() -> None:
     mocap_name = "target"
     mocap_id = model.body(mocap_name).mocapid[0]
 
-        # Initial positions
-    # Get latest file
-    # /home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/joint_position_data_20240809_154101.txt
+    # Mujoco options
+    options = mujoco.MjvOption()
+    options.frame = mujoco.mjtFrame.mjFRAME_SITE
+
+    # ------------------------------------------------------------------------
+    # -----------          Calculate desired positions            ------------
+    # ------------------------------------------------------------------------
+
+        # Joint positions        
     list_of_files_q = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/joint_posi*')
     filePath_q = max(list_of_files_q, key=os.path.getctime)
     q = np.loadtxt(filePath_q, delimiter=",")
+        # Desired rotation with time
+    list_of_files_rot_time = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/rotation_tim*')
+    filePath_rot_time = max(list_of_files_rot_time, key=os.path.getctime)
+    rot_time_orig = np.loadtxt(filePath_rot_time, delimiter=",")
+    # rearrange the array so that it fits mujoco notation (normal/eigen notation is x,y,z,w; Mjc is w,x,y,z)
+    rot_time = np.array(rot_time_orig)
+    rot_time[:,0] = rot_time_orig[:,3]
+    rot_time[:,1:4] = rot_time_orig[:,0:3]
+    n_pos = 1
+
     desired_angle = np.deg2rad(-20)
     rotation_axis = np.array([1,1,0])
 
@@ -90,6 +110,10 @@ def main() -> None:
     quat_target_init = np.zeros(4)
     desired_quat = np.zeros(4) 
     desired_quat_conj = np.zeros(4)
+
+    # ------------------------------------------------------------------------
+    # -----------          Debug and runtime variables            ------------
+    # ------------------------------------------------------------------------
 
     # Time variables
     time_max = (np.shape(q)[0]/1000)-0.005
@@ -106,12 +130,15 @@ def main() -> None:
     time_next_frame = time_between_frames
     fps = 1/time_between_frames
     frames = []
-
-    # Mujoco options
-    options = mujoco.MjvOption()
-    options.frame = mujoco.mjtFrame.mjFRAME_SITE
     
-    with mujoco.Renderer(model=model) as renderer:
+
+    # ------------------------------------------------------------------------
+    # -----------                                                 ------------
+    # -----------                Start Simulation                 ------------
+    # -----------                                                 ------------
+    # ------------------------------------------------------------------------
+
+    with mujoco.Renderer(model=model, height=224*2, width=320*2) as renderer:
 
         # Reset the simulation.
         mujoco.mj_resetDataKeyframe(model, data, key_id)
@@ -120,9 +147,10 @@ def main() -> None:
         data.qpos = q[0,:]
 
         t_init = time.time()
-        while (time.time()-t_init)<time_max:
+        while (time.time()-t_init)<time_max: # time_max
+            time_current = time.time()-t_init
 
-            if (time.time()-t_init)>0.03 and set_mocap_pos:
+            if time_current>0.03 and set_mocap_pos:
                 # This line only exists cause I dont know how to run this loop only once
                 set_mocap_pos = False   
 
@@ -131,12 +159,15 @@ def main() -> None:
                 pos_init = data.site(site_id).xpos
                 pos_init = np.array(pos_init)
                 model.body("target").pos = pos_init
-                # Get initial orientation
-                mujoco.mju_mat2Quat(rotation_init, data.site(site_id).xmat)
-                # Rotate to the desired configuration
-                mujoco.mju_axisAngle2Quat(desired_quat, rotation_axis, desired_angle)
-                mujoco.mju_negQuat(desired_quat_conj, desired_quat)
-                mujoco.mju_mulQuat(model.body("target").quat, rotation_init, desired_quat_conj)
+                # Extract the rotation from the txt file
+                model.body("target").quat = rot_time[0,:4]
+
+            # Set new desired rotation according to text file
+            if n_pos<len(rot_time):
+                if time_current>rot_time[n_pos, -1]:
+                    model.body("target").quat = rot_time[n_pos, :4]
+                    print(f"Time now is {time_current}")
+                    n_pos += 1
             
             # # Loop that gets called every time_debug seconds
             # step_current = round(data.time/model.opt.timestep)
@@ -147,7 +178,7 @@ def main() -> None:
             #     time_debug += time_sample
 
             # Set the control signal and step the simulation.
-            if (time.time()-t_init)>time_next_frame:
+            if time_current>time_next_frame:
                 time_now = round((time.time()-t_init)*1000)
                 if time_now>np.shape(q)[0]:
                     data.ctrl[actuator_ids] = q[-1, dof_ids]
@@ -170,7 +201,7 @@ def main() -> None:
             for image_array in image_arrays:
                 writer.append_data(image_array)
 
-        print(f"Time wall: {(time.time()-t_init)}ms; Time data:{time_now}")
+        print(f"Time wall: {time_current}ms; Time data:{time_now}")
         
 if __name__ == "__main__":
     main()

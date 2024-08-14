@@ -61,6 +61,11 @@ int main() {
   std::vector<std::array<double, 3>> position_data; // Stores the position in x,y,z
   std::vector<std::array<double, 6>> force_data; // Stores the force and torque on the EE
   std::vector<std::array<double, 5>> rotation_time_data; // stores the desired rotation with the current time
+  // Similar to the stuff above, but instead of storing everything they are just need to convert the Eigen vectors into arrays
+  std::array<double, 3> pos_array{}; 
+  std::array<double, 6> error_array{}, F_tau_d_array{}; 
+  std::array<double, 7> tau_d_array{};
+
 
   try {
     // Set Up basic robot function
@@ -74,25 +79,22 @@ int main() {
     franka::RobotState initial_state = robot.readOnce();
 
       // Damping/Stifness
-    const double translation_stiffness{150.0};
-    const double rotation_stiffness{30.0};
+    const double translation_stiffness{200.0};
+    const double rotation_stiffness{20.0};
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6);
-    Eigen::MatrixXd K_i = Eigen::MatrixXd::Identity(6, 6); 
-    Eigen::VectorXd Kn(7); Kn << 0, 0, 0, 0, 0, 50, 0;
+    Eigen::VectorXd Kn(7); Kn << 0, 0, 0, 0, 0, 200, 0;
     K_p.topLeftCorner(3,3) *= translation_stiffness; 
     K_p.bottomRightCorner(3,3) *= rotation_stiffness; 
     K_d.topLeftCorner(3,3) *= 1 * sqrt(translation_stiffness);
     K_d.bottomRightCorner(3,3) *= 1 * sqrt(rotation_stiffness);
-    K_i.topLeftCorner(3,3) *= 2 * sqrt(translation_stiffness);
-    K_i.bottomRightCorner(3,3) *= 2 * sqrt(rotation_stiffness); 
 
       // Time for the loop
     double time_global = 0.0;
     double time_cycle = 0.0;
-    double time_max = 8;
+    double time_max = 10;
     double period_acc = 2;
-    double period_dec = 0.5; // time for decceleration, to stop abrubt braking
+    double period_dec = 0.8; // time for decceleration, to stop abrubt braking
     double sampling_interval = 0.25;
     double next_sampling_time = 0;
     double dt = 0;
@@ -117,26 +119,26 @@ int main() {
     Eigen::Quaterniond quaternion_internal(angle_axis_internal);
     // Combine the rotations
     Eigen::Quaterniond quaternion_combined = quaternion_internal * quaternion_flexion;
+    // Translate the desired rotation into local coordinate system (rotation in EE-CoSy instead of base CoSy)
     Eigen::Quaterniond rot_quaternion_rel = rotation_init * quaternion_combined * rotation_init.inverse();
+    // Add rotation to initial orientation
+    Eigen::Quaterniond rot_d = rot_quaternion_rel * rotation_init; 
+    // std::cout << "quaternion_flexion: " << quaternion_flexion << "\nRotation_init: " << rotation_init << "\nDesired quat: " << rot_d << std::endl;
       // Desired relative position
     Eigen::Matrix<double, 3,1> pos_d;
     pos_d = position_init;
-    Eigen::Quaterniond rot_d = rot_quaternion_rel * rotation_init; 
-    std::cout << "quaternion_flexion: " << quaternion_flexion << "\nRotation_init: " << rotation_init << std::endl;
-
-    return -1;
 
       // Variables to set new position
     // Decceleration
     bool decceleration = false; // if true, robot deccelerates, used to stop the motion before setting a new position
     double t_dec = 0;   // will be set the moment a decceleration is called
     // New position
-    Eigen::Matrix<double, 3, 1> pos_temp; pos_temp.setZero();
+    Eigen::Matrix<double, 3, 1> pos_temp = pos_d;
     bool new_pos = false;   // state variable, if true new position will be set
     std::srand(std::time(nullptr)); // initialize random seed
     double max_flexion = -M_PI/4;    // Max possible flexion
-    double max_internal = M_PI/18;  // Max possible internal rotation
-    double min_internal = -M_PI/18; // Min possible internal rotation
+    double max_internal = M_PI/12;   // Max possible internal-external rotation
+    double range_internal = 2*max_internal; // Possible values (max_internal-min_internal)
     // Debug stuff
     double t_new_pos = 0; // Debug variable to see when a new position has been called
     Eigen::Matrix<double, 5, 1> rotation_time; 
@@ -145,10 +147,15 @@ int main() {
     Eigen::VectorXd::Map(&rotation_time_array[0], 5) = rotation_time;
     rotation_time_data.push_back(rotation_time_array);
 
-    // Other variables
+      // Pre-allocation
+    // Acceleration and decceleration factor
     double factor_rot{0};
     double factor_pos{0};
-
+    Eigen::Matrix<double, 6,1> factor_filter; 
+    // Commanded wrench 
+    Eigen::Matrix<double, 6,1> h_c; 
+    // Error between current and desired orientation
+    Eigen::Matrix<double, 6,1> error; 
 
 // --------------------------------------------------------------------------------------------
 // ----                                                                                    ----
@@ -188,7 +195,7 @@ int main() {
           angle_internal = 0; // No internal rotation if the knee is extended
         }
         else {
-          angle_internal = (std::rand()/(RAND_MAX/max_internal));
+          angle_internal = (std::rand()/(RAND_MAX/range_internal))-max_internal;
         }
         Eigen::AngleAxisd angle_axis_internal(angle_internal, axis_internal);
         Eigen::Quaterniond quaternion_internal(angle_axis_internal);
@@ -197,12 +204,9 @@ int main() {
         rot_quaternion_rel = rotation_init * quaternion_combined * rotation_init.inverse();
         // Calculate new rotation
         rot_d = rot_quaternion_rel * rotation_init; 
-          // Set desired position temporarely to the current position. 
-          // This is done to be able to continuously keep the positional control active instead of having to smooth it in/out
-        pos_d = position;
-        pos_temp = position;
-          // Reset state variable
+          // Reset state variable and cycle time
         new_pos = false; 
+        time_cycle = 0;
           // Print text and update data variable
         rotation_time << rot_d.coeffs(), time_global;
         Eigen::VectorXd::Map(&rotation_time_array[0], 5) = rotation_time;
@@ -217,15 +221,14 @@ int main() {
 
       // Calculate value depending on where in the acceleration/decceleration cycle the robot is in
       if ((time_global+period_dec)>time_max) {   // Deccelerate if the maximum time has been reached
-        factor_rot = (1 + std::cos(M_PI * (time_global-(time_max-period_dec))/period_dec))/2;
-        factor_pos = factor_rot;
+        factor_rot = (1 + std::cos(M_PI * (time_global-(time_max-period_dec))/period_dec))/2 * factor_rot;  // * factor_rot added cause it is not garanteed that factor_rot==1 when close to t_maxy
+        factor_pos = (1 + std::cos(M_PI * (time_global-(time_max-period_dec))/period_dec))/2;
       }
       else if (decceleration==true){  // Deccelerate if decceleration has been called because of a new position
-        factor_rot = (1 + std::cos(M_PI * (time_cycle-t_dec)/period_dec))/2;
-        factor_pos = factor_rot;
-        if (factor_rot < 0.0001) {  // Give command for new pos if slow enough
+        factor_rot = (1 + std::cos(M_PI * (time_cycle-t_dec)/period_dec))/2 * factor_rot;
+        factor_pos = 1;
+        if (factor_rot < 0.001) {  // Give command for new pos if slow enough
           decceleration = false;
-          time_cycle = 0;
           new_pos = true;
           std::cout << "New position to set" << std::endl;
         }
@@ -233,16 +236,12 @@ int main() {
       else if (time_cycle<period_acc) {    // start acceleration at the beginning of a new cycle
         factor_rot = (1 - std::cos(M_PI * time_cycle/period_acc))/2;
         factor_pos = 1;
-        if (pos_d!=position_init){  // needed when a new position has been assigned
-          pos_d = pos_temp + (time_cycle/period_acc) * (position_init - pos_temp);
-        }
       }
       else { // If no other cases are valid, keep factor constant
         factor_rot = 1;
         factor_pos = 1;
       }
       // Only apply smooth acceleration to rotation so that position deviations are immediatly corrected
-      Eigen::Matrix<double, 6,1> factor_filter; 
       factor_filter << factor_pos, factor_pos, factor_pos, factor_rot, factor_rot, factor_rot; 
 
       // -------------------------------------------------------------------
@@ -251,7 +250,7 @@ int main() {
 
         // Compute trajectory between current and desired orientation
       // Positional error
-      Eigen::Matrix<double, 6,1> error; error.setZero();
+      error.setZero();
       error.head(3) << pos_d - position; 
       // Rotational error
       if (rot_d.coeffs().dot(rotation.coeffs()) < 0.0) {
@@ -264,18 +263,15 @@ int main() {
       error.tail(3) << transform.linear() * error.tail(3);
 
       // Calculate the necessary wrench, from Handbook of robotics, Chap. 7
-      Eigen::Matrix<double, 6,1> h_c; h_c.setZero();
-      Eigen::Matrix<double, 6,1> v_e = jacobian * dq;
-      h_c = K_p * error - K_d * v_e ; 
+      h_c.setZero();
+      h_c = K_p * error - K_d * jacobian * dq; 
 
-      // // Add nullspace control to stay in fixed position
-      // Eigen::MatrixXd pseudo_inv = jacobian.completeOrthogonalDecomposition().pseudoInverse();
-      // Eigen::Matrix<double, 6,1> error_null = error; error_null.tail(3) << 0,0,0;
-      // Eigen::MatrixXd h_null = (Eigen::MatrixXd::Identity(7,7) - pseudo_inv * jacobian) * Kn.cwiseProduct(q_init-q);
+      // Add nullspace control to stay in fixed position
+      Eigen::MatrixXd pseudo_inv = jacobian.completeOrthogonalDecomposition().pseudoInverse();
+      Eigen::MatrixXd h_null = (Eigen::MatrixXd::Identity(7,7) - pseudo_inv * jacobian) * Kn.cwiseProduct(q_init-q);
 
       // Calculate torque and map to an array
-      Eigen::MatrixXd tau_d = jacobian.transpose() * h_c.cwiseProduct(factor_filter); //  + h_null 
-      std::array<double, 7> tau_d_array{};
+      Eigen::MatrixXd tau_d = jacobian.transpose() * h_c.cwiseProduct(factor_filter) + h_null; //  + h_null 
       Eigen::VectorXd::Map(&tau_d_array[0], 7) =  tau_d;
 
       // Calculate positional error for tests
@@ -303,13 +299,13 @@ int main() {
 
       if (decceleration==false) {
         // Set new position if: target reached/force threshold reached/no movement
-        if (error.norm()<0.05) {   // Target reached
+        if (error.norm()<0.005) {   // Target reached
             // Set decceleration and current time to properly calculate the decceleration factor
           decceleration = true;
           t_dec = time_cycle;
             // Print which case was called and the current values that called it
           t_new_pos = time_global;
-          std::cout << "Target reached, time:" << time_cycle << ", current error is: \n" << error << std::endl;
+          std::cout << "Target reached, time:" << time_global << ", current error is: \n" << error << std::endl;
         }
         else if (F_ext.tail(3).norm()>4) {   // Torque threshold reached
             // Set decceleration and current time to properly calculate the decceleration factor
@@ -317,15 +313,15 @@ int main() {
           t_dec = time_cycle;
             // Print which case was called and the current values that called it
           t_new_pos = time_global; 
-          std::cout << "Max torque reached, time:" << time_cycle << ", current forces are: \n" << F_ext << std::endl;
+          std::cout << "Max torque reached, time:" << time_global << ", current forces are: \n" << F_ext << std::endl;
         }
-        else if (dq.norm()<0.01 and factor_rot>0.9) {  // No movement, probably equilibrium position
+        else if (dq.norm()<0.01 and time_cycle>(period_acc+0.3)) {  // No movement, probably equilibrium position
             // Set decceleration and current time to properly calculate the decceleration factor
           decceleration = true;
           t_dec = time_cycle;
             // Print which case was called and the current values that called it
           t_new_pos = time_global; 
-          std::cout << "Movement stopped, time:" << time_cycle << ", dq: \n" << dq << std::endl;
+          std::cout << "Movement stopped, time:" << time_global << ", dq: \n" << dq << std::endl;
         }
       }
       // Calculate stupid stuff once again
@@ -334,8 +330,6 @@ int main() {
       // Eigen::Matrix<double, 6, 1> F_tau_d = body_jacobian.transpose().completeOrthogonalDecomposition().pseudoInverse() * tau_d; 
 
       // Map the position and error to an array (I cant add Eigen vectors to arrays)
-      std::array<double, 3> pos_array{}; 
-      std::array<double, 6> error_array{}, F_tau_d_array{}; 
       Eigen::VectorXd::Map(&pos_array[0], 3) = position;
       Eigen::VectorXd::Map(&error_array[0], 6) = error;
       // Eigen::VectorXd::Map(&F_tau_d_array[0], 6) = F_tau_d;
