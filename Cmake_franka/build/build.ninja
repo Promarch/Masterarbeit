@@ -435,6 +435,39 @@ build ReadForce: CXX_EXECUTABLE_LINKER__ReadForce_Debug CMakeFiles/ReadForce.dir
   TARGET_FILE = ReadForce
   TARGET_PDB = ReadForce.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target ImpedanceCartesianControl
+
+
+#############################################
+# Order-only phony target for ImpedanceCartesianControl
+
+build cmake_object_order_depends_target_ImpedanceCartesianControl: phony || cmake_object_order_depends_target_examples_common
+
+build CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o: CXX_COMPILER__ImpedanceCartesianControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceCartesianControl.cpp || cmake_object_order_depends_target_ImpedanceCartesianControl
+  DEP_FILE = CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/ImpedanceCartesianControl.dir
+  OBJECT_FILE_DIR = CMakeFiles/ImpedanceCartesianControl.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target ImpedanceCartesianControl
+
+
+#############################################
+# Link the executable ImpedanceCartesianControl
+
+build ImpedanceCartesianControl: CXX_EXECUTABLE_LINKER__ImpedanceCartesianControl_Debug CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o | libexamples_common.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/ImpedanceCartesianControl.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = ImpedanceCartesianControl
+  TARGET_PDB = ImpedanceCartesianControl.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -513,7 +546,7 @@ build examples_common: phony libexamples_common.a
 #############################################
 # Folder: /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
-build all: phony libexamples_common.a JointPositions2 Waypoints HalfCircle CircleExplore JointImpedanceControl_example CartesianImpedance_example GetPosition ForceControl ImpedanceControl OperationalSpaceControl ReadForce
+build all: phony libexamples_common.a JointPositions2 Waypoints HalfCircle CircleExplore JointImpedanceControl_example CartesianImpedance_example GetPosition ForceControl ImpedanceControl OperationalSpaceControl ReadForce ImpedanceCartesianControl
 
 # =============================================================================
 # Built-in targets

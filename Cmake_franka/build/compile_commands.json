@@ -58,5 +58,10 @@
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ReadForce.dir/ReadForce.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ReadForce.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ReadForce.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceCartesianControl.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceCartesianControl.cpp"
 }
 ]

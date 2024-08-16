@@ -33,6 +33,7 @@ SET(PROGRAM_files
   ImpedanceControl
   OperationalSpaceControl
   ReadForce
+  ImpedanceCartesianControl
 )
 
 foreach(singleFile ${PROGRAM_files})
