@@ -101,33 +101,28 @@ int main() {
     Eigen::Affine3d transform_init(Eigen::Matrix4d::Map(initial_state.O_T_EE.data()));
     Eigen::Vector3d position_init(transform_init.translation());
     Eigen::Quaterniond rotation_init(transform_init.linear());
-    Eigen::Matrix3d rot_matrix_init = rotation_init.toRotationMatrix();
-    
-      // Desired Rotation, created with quaternions
-    // Flexion (Rotation around y in local CoSy) 
-    double angle_flexion = -M_PI/9;
-    Eigen::Vector3d axis_flexion(1,0,0);
-    Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
-    Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
-    // Varus-Valgus (Rotation around z in local CoSy) 
-    double angle_internal = 0;
-    Eigen::Vector3d axis_internal(0,1,0);
-    Eigen::AngleAxisd angle_axis_internal(angle_internal, axis_internal);
-    Eigen::Quaterniond quaternion_internal(angle_axis_internal);
-    // Combine the rotations
-    Eigen::Quaterniond quaternion_combined = quaternion_internal * quaternion_flexion;
-    Eigen::Quaterniond rot_quaternion_rel = rotation_init * quaternion_combined * rotation_init.inverse();
-      // Desired relative position
-    Eigen::Matrix<double, 3,1> pos_d;
-    pos_d << position_init;
-    Eigen::Quaterniond rot_d = rot_quaternion_rel * rotation_init; 
     
       // Create desired rotation with rotation matrix
     // Flexion (rotation around EEs x-axis)
-    double cart_angle_flexion = -M_PI/9;
-    Eigen::AngleAxisd cart_vectorFlexion(cart_angle_flexion, Eigen::Vector3d::UnitX());
-    Eigen::Matrix3d cart_rotationFlexion = cart_vectorFlexion.toRotationMatrix();
-    Eigen::Affine3d transform_d = transform_init * Eigen::Affine3d(cart_rotationFlexion);
+    double angle_flexion = -M_PI/9;
+    Eigen::AngleAxisd vector_flexion(angle_flexion, Eigen::Vector3d::UnitX());
+    Eigen::Matrix3d rotation_flexion = vector_flexion.toRotationMatrix();
+    Eigen::Affine3d transform_flexion = Eigen::Affine3d(rotation_flexion);
+    Eigen::Quaterniond quaternion_flexion(rotation_flexion);
+    // Internal-external (rotation around EEs x-axis)
+    double angle_internal = -M_PI/18;
+    Eigen::AngleAxisd vector_internal(angle_internal, Eigen::Vector3d::UnitY());
+    Eigen::Matrix3d rotation_internal = vector_internal.toRotationMatrix();
+    Eigen::Affine3d transform_internal = Eigen::Affine3d(rotation_internal);
+    Eigen::Quaterniond quaternion_internal(rotation_internal);
+    // Combine rotations (first flexion then rotation)
+    Eigen::Affine3d transform_d = transform_init * transform_flexion * transform_internal; 
+    // Combine rotation quaternion for error plotting
+    Eigen::Quaterniond quaternion_combined = quaternion_internal * quaternion_flexion;
+    Eigen::Quaterniond rot_d = rotation_init * quaternion_combined;
+
+    Eigen::Matrix<double, 3,1> pos_d;
+    pos_d << position_init;
 
     // Stiffness/Damping for cartesian
     Eigen::VectorXd Kp(7), Kd(7);
@@ -145,8 +140,8 @@ int main() {
     // Pre-allocate stuff
     std::array<double, 16> cart_pose_array{}; 
     std::array<double, 7> tau_d_array{}; 
-
-    Eigen::Matrix<double, 7,1> tau_d, tau_d_temp;
+    Eigen::Matrix<double, 3, 1> error; 
+    Eigen::Matrix<double, 7,1> tau_d;
 
 
 // --------------------------------------------------------------------------------------------
@@ -157,6 +152,11 @@ int main() {
     auto cartesian_pose_callback = [&](const franka::RobotState& robot_state, franka::Duration period) -> franka::CartesianPose {
       dt = period.toSec();
       time += dt;
+
+        // Get current position
+      Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
+      Eigen::Vector3d position(transform.translation());
+      Eigen::Quaterniond rotation(transform.linear());
 
         // Factor for smooth acceleration
       if (time<time_acc) {
@@ -172,10 +172,32 @@ int main() {
       // Set desired pose
       Eigen::VectorXd::Map(&cart_pose_array[0], 16) = Eigen::Map<Eigen::VectorXd>(transform_temp.matrix().data(), 16);
 
+      // Rotational error
+      if (rot_d.coeffs().dot(rotation.coeffs()) < 0.0) {
+        rotation.coeffs() << -rotation.coeffs();
+      }
+      Eigen::Quaterniond error_quaternion(rotation.inverse() * rot_d);
+      error << error_quaternion.x(), error_quaternion.y(), error_quaternion.z();
+      // Transform to base frame
+      error << transform.linear() * error;
+
+      // Calculate positional error for tests
+      double distance = (pos_d-position).norm(); 
+
+      // Print current wrench, time, and absolute positional error every sampling_interval
+      if (time >= next_sampling_time) {
+        std::cout << std::fixed << std::setprecision(3);
+        std::cout << "Time: " << time << std::endl << "Error: " << std::endl << error << std::endl << "Position error: " << distance << std::endl<< std::endl; 
+        next_sampling_time += sampling_interval;
+      }
+
       // // Stop motion when time is reached
-      // if (time >= time_max) {
-      //   return franka::MotionFinished(cart_pose_array);
-      // }
+      if (time >= time_max) {
+        std::cout << std::fixed << std::setprecision(3);
+        std::cout << "Time: " << time << std::endl << "Error: " << std::endl << error << std::endl << "Position error: " << distance << std::endl << std::endl; 
+        std::cout << std::endl << "Finished motion, shutting down example" << std::endl;
+        return franka::MotionFinished(cart_pose_array);
+      }
       // Send desired pose.
       return cart_pose_array;
     };
@@ -192,69 +214,21 @@ int main() {
       Eigen::Map<const Eigen::Matrix<double, 7,1>> dq(robot_state.dq.data()); 
       Eigen::Map<const Eigen::Matrix<double, 7,1>> q(robot_state.q.data());
       Eigen::Map<const Eigen::Matrix<double, 7,1>> q_d(robot_state.q_d.data());
-        // Get current position
-      Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
-      Eigen::Vector3d position(transform.translation());
-      Eigen::Quaterniond rotation(transform.linear());
-      Eigen::Matrix3d rot_matrix = rotation.toRotationMatrix();
 
         // Calculate torque with aid of cartesian pose
-      tau_d_temp = Kp.cwiseProduct(q_d-q) - Kd.cwiseProduct(dq);
-      tau_d = tau_d_temp;
+      tau_d = Kp.cwiseProduct(q_d-q) - Kd.cwiseProduct(dq);
       Eigen::VectorXd::Map(&tau_d_array[0], 7) =  tau_d;
 
-      // Print current wrench, time, and absolute positional error every sampling_interval
-      // if (time >= next_sampling_time) {
-      //   std::cout << std::fixed << std::setprecision(3);
-      //   std::cout << "Time: " << time << ", Acc factor: " << factor_acc <<"\nq_d: \n" << q_d << "\n\n"; 
-      //   next_sampling_time += sampling_interval;
-      // }
-
-        // Compute trajectory between current and desired orientation
-      // Positional error
-      Eigen::Matrix<double, 6,1> error; error.setZero();
-      error.head(3) << pos_d - position; 
-      // Rotational error
-      if (rot_d.coeffs().dot(rotation.coeffs()) < 0.0) {
-        rotation.coeffs() << -rotation.coeffs();
-      }
-      // Difference quaternion
-      Eigen::Quaterniond error_quaternion(rotation.inverse() * rot_d);
-      error.tail(3) << error_quaternion.x(), error_quaternion.y(), error_quaternion.z();
-      // Transform to base frame
-      error.tail(3) << transform.linear() * error.tail(3);
-
-      // Calculate positional error for tests
-      double distance = (pos_d-position).norm(); 
-
-      // Print current wrench, time, and absolute positional error
-      if (time >= next_sampling_time) {
-        std::cout << std::fixed << std::setprecision(3);
-        std::cout << "Time: " << time << std::endl << "Error: " << std::endl << error << std::endl << "Position error: " << distance << std::endl<< std::endl; 
-        next_sampling_time += sampling_interval;
-      }
-
-      // Stop if time is reached
-      if (time >= time_max) {
-        std::cout << std::fixed << std::setprecision(3);
-        std::cout << "Time: " << time << std::endl << "Error: " << std::endl << error << std::endl << "Position error: " << distance << std::endl << std::endl; 
-        std::cout << std::endl << "Finished motion, shutting down example" << std::endl;
-        franka::Torques output = tau_d_array;
-        return franka::MotionFinished(output);
-      }
 
       // Map the position and error to an array (I cant add Eigen vectors to arrays)
       std::array<double, 3> pos_array{}; 
-      std::array<double, 6> error_array{}, F_tau_d_array{}; 
-      Eigen::VectorXd::Map(&pos_array[0], 3) = position;
-      Eigen::VectorXd::Map(&error_array[0], 6) = error;
+      std::array<double, 6> F_tau_d_array{}; 
       // Eigen::VectorXd::Map(&F_tau_d_array[0], 6) = F_tau_d;
       
       // Add the current data to the array
       tau_data.push_back(tau_d_array);
       tau_filter_data.push_back(robot_state.tau_ext_hat_filtered);
       // force_tau_d_data.push_back(F_tau_d_array);
-      position_data.push_back(pos_array);
       force_data.push_back(robot_state.K_F_ext_hat_K);
       joint_position_data.push_back(robot_state.q);
 
