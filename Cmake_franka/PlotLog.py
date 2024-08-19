@@ -215,13 +215,15 @@ def plot7(df_array):
     plt.show()
         
 # %%
+# folder path
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_cartesian/"
 # Plot torques
-list_of_files_tau = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/tau_da*')
+list_of_files_tau = glob.glob(folder_path + 'tau_da*')
 filePath_tau = max(list_of_files_tau, key=os.path.getctime)
 df_orig_tau = pd.read_csv(filePath_tau, header=None)
 df_tau = df_orig_tau.copy()
 
-list_of_files_tau_filter = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/tau_filter*')
+list_of_files_tau_filter = glob.glob(folder_path + 'tau_filter*')
 filePath_tau_filter = max(list_of_files_tau_filter, key=os.path.getctime)
 df_orig_tau_filter = pd.read_csv(filePath_tau_filter, header=None)
 df_tau_filter = df_orig_tau_filter.copy()
@@ -231,23 +233,37 @@ df_tau_filter = df_orig_tau_filter.copy()
 # df_orig_tau_mass = pd.read_csv(filePath_tau_mass, header=None)
 # df_tau_mass = df_orig_tau_mass.copy()
 
-list_of_files_q = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/joint_pos*')
+list_of_files_q = glob.glob(folder_path + 'joint_pos*')
 filePath_q = max(list_of_files_q, key=os.path.getctime)
 df_orig_q = pd.read_csv(filePath_q, header=None)
 df_q = df_orig_q.copy()
 
-plot7([df_tau, df_tau_filter])
+plot7([df_tau, df_q])
 # plot_torque(df_tau, df_tau_filter, df_q)
+# %%
+    # Get external force data
+list_of_files_force_ext = glob.glob(folder_path + 'force*')
+filePath_force_ext = max(list_of_files_force_ext, key=os.path.getctime)
+df_orig_force_ext = pd.read_csv(filePath_force_ext, header=None)
+df_force_ext = df_orig_force_ext.copy()
 
+#     # Get force data from torque+jacobian
+# list_of_files_force_tau = glob.glob(folder_path + 'tau_force*')
+# filePath_force_tau = max(list_of_files_force_tau, key=os.path.getctime)
+# df_orig_force_tau = pd.read_csv(filePath_force_tau, header=None)
+# df_force_tau = df_orig_force_tau.copy()
+
+    # Plot Force
+plot_force_F_T(df_force_ext)
 # %%
 # Plot orientation error
     # Get position
-list_of_files_pos = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/position_*')
+list_of_files_pos = glob.glob(folder_path + 'position_*')
 filePath_pos = max(list_of_files_pos, key=os.path.getctime)
 df_orig_pos = pd.read_csv(filePath_pos, header=None)
 df_pos = df_orig_pos.copy()
     # Get rotation
-list_of_files_rot = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/rotati*')
+list_of_files_rot = glob.glob(folder_path + 'rotati*')
 filePath_rot = max(list_of_files_rot, key=os.path.getctime)
 df_orig_rot = pd.read_csv(filePath_rot, header=None)
 df_rot = df_orig_rot.copy()
@@ -256,23 +272,8 @@ df_rot = df_orig_rot.copy()
 # plot_orientation_error(df_pos, df_rot)
 
 # %%
-    # Get external force data
-list_of_files_force_ext = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force*')
-filePath_force_ext = max(list_of_files_force_ext, key=os.path.getctime)
-df_orig_force_ext = pd.read_csv(filePath_force_ext, header=None)
-df_force_ext = df_orig_force_ext.copy()
-
-    # Get force data from torque+jacobian
-list_of_files_force_tau = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/tau_force*')
-filePath_force_tau = max(list_of_files_force_tau, key=os.path.getctime)
-df_orig_force_tau = pd.read_csv(filePath_force_tau, header=None)
-df_force_tau = df_orig_force_tau.copy()
-
-    # Plot Force
-# plot_force_F_T(df_force_ext)
-# %%
     # Get force error data
-list_of_files_error = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/error*')
+list_of_files_error = glob.glob(folder_path + 'error*')
 filePath_error = max(list_of_files_error, key=os.path.getctime)
 df_orig_error = pd.read_csv(filePath_error, header=None)
 df_error = df_orig_error.copy()
