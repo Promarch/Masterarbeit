@@ -58,8 +58,9 @@ print(f"Extracted {frame_count} frames")
 #%% 
     # Get Data
 # Force data from sensor
-path =  "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_data_20240809_154101.txt"
-list_of_files_wrench = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_data*')
+# path =  "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_data_20240809_154101.txt"
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_cartesian/"
+list_of_files_wrench = glob.glob(folder_path + 'force_data*')
 filePath_wrench = max(list_of_files_wrench, key=os.path.getctime)
 wrench = np.loadtxt(filePath_wrench, delimiter=",")
 # # Force data calculated with commanded torque
@@ -84,9 +85,10 @@ ax_img.set_title('Video of Motion')
 img = ax_img.imshow(frames[0])
 
 # plot force
-ax_force.plot(wrench[:,3], "r", label=r"Filter $\tau_x$")
-ax_force.plot(wrench[:,4], "g", label=r"Filter $\tau_y$")
-ax_force.plot(wrench[:,5], "b", label=r"Filter $\tau_z$")
+x = np.arange(len(wrench))/1000
+ax_force.plot(x, wrench[:,3], "r", label=r"Filter $\tau_x$")
+ax_force.plot(x, wrench[:,4], "g", label=r"Filter $\tau_y$")
+ax_force.plot(x, wrench[:,5], "b", label=r"Filter $\tau_z$")
 # ax_force.plot(F_tau_d[:,3] * 0.5, "r--", label=r"Des $\tau_x$")
 # ax_force.plot(F_tau_d[:,4] * 0.5, "g--", label=r"Des $\tau_y$")
 # ax_force.plot(F_tau_d[:,5] * 0.5, "b--", label=r"Des $\tau_z$")
@@ -127,11 +129,13 @@ def update(frame_id):
     # update img
     img.set_data(frames[frame_id])
     # update force
-    t = frame_id * frame_count/len(wrench)*1000
+    t = frame_id * len(wrench)/frame_count/1000
     vert_line.set_xdata(t)
+    print(f"Current frame: {frame_id}, current time: {t}")
     return (img, vert_line)
-ani = animation.FuncAnimation(fig=fig, func=update, frames=frame_count, interval=25)
 
-plt.show()
+ani = animation.FuncAnimation(fig=fig, func=update, frames=frame_count, interval=25)
+ani.save(filename="/home/alexandergerard/Masterarbeit/mjctrl/copy_robot/animation_robot.gif", writer="pillow")
+# plt.show()
 
 #%%

@@ -86,12 +86,13 @@ def main() -> None:
     # -----------          Calculate desired positions            ------------
     # ------------------------------------------------------------------------
 
+    folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_cartesian/"
         # Joint positions        
-    list_of_files_q = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/joint_posi*')
+    list_of_files_q = glob.glob(folder_path + 'joint_posi*')
     filePath_q = max(list_of_files_q, key=os.path.getctime)
     q = np.loadtxt(filePath_q, delimiter=",")
         # Desired rotation with time
-    list_of_files_rot_time = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/rotation_tim*')
+    list_of_files_rot_time = glob.glob(folder_path + 'rotation_tim*')
     filePath_rot_time = max(list_of_files_rot_time, key=os.path.getctime)
     rot_time_orig = np.loadtxt(filePath_rot_time, delimiter=",")
     # rearrange the array so that it fits mujoco notation (normal/eigen notation is x,y,z,w; Mjc is w,x,y,z)
