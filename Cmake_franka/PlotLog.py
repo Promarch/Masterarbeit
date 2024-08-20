@@ -34,10 +34,10 @@ def plot_torque(df_tau, df_filter, df_q, columns = None):
         axs[i].set_ylim(min_tau, max_tau)
         axs[i].grid(True)
         
-        axs[i].legend()
+        axs[i].legend(loc = "upper right")
         ax_twin = axs[i].twinx()
         ax_twin.plot(x, df_q[col].to_numpy(), "r--", label = r"$q_{pos}$")
-        ax_twin.legend()
+        ax_twin.legend(loc = "lower right")
         # Set y_lim so that you always have the same tick range
         y_lim_min = (np.max(df_q[col])+np.min(df_q[col]))/2 - max_range/2
         y_lim_max = (np.max(df_q[col])+np.min(df_q[col]))/2 + max_range/2
@@ -216,7 +216,7 @@ def plot7(df_array):
         
 # %%
 # folder path
-folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_cartesian/"
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 # Plot torques
 list_of_files_tau = glob.glob(folder_path + 'tau_da*')
 filePath_tau = max(list_of_files_tau, key=os.path.getctime)
@@ -238,8 +238,8 @@ filePath_q = max(list_of_files_q, key=os.path.getctime)
 df_orig_q = pd.read_csv(filePath_q, header=None)
 df_q = df_orig_q.copy()
 
-plot7([df_tau, df_q])
-# plot_torque(df_tau, df_tau_filter, df_q)
+# plot7([df_tau, df_q])
+plot_torque(df_tau, df_tau_filter, df_q)
 # %%
     # Get external force data
 list_of_files_force_ext = glob.glob(folder_path + 'force*')
@@ -256,26 +256,27 @@ df_force_ext = df_orig_force_ext.copy()
     # Plot Force
 plot_force_F_T(df_force_ext)
 # %%
-# Plot orientation error
-    # Get position
-list_of_files_pos = glob.glob(folder_path + 'position_*')
-filePath_pos = max(list_of_files_pos, key=os.path.getctime)
-df_orig_pos = pd.read_csv(filePath_pos, header=None)
-df_pos = df_orig_pos.copy()
-    # Get rotation
-list_of_files_rot = glob.glob(folder_path + 'rotati*')
-filePath_rot = max(list_of_files_rot, key=os.path.getctime)
-df_orig_rot = pd.read_csv(filePath_rot, header=None)
-df_rot = df_orig_rot.copy()
+# # Plot orientation error
+#     # Get position
+# list_of_files_pos = glob.glob(folder_path + 'position_*')
+# filePath_pos = max(list_of_files_pos, key=os.path.getctime)
+# df_orig_pos = pd.read_csv(filePath_pos, header=None)
+# df_pos = df_orig_pos.copy()
+#     # Get rotation
+# list_of_files_rot = glob.glob(folder_path + 'rotati*')
+# filePath_rot = max(list_of_files_rot, key=os.path.getctime)
+# df_orig_rot = pd.read_csv(filePath_rot, header=None)
+# df_rot = df_orig_rot.copy()
 
 # Plot error
 # plot_orientation_error(df_pos, df_rot)
 
 # %%
+
     # Get force error data
-list_of_files_error = glob.glob(folder_path + 'error*')
-filePath_error = max(list_of_files_error, key=os.path.getctime)
-df_orig_error = pd.read_csv(filePath_error, header=None)
-df_error = df_orig_error.copy()
+# list_of_files_error = glob.glob(folder_path + 'error*')
+# filePath_error = max(list_of_files_error, key=os.path.getctime)
+# df_orig_error = pd.read_csv(filePath_error, header=None)
+# df_error = df_orig_error.copy()
     # Plot Force
 # plot_force_error(df_error)

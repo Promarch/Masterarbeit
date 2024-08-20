@@ -35,7 +35,7 @@ std::string getCurrentDateTime() {
 }
 template <std::size_t N>
 void writeDataToFileImpl(const std::vector<std::array<double, N>>& data, const std::string& var_name) {
-  std::string filename = "data_output_cartesian/" + var_name + "_" + getCurrentDateTime() + ".txt";
+  std::string filename = "data_output_knee/" + var_name + "_" + getCurrentDateTime() + ".txt";
   std::ofstream data_file(filename);
   if (data_file.is_open()) {
     data_file << std::fixed << std::setprecision(4);
@@ -61,14 +61,11 @@ int main() {
   std::vector<std::array<double, 6>> force_data, force_tau_d_data; // Stores wrench acting on EE
   std::vector<std::array<double, 5>> rotation_time_data; // stores the desired rotation with the current time
 
-  
   try {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector
-    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.205, 1.0});
-    // robot.setK({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
-    // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.200, 1.0});
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
     franka::RobotState initial_state = robot.readOnce();
@@ -76,16 +73,14 @@ int main() {
       // Stiffness Damping on joint level
     Eigen::VectorXd Kp(7), Kd(7);
     Kp << 200.0, 200.0, 200.0, 200.0, 200.0, 200.0, 200.0;
-          // 600.0, 600.0, 600.0, 600.0, 250.0, 150.0, 50.0;
     Kd << 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0;
-          // 50.0, 50.0, 50.0, 50.0, 10.0, 25.0, 15.0;
 
-      // Time for the loop
+      // Time variables
     double time_global = 0.0; // Time the robot has been running for
     double time_cycle = 0.0;  // Time since new position
-    double time_max = 17;     // Maximum runtime
+    double time_max = 29;     // Maximum runtime
     double period_acc = 4;    // Time between old and new commanded position
-    double period_reacceleration = 1; // Time to reaccelerate the joints if starting config is not the initial position
+    double period_reacceleration = 3; // Time to reaccelerate the joints if starting config is not the initial position
     double period_dec = 0.5; // time for decceleration, to stop abrubt braking
     double sampling_interval = 0.1; // Time for first sampling interval
     double next_sampling_time = 0;  // Interval at which the debug loop is called
@@ -105,7 +100,7 @@ int main() {
     Eigen::Affine3d transform_flexion = Eigen::Affine3d(rotation_flexion);
     Eigen::Quaterniond quaternion_flexion(rotation_flexion);
     // Internal-external (rotation around EEs x-axis)
-    double angle_internal = -M_PI/18;
+    double angle_internal = 0;
     Eigen::AngleAxisd vector_internal(angle_internal, Eigen::Vector3d::UnitY());
     Eigen::Matrix3d rotation_internal = vector_internal.toRotationMatrix();
     Eigen::Affine3d transform_internal = Eigen::Affine3d(rotation_internal);
@@ -295,10 +290,13 @@ int main() {
       }
 
         // Decceleration or acceleration factor 
-      if ((time_global+period_dec)>time_max) {
+      if ((time_global+period_dec)>time_max and factor_torque==1) { // Decceleration when nearing t_max and factor torque is active
         factor_torque = (1 + std::cos(M_PI * (time_global-(time_max-period_dec))/period_dec))/2;
       }
-      else if (decceleration==true){
+      else if ((time_global+period_dec)>time_max and factor_torque<1) { // Decceleration when nearing t_max and factor torque is doing stuff
+        factor_torque = (1 + std::cos(M_PI * (time_global-(time_max-period_dec))/period_dec))/2 * factor_torque;
+      }
+      else if (decceleration==true){  // Decceleration called externally due to exceeded wrench
         factor_torque = (1 + std::cos(M_PI * (time_cycle-t_dec)/period_dec))/2 * factor_torque;
         if (factor_torque<0.001) {
           factor_torque = 0.0;

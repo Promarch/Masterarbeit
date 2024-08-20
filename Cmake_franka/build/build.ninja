@@ -304,105 +304,6 @@ build GetPosition: CXX_EXECUTABLE_LINKER__GetPosition_Debug CMakeFiles/GetPositi
   TARGET_PDB = GetPosition.dbg
 
 # =============================================================================
-# Object build statements for EXECUTABLE target ForceControl
-
-
-#############################################
-# Order-only phony target for ForceControl
-
-build cmake_object_order_depends_target_ForceControl: phony || cmake_object_order_depends_target_examples_common
-
-build CMakeFiles/ForceControl.dir/ForceControl.cpp.o: CXX_COMPILER__ForceControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp || cmake_object_order_depends_target_ForceControl
-  DEP_FILE = CMakeFiles/ForceControl.dir/ForceControl.cpp.o.d
-  FLAGS = -g -std=gnu++14
-  INCLUDES = -isystem /usr/include/eigen3
-  OBJECT_DIR = CMakeFiles/ForceControl.dir
-  OBJECT_FILE_DIR = CMakeFiles/ForceControl.dir
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target ForceControl
-
-
-#############################################
-# Link the executable ForceControl
-
-build ForceControl: CXX_EXECUTABLE_LINKER__ForceControl_Debug CMakeFiles/ForceControl.dir/ForceControl.cpp.o | libexamples_common.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a
-  FLAGS = -g
-  LINK_LIBRARIES = libexamples_common.a  /usr/lib/libfranka.so.0.10.0
-  OBJECT_DIR = CMakeFiles/ForceControl.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = ForceControl
-  TARGET_PDB = ForceControl.dbg
-
-# =============================================================================
-# Object build statements for EXECUTABLE target ImpedanceControl
-
-
-#############################################
-# Order-only phony target for ImpedanceControl
-
-build cmake_object_order_depends_target_ImpedanceControl: phony || cmake_object_order_depends_target_examples_common
-
-build CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o: CXX_COMPILER__ImpedanceControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceControl.cpp || cmake_object_order_depends_target_ImpedanceControl
-  DEP_FILE = CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o.d
-  FLAGS = -g -std=gnu++14
-  INCLUDES = -isystem /usr/include/eigen3
-  OBJECT_DIR = CMakeFiles/ImpedanceControl.dir
-  OBJECT_FILE_DIR = CMakeFiles/ImpedanceControl.dir
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target ImpedanceControl
-
-
-#############################################
-# Link the executable ImpedanceControl
-
-build ImpedanceControl: CXX_EXECUTABLE_LINKER__ImpedanceControl_Debug CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o | libexamples_common.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a
-  FLAGS = -g
-  LINK_LIBRARIES = libexamples_common.a  /usr/lib/libfranka.so.0.10.0
-  OBJECT_DIR = CMakeFiles/ImpedanceControl.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = ImpedanceControl
-  TARGET_PDB = ImpedanceControl.dbg
-
-# =============================================================================
-# Object build statements for EXECUTABLE target OperationalSpaceControl
-
-
-#############################################
-# Order-only phony target for OperationalSpaceControl
-
-build cmake_object_order_depends_target_OperationalSpaceControl: phony || cmake_object_order_depends_target_examples_common
-
-build CMakeFiles/OperationalSpaceControl.dir/OperationalSpaceControl.cpp.o: CXX_COMPILER__OperationalSpaceControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/OperationalSpaceControl.cpp || cmake_object_order_depends_target_OperationalSpaceControl
-  DEP_FILE = CMakeFiles/OperationalSpaceControl.dir/OperationalSpaceControl.cpp.o.d
-  FLAGS = -g -std=gnu++14
-  INCLUDES = -isystem /usr/include/eigen3
-  OBJECT_DIR = CMakeFiles/OperationalSpaceControl.dir
-  OBJECT_FILE_DIR = CMakeFiles/OperationalSpaceControl.dir
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target OperationalSpaceControl
-
-
-#############################################
-# Link the executable OperationalSpaceControl
-
-build OperationalSpaceControl: CXX_EXECUTABLE_LINKER__OperationalSpaceControl_Debug CMakeFiles/OperationalSpaceControl.dir/OperationalSpaceControl.cpp.o | libexamples_common.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a
-  FLAGS = -g
-  LINK_LIBRARIES = libexamples_common.a  /usr/lib/libfranka.so.0.10.0
-  OBJECT_DIR = CMakeFiles/OperationalSpaceControl.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = OperationalSpaceControl
-  TARGET_PDB = OperationalSpaceControl.dbg
-
-# =============================================================================
 # Object build statements for EXECUTABLE target ReadForce
 
 
@@ -546,7 +447,7 @@ build examples_common: phony libexamples_common.a
 #############################################
 # Folder: /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
-build all: phony libexamples_common.a JointPositions2 Waypoints HalfCircle CircleExplore JointImpedanceControl_example CartesianImpedance_example GetPosition ForceControl ImpedanceControl OperationalSpaceControl ReadForce ImpedanceCartesianControl
+build all: phony libexamples_common.a JointPositions2 Waypoints HalfCircle CircleExplore JointImpedanceControl_example CartesianImpedance_example GetPosition ReadForce ImpedanceCartesianControl
 
 # =============================================================================
 # Built-in targets

@@ -86,7 +86,7 @@ def main() -> None:
     # -----------          Calculate desired positions            ------------
     # ------------------------------------------------------------------------
 
-    folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_cartesian/"
+    folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
         # Joint positions        
     list_of_files_q = glob.glob(folder_path + 'joint_posi*')
     filePath_q = max(list_of_files_q, key=os.path.getctime)

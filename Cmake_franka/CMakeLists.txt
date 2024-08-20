@@ -29,9 +29,6 @@ SET(PROGRAM_files
   JointImpedanceControl_example
   CartesianImpedance_example
   GetPosition
-  ForceControl
-  ImpedanceControl
-  OperationalSpaceControl
   ReadForce
   ImpedanceCartesianControl
 )

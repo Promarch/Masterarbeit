@@ -41,21 +41,6 @@
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ForceControl.dir/ForceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ForceControl.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceControl.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceControl.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/OperationalSpaceControl.dir/OperationalSpaceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/OperationalSpaceControl.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/OperationalSpaceControl.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ReadForce.dir/ReadForce.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ReadForce.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ReadForce.cpp"
 },
