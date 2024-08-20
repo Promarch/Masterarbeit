@@ -101,16 +101,9 @@ def main() -> None:
     rot_time[:,1:4] = rot_time_orig[:,0:3]
     n_pos = 1
 
-    desired_angle = np.deg2rad(-20)
-    rotation_axis = np.array([1,1,0])
-
     # Pre-allocation
-    rotation_init = np.zeros(4)
     pos_init = np.zeros(3)
-    rotation_target_init = np.zeros(9)
-    quat_target_init = np.zeros(4)
-    desired_quat = np.zeros(4) 
-    desired_quat_conj = np.zeros(4)
+
 
     # ------------------------------------------------------------------------
     # -----------          Debug and runtime variables            ------------
@@ -122,7 +115,7 @@ def main() -> None:
     set_mocap_pos = True
 
     # Debug
-    time_debug = 0.1
+    time_debug = 0.5
     time_sample = time_debug
     end_of_file = False
 
@@ -148,10 +141,21 @@ def main() -> None:
         data.qpos = q[0,:]
 
         t_init = time.time()
-        while (time.time()-t_init)<time_max: # time_max
-            time_current = time.time()-t_init
+        while data.time < time_max: # time_max
+            # Time variables for readability
+            time_current = data.time
+            time_ms = round(time_current*1000)
 
-            if time_current>0.03 and set_mocap_pos:
+            # Update joint positions every step at the beginning (needed cause else mj_step calculates it's own movement)
+            if time_current<0.5:
+                data.ctrl[actuator_ids] = q[time_ms, dof_ids]
+
+            
+            # ----------------------------------------------
+            # ----   Set initial desired orientation    ----
+            # ----------------------------------------------
+
+            if time_current>0.001 and set_mocap_pos:
                 # This line only exists cause I dont know how to run this loop only once
                 set_mocap_pos = False   
 
@@ -163,46 +167,48 @@ def main() -> None:
                 # Extract the rotation from the txt file
                 model.body("target").quat = rot_time[0,:4]
 
-            # Set new desired rotation according to text file
+            # ----------------------------------------------
+            # ----      Set new desired orientation     ----
+            # ----------------------------------------------
+
             if n_pos<len(rot_time):
                 if time_current>rot_time[n_pos, -1]:
                     model.body("target").quat = rot_time[n_pos, :4]
-                    print(f"Time now is {time_current}")
+                    # print(f"Time now is {time_current}")
                     n_pos += 1
             
-            # # Loop that gets called every time_debug seconds
-            # step_current = round(data.time/model.opt.timestep)
-            # if (time.time()-t_init)>time_debug:
-            #     time_pc = round(1000*(time.time()-t_init))
-            #     time_data = round(1000*data.time)
-            #     print(f"Current step: {step_current}; Time wall: {time_pc}ms; Time data:{time_data}")
+            # # Debug loop that gets called every time_sample seconds
+            # if (time_current)>time_debug:
+            #     print(f"Time wall: {round(time.time()-t_init, 3)}ms; Time data:{round(data.time, 3)}")
             #     time_debug += time_sample
 
-            # Set the control signal and step the simulation.
+            # ----------------------------------------------
+            # --- Set control signal and step simulation ---
+            # ----------------------------------------------
+
             if time_current>time_next_frame:
-                time_now = round((time.time()-t_init)*1000)
-                if time_now>np.shape(q)[0]:
+                if time_ms>np.shape(q)[0]:
                     data.ctrl[actuator_ids] = q[-1, dof_ids]
                     if end_of_file==False:
                         print("End of file reached")
                         end_of_file=True
                 else: 
-                    data.ctrl[actuator_ids] = q[time_now-1, dof_ids]
+                    data.ctrl[actuator_ids] = q[time_ms-1, dof_ids]
+                    mujoco.mj_step(model, data)
                     renderer.update_scene(data, camera="closeup", scene_option=options) #
                     pixels = renderer.render()
                     image = Image.fromarray((pixels).astype(np.uint8))
                     frames.append(image)
-                # Step simulation
-                mujoco.mj_step(model, data)
-                print(f"{time_next_frame}")
                 time_next_frame += time_between_frames
+            # Step simulation
+            mujoco.mj_step(model, data)
 
         image_arrays = [np.array(img) for img in frames]
         with imageio.get_writer(f'copy_robot/video.mp4', mode='I', fps=fps) as writer:
             for image_array in image_arrays:
                 writer.append_data(image_array)
 
-        print(f"Time wall: {time_current}ms; Time data:{time_now}")
+        print(f"Time wall: {np.round(time.time()-t_init,3)}ms; Time data:{np.round(time_current,3)}")
         
 if __name__ == "__main__":
     main()
