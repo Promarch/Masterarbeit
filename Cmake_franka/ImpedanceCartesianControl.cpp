@@ -265,7 +265,7 @@ int main() {
       Eigen::Map<const Eigen::Matrix<double, 7,1>> q_d(robot_state.q_d.data());
       Eigen::Map<const Eigen::Matrix<double, 6,1>> F_ext(robot_state.K_F_ext_hat_K.data());
 
-        // Deccelerate if forces to high or desired position reached or no joint movement present
+        // Deccelerate if forces to high, or set new pos if desired position reached or no joint movement present
       if (decceleration==false) {
         if (F_ext.tail(3).norm()>4) {   // Forces too high
           decceleration = true;
@@ -289,7 +289,7 @@ int main() {
         }
       }
 
-        // Decceleration or acceleration factor 
+        // Calculate decceleration or acceleration factor 
       if ((time_global+period_dec)>time_max and factor_torque==1) { // Decceleration when nearing t_max and factor torque is active
         factor_torque = (1 + std::cos(M_PI * (time_global-(time_max-period_dec))/period_dec))/2;
       }

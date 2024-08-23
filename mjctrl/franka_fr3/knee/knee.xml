@@ -1,4 +1,13 @@
 <mujoco model="knee">
+    <compiler angle="radian"/>
+
+    <option integrator="implicitfast"/>
+    <default>
+        <default class="visuals">
+            <geom type="mesh" contype="0" conaffinity="0" group="2"/>
+        </default>
+    </default>
+
     <body name="tibia" pos="0.25 -0.25 0.6" quat="1 0 0 0">
         <geom class="visuals" euler="0 0 0" mesh="tibia mesh" pos="0 0 0" type="mesh" />
         <geom class="tracker" euler="0 0 0" mesh="tibia tracker mesh" pos="0 0 0" type="mesh" />

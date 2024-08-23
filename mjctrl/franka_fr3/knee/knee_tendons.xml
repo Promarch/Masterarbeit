@@ -1,10 +1,10 @@
 <mujoco model="knee_tendons">
     <tendon>
-        <spatial name="dMCL" stiffness="200.0" damping="20" springlength="0.03254581621081527"
+        <!-- <spatial name="dMCL" stiffness="200.0" damping="20" springlength="0.03254581621081527"
             width="0.002" rgba="0.9 0.2 0.2 0.9">
             <site site="dMCL_start" />
             <site site="dMCL_end" />
-        </spatial>
+        </spatial> -->
         <spatial name="HKB" stiffness="200.0" damping="20" springlength="0.039496168793682666"
             width="0.002" rgba="0.9 0.2 0.2 0.9">
             <site site="HKB_start" />
@@ -15,22 +15,22 @@
             <site site="LCL_start" />
             <site site="LCL_end" />
         </spatial>
-        <spatial name="LP" stiffness="200.0" damping="20" springlength="0.046587925521048866"
+        <!-- <spatial name="LP" stiffness="200.0" damping="20" springlength="0.046587925521048866"
             width="0.002" rgba="0.9 0.2 0.2 0.9">
             <site site="LP_start" />
             <site site="LP_end" />
-        </spatial>
-        <spatial name="POL" stiffness="200.0" damping="20" springlength="0.03824106618566672"
+        </spatial> -->
+        <!-- <spatial name="POL" stiffness="200.0" damping="20" springlength="0.03824106618566672"
             width="0.002" rgba="0.9 0.2 0.2 0.9">
             <site site="POL_start" />
             <site site="POL_end" />
-        </spatial>
-        <spatial name="PS" stiffness="200.0" damping="20" springlength="0.06929178980221773"
+        </spatial> -->
+        <!-- <spatial name="PS" stiffness="200.0" damping="20" springlength="0.06929178980221773"
             width="0.002" rgba="0.9 0.2 0.2 0.9">
             <site site="PS_start" />
             <geom geom="PS_wrap" />
             <site site="PS_end" />
-        </spatial>
+        </spatial> -->
         <spatial name="sMCL" stiffness="200.0" damping="20" springlength="0.041187427070233186"
             width="0.002" rgba="0.9 0.2 0.2 0.9">
             <site site="sMCL_start" />

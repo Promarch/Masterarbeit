@@ -11,8 +11,8 @@
 0	1645	1719244056606589109	CMakeFiles/examples_common.dir/cmake/examples_common.cpp.o	d2cd41446b81ec82
 1680	1805	1719244056766589244	JointImpedanceControl	fabb98f1bb41015c
 1	8858	1722849665884378862	CMakeFiles/JointPositions2.dir/JointPositions2.cpp.o	850c1ffa1905a58e
-1	3470	1724147921865230260	CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o	78ef45421817b990
-3471	3633	1724147922033230411	ImpedanceCartesianControl	4f42e360d4e59156
+1	3488	1724329687593152117	CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o	78ef45421817b990
+3488	3652	1724329687761150657	ImpedanceCartesianControl	4f42e360d4e59156
 2	3569	1719244058526590729	CMakeFiles/CartesianImpedance_example.dir/CartesianImpedance_example.cpp.o	29c24bfa11b200f6
 8858	9220	1722849666260379977	JointPositions2	57095ddb979aba54
 8677	9046	1722849666084379455	ReadForce	344a4094826c83a1
@@ -28,15 +28,3 @@
 1	1680	1719244056642589140	CMakeFiles/JointImpedanceControl.dir/JointImpedanceControl.cpp.o	f0cccaeb80b77cb4
 1	2390	1720091534743841449	CMakeFiles/ForceControl.dir/ForceControl.cpp.o	a65d67703efbfb43
 1672	1781	1719244056742589224	CircleExplore	743e63caab412cd5
-1	3462	1724152379981293226	CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o	78ef45421817b990
-3462	3627	1724152380149293419	ImpedanceCartesianControl	4f42e360d4e59156
-1	3385	1724152726761700984	CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o	78ef45421817b990
-3386	3547	1724152726929701185	ImpedanceCartesianControl	4f42e360d4e59156
-1	3415	1724153213422297124	CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o	78ef45421817b990
-3416	3581	1724153213590297334	ImpedanceCartesianControl	4f42e360d4e59156
-1	3520	1724153771063421822	CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o	78ef45421817b990
-3520	3698	1724153771243422163	ImpedanceCartesianControl	4f42e360d4e59156
-1	3438	1724153786343450705	CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o	78ef45421817b990
-3438	3608	1724153786519451037	ImpedanceCartesianControl	4f42e360d4e59156
-1	3478	1724154252720253572	CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o	78ef45421817b990
-3478	3646	1724154252892253849	ImpedanceCartesianControl	4f42e360d4e59156

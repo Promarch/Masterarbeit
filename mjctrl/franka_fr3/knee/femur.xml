@@ -22,8 +22,6 @@
             <geom class="collisions" mesh="patella_0" name="patella_0" type="mesh" />
             <geom class="collisions" mesh="patella_1" name="patella_1" type="mesh" />
             <geom class="collisions" mesh="patella_2" name="patella_2" type="mesh" />
-
-
         </body>
 
         <site name="dMCL_start"
