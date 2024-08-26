@@ -6,6 +6,15 @@
   
   <statistic center="0.2 0 0.4" extent=".8"/>
 
+  <default>
+    <default class="translation">
+      <motor ctrlrange="-15 15" />
+    </default>
+    <default class="rotation">
+      <motor ctrlrange="-2 2"/>
+    </default>
+  </default>
+
   <visual>
     <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
     <rgba haze="0.15 0.25 0.35 1"/>
@@ -22,12 +31,13 @@
   <worldbody>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
     <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
+    <site name = "world_site" type="sphere" size="0.01" rgba="0 0 1 1" group="1"/>
     <!-- <body name="target" pos="-0.470852 0.139243 0.136262" quat="-0.258819 0 0.9659258 0" mocap="true">
       <geom type="box" size=".05 .05 .05" contype="0" conaffinity="0" rgba=".6 .3 .3 .5"/>
       <site name = "target_site" type="sphere" size="0.01" rgba="0 0 1 1" group="1"/>
     </body> -->
 
-    <body name="femur" pos="-0.02 0.165 -.07" quat="0 1 0 0">
+    <body name="femur" pos="0.00 0.00 0.00" quat="0 1 0 0">
       <joint type="free" />
 
       <geom class="visuals" euler="0 0 0" mesh="femur mesh" pos="0 0 0" type="mesh" />
@@ -71,7 +81,7 @@
 
     </body>
 
-    <body name="tibia" pos="0.25 -0.25 0.5" quat="1 0 0 0">
+    <body name="tibia" pos="0.0 0.00 0.5" quat="1 0 0 0">
       <geom class="visuals" euler="0 0 0" mesh="tibia mesh" pos="0 0 0" type="mesh" />
       <!-- <geom class="tracker" euler="0 0 0" mesh="tibia tracker mesh" pos="0 0 0" type="mesh" /> -->
       <inertial
@@ -131,4 +141,19 @@
     </body>
 
   </worldbody>
+
+  <actuator>
+    <motor name="x"  site="attachment_site2" refsite="world_site" gear="1 0 0 0 0 0" class="translation"/>
+    <motor name="y"  site="attachment_site2" refsite="world_site" gear="0 1 0 0 0 0" class="translation"/>
+    <position name="z"  site="attachment_site2" refsite="world_site" gear="0 0 1 0 0 0" class="translation"/>
+    <motor name="rx" site="attachment_site2" refsite="world_site" gear="0 0 0 1 0 0" class="rotation"/>
+    <motor name="ry" site="attachment_site2" refsite="world_site" gear="0 0 0 0 1 0" class="rotation"/>
+    <motor name="rz" site="attachment_site2" refsite="world_site" gear="0 0 0 0 0 1" class="rotation"/>
+    <motor name="slider" site="world_site" ctrlrange="30 1000"/>
+  </actuator>
+
+  <keyframe>
+    <key name="start" qpos='0.0024251 0.0296319 -0.182038 0.104981 0.0841786 -0.990769 -0.0164171'/>
+  </keyframe>
+
 </mujoco>
