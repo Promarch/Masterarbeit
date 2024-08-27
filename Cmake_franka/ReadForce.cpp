@@ -134,10 +134,8 @@ int main() {
       // Write Data to .txt file
     writeDataToFile(tau_grav_data);
     writeDataToFile(tau_filter_data);
-    writeDataToFile(F_tau_grav_data);
     writeDataToFile(F_tau_filter_data);
     writeDataToFile(F_ext_data);
-    writeDataToFile(F_grav_data);
 
   }
   // Catches Exceptions caused within the execution of a program (I think)
@@ -145,10 +143,8 @@ int main() {
     std::cout << e.what() << std::endl;
     writeDataToFile(tau_grav_data);
     writeDataToFile(tau_filter_data);
-    writeDataToFile(F_tau_grav_data);
     writeDataToFile(F_tau_filter_data);
     writeDataToFile(F_ext_data);
-    writeDataToFile(F_grav_data);
 
     return -1;
   }

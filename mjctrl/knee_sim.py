@@ -8,23 +8,43 @@ import numpy as np
 import mujoco
 import mujoco.viewer
 
+    # Import model
 path = "franka_fr3/scene_knee.xml"
 model = mujoco.MjModel.from_xml_path(path)
 data = mujoco.MjData(model)
 
+    # Set Simulation parameters
+# Enable gravity compensation. Set to 0.0 to disable.
+model.body_gravcomp[:] = float(True)
+# Simulation timestep in seconds.
+dt: float = 0.002
+
+    # Get id's of different bodies, sites and tendons
 # Body where the point of applied force is located
 body_name = "femur"
 body_id = model.body(body_name).id
 # Site of the point of applied force
 site_name = "attachment_site2"
+site_id = model.site(site_name).id
 site_pos = model.site(site_name).pos
 # Initial joint configuration saved as a keyframe in the XML file.
 key_name = "start"
 key_id = model.key(key_name).id
+# Tendons
+name_tendons = ["ACL", "PCL", "sMCL", "LCL"]
+# Force actuators
+actuator_name = ["F_x", "F_y", "F_z", "tau_x", "tau_y", "tau_z"]
+actuator_ids = np.array([model.actuator(name).id for name in actuator_name])
+# general slider
+stiffness_slider = "tendon stiffness"
+stiffness_slider_id = model.actuator(stiffness_slider).id
+debug_slider = "debug"
+debug_slider_id = model.actuator(debug_slider).id
+L_tendon_ids = np.array([model.actuator("L_"+name).id for name in name_tendons])
 
     # Get forces
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
-    # Wrench
+# Wrench
 list_of_files_wrench = glob.glob(folder_path + 'force_data*')
 filePath_wrench = max(list_of_files_wrench, key=os.path.getctime)
 wrench = np.loadtxt(filePath_wrench, delimiter=",")
@@ -44,15 +64,11 @@ def main() -> None:
     time_sample = time_debug
     end_of_file = False
     # Framerate
-    time_between_frames = 0.0125*2
+    time_between_frames = 0.025 * 4
     time_next_frame = time_between_frames
 
-    # visualize contact frames and forces, make body transparent
-    options = mujoco.MjvOption()
-    mujoco.mjv_defaultOption(options)
-    options.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = True
-    options.flags[mujoco.mjtVisFlag.mjVIS_CONTACTFORCE] = True
-    options.flags[mujoco.mjtVisFlag.mjVIS_TRANSPARENT] = True
+    # Pre allocation
+    sensor_data = np.zeros(4)
 
     with mujoco.viewer.launch_passive(
         model=model,
@@ -75,28 +91,44 @@ def main() -> None:
         t_init = time.time()
         while viewer.is_running():
             time_current = np.round(time.time()-t_init,3)
+            time_ms = round(time_current*1000)
+            step_start = time.time()
 
-            model.tendon("LCL")._stiffness = data.ctrl[-1]
-            mujoco.mj_step(model, data)
+            # Set the stiffness of the tendon to the slider value
+            for i, tendon in enumerate(name_tendons):
+                model.tendon(tendon)._stiffness = data.ctrl[stiffness_slider_id]
+                
+            # Current debug: set the z coordinate of the femur to the debug slider value
+            model.tendon("ACL")._lengthspring = data.ctrl[model.actuator("L_ACL").id]
+            model.tendon("PCL")._lengthspring = data.ctrl[model.actuator("L_PCL").id]
+            model.tendon("sMCL")._lengthspring = data.ctrl[model.actuator("L_sMCL").id]
+            model.tendon("LCL")._lengthspring = data.ctrl[model.actuator("L_LCL").id]
+
+
+                # Debug loop
+            if time_current>time_debug:
+                # if time_ms>np.shape(wrench)[0]:
+                #     # mujoco.mj_applyFT(model, data, force[-1, :], torque[-1, :], site_pos, body_id, data.qfrc_applied)
+                #     if end_of_file==False:
+                #         print("End of file reached, time:", time_ms)
+                #         end_of_file=True
+                # else: 
+                for i, tendon in enumerate(name_tendons):
+                    sensor_data[i] = data.sensor(tendon).data
+
+                print(f"Time: {np.round(time_current,1)}, ACL: {np.round(sensor_data[0],3)}, PCL: {np.round(sensor_data[1],3)}, MCL: {np.round(sensor_data[2],3)}, LCL: {np.round(sensor_data[3],3)}") # , Current force: {np.round(force[time_ms-1, :],3)}, current Torque: {np.round(torque[time_ms-1, :],3)}
+                # print(f"")
+                time_debug += time_sample
 
             # Set the control signal and step the simulation.
-            if time_current>time_next_frame:
-                time_ms = round(time_current*1000)
-                if time_ms>np.shape(wrench)[0]:
-                    # mujoco.mj_applyFT(model, data, force[-1, :], torque[-1, :], site_pos, body_id, data.qfrc_applied)
-                    if end_of_file==False:
-                        print("End of file reached, time:", time_ms)
-                        end_of_file=True
-                else: 
-                    # mujoco.mj_applyFT(model, data, force[time_ms-1, :]*0.01, torque[time_ms-1, :], site_pos, body_id, data.qfrc_applied)
-                    
-                    print(f"Time: {time_current}, slider value: {data.ctrl[-1]}, tendon value: {model.tendon('LCL')._stiffness}") # , Current force: {np.round(force[time_ms-1, :],3)}, current Torque: {np.round(torque[time_ms-1, :],3)}
-                mujoco.mj_step(model, data)
-                viewer.sync()
-                time_next_frame += time_between_frames
+            # for actuator in name_actuator:
+            #     data.ctrl[actuator] = wrench[time_ms, actuator]
+            mujoco.mj_step(model, data)
 
-            # mujoco.mj_step(model, data)
-            # viewer.sync()
+            viewer.sync()
+            time_until_next_step = dt - (time.time() - step_start)
+            if time_until_next_step > 0:
+                time.sleep(time_until_next_step)
 
 if __name__ == "__main__":
     main()

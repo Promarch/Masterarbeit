@@ -213,10 +213,12 @@ def plot7(df_array):
         axs[i].grid(True)
         axs[i].legend(loc = "upper right")
     plt.show()
-        
-# %%
+
 # folder path
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/"
+
+# %%
 # Plot torques
 list_of_files_tau = glob.glob(folder_path + 'tau_da*')
 filePath_tau = max(list_of_files_tau, key=os.path.getctime)
@@ -243,6 +245,7 @@ plot_torque(df_tau, df_tau_filter, df_q)
 # %%
     # Get external force data
 list_of_files_force_ext = glob.glob(folder_path + 'force*')
+list_of_files_force_ext = glob.glob(folder_path + 'F_*')
 filePath_force_ext = max(list_of_files_force_ext, key=os.path.getctime)
 df_orig_force_ext = pd.read_csv(filePath_force_ext, header=None)
 df_force_ext = df_orig_force_ext.copy()
