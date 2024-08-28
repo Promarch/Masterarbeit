@@ -15,7 +15,7 @@ data = mujoco.MjData(model)
 
     # Set Simulation parameters
 # Enable gravity compensation. Set to 0.0 to disable.
-model.body_gravcomp[:] = float(True)
+model.body_gravcomp[:] = float(False)
 # Simulation timestep in seconds.
 dt: float = 0.002
 
@@ -98,11 +98,11 @@ def main() -> None:
             for i, tendon in enumerate(name_tendons):
                 model.tendon(tendon)._stiffness = data.ctrl[stiffness_slider_id]
                 
-            # Current debug: set the z coordinate of the femur to the debug slider value
-            model.tendon("ACL")._lengthspring = data.ctrl[model.actuator("L_ACL").id]
-            model.tendon("PCL")._lengthspring = data.ctrl[model.actuator("L_PCL").id]
-            model.tendon("sMCL")._lengthspring = data.ctrl[model.actuator("L_sMCL").id]
-            model.tendon("LCL")._lengthspring = data.ctrl[model.actuator("L_LCL").id]
+            # # Current debug
+            # model.tendon("ACL")._lengthspring = data.ctrl[model.actuator("L_ACL").id]
+            # model.tendon("PCL")._lengthspring = data.ctrl[model.actuator("L_PCL").id]
+            # model.tendon("sMCL")._lengthspring = data.ctrl[model.actuator("L_sMCL").id]
+            # model.tendon("LCL")._lengthspring = data.ctrl[model.actuator("L_LCL").id]
 
 
                 # Debug loop
