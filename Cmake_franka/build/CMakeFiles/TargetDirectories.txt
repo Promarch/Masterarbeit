@@ -8,6 +8,8 @@
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/GetPosition.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/ReadForce.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/ImpedanceCartesianControl.dir
+/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/VertForce.dir
+/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/force_control_example.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/edit_cache.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/rebuild_cache.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/list_install_components.dir

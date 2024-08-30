@@ -48,5 +48,15 @@
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceCartesianControl.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceCartesianControl.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/VertForce.dir/VertForce.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/VertForce.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/VertForce.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/force_control_example.dir/force_control_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/force_control_example.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/force_control_example.cpp"
 }
 ]

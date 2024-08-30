@@ -31,6 +31,8 @@ SET(PROGRAM_files
   GetPosition
   ReadForce
   ImpedanceCartesianControl
+  VertForce
+  force_control_example
 )
 
 foreach(singleFile ${PROGRAM_files})

@@ -369,6 +369,72 @@ build ImpedanceCartesianControl: CXX_EXECUTABLE_LINKER__ImpedanceCartesianContro
   TARGET_FILE = ImpedanceCartesianControl
   TARGET_PDB = ImpedanceCartesianControl.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target VertForce
+
+
+#############################################
+# Order-only phony target for VertForce
+
+build cmake_object_order_depends_target_VertForce: phony || cmake_object_order_depends_target_examples_common
+
+build CMakeFiles/VertForce.dir/VertForce.cpp.o: CXX_COMPILER__VertForce_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/VertForce.cpp || cmake_object_order_depends_target_VertForce
+  DEP_FILE = CMakeFiles/VertForce.dir/VertForce.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/VertForce.dir
+  OBJECT_FILE_DIR = CMakeFiles/VertForce.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target VertForce
+
+
+#############################################
+# Link the executable VertForce
+
+build VertForce: CXX_EXECUTABLE_LINKER__VertForce_Debug CMakeFiles/VertForce.dir/VertForce.cpp.o | libexamples_common.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/VertForce.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = VertForce
+  TARGET_PDB = VertForce.dbg
+
+# =============================================================================
+# Object build statements for EXECUTABLE target force_control_example
+
+
+#############################################
+# Order-only phony target for force_control_example
+
+build cmake_object_order_depends_target_force_control_example: phony || cmake_object_order_depends_target_examples_common
+
+build CMakeFiles/force_control_example.dir/force_control_example.cpp.o: CXX_COMPILER__force_control_example_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/force_control_example.cpp || cmake_object_order_depends_target_force_control_example
+  DEP_FILE = CMakeFiles/force_control_example.dir/force_control_example.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/force_control_example.dir
+  OBJECT_FILE_DIR = CMakeFiles/force_control_example.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target force_control_example
+
+
+#############################################
+# Link the executable force_control_example
+
+build force_control_example: CXX_EXECUTABLE_LINKER__force_control_example_Debug CMakeFiles/force_control_example.dir/force_control_example.cpp.o | libexamples_common.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/force_control_example.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = force_control_example
+  TARGET_PDB = force_control_example.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -447,7 +513,7 @@ build examples_common: phony libexamples_common.a
 #############################################
 # Folder: /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
-build all: phony libexamples_common.a JointPositions2 Waypoints HalfCircle CircleExplore JointImpedanceControl_example CartesianImpedance_example GetPosition ReadForce ImpedanceCartesianControl
+build all: phony libexamples_common.a JointPositions2 Waypoints HalfCircle CircleExplore JointImpedanceControl_example CartesianImpedance_example GetPosition ReadForce ImpedanceCartesianControl VertForce force_control_example
 
 # =============================================================================
 # Built-in targets
