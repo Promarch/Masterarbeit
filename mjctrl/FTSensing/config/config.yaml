@@ -1,0 +1,102 @@
+# select environment by applying 'disk' or 'knee'
+defaults:
+  - env: disk
+  - _self_
+
+# actor details
+actor:
+  use_std: False
+  lr: 1.0e-6
+  width: 256
+  reinforce: True
+  max_grad_norm: 0.1
+
+# critic details
+critic:
+  lr: 3.0e-4
+  width: 384
+  hidden_dims:
+    - 512
+    - 256
+    - 128
+
+# general worker setup
+general:
+  num_workers: 40
+  num_trainers: 5
+  epochs: 25000
+  cuda_device: 2
+  seed: 50
+
+# all parameters used for ppo training
+ppo:
+  gamma: 0.99
+  lam: 0.95
+  batch_size: 2000
+  steps_per_epoch: 300000
+  nb_optim_iters: 4
+  clip_ratio: 0.2
+
+# all parameters used for sac training
+sac:
+  gamma: 0.99
+  tau: 1.0e-3
+  learn_alpha: true
+  alpha_init: 0.1
+  alpha_lr: 1.0e-4
+  batch_size: 4000
+  steps_per_epoch: 40000
+  memory_size: 20000000
+  nb_optim_iters: 1
+  nb_batch_ids: 2000
+  cql_weight: 1.0
+  critic_dropout_rate: 0.1
+  update_target_frequency: 10
+  update_actor_frequency: 10
+
+simple:
+  gamma: 0.999
+  batch_size: 126
+  clip_ratio: 0.2
+  steps_per_epoch: 256
+  nb_optim_iters: 1
+  nb_batch_ids: 2000
+  memory_size: 51200
+  eps_prob: 1.0e-7
+  sac_training: false
+
+transf:
+  batch_size: 100
+  block_size: 8
+  steps_per_epoch: 256
+  nb_optim_iters: 2
+  nb_batch_ids: 100
+  memory_size: 10000
+  embedding_dim: 100
+  vq_hidden_dim: 100
+  num_embeddings: 100
+  vq_beta: 0.25
+  vq_epochs: 500
+  vq_lr: 1.0e-3
+  data_load_path: ./res/transitions_dataset.pkl
+  data_save_path: ./res/transitions_dataset.pkl
+
+# the measurement dataset options
+measure_dataset:
+  train_percentage: 99
+  shuffle: True
+  measure_path: ./measurement
+  filter_oscillations: false
+  use_start_only: false
+  filter_apps:
+    - 25
+  filter_tste:
+    - 7190
+    - 12990
+  start_pos: 0
+
+# logging
+log:
+  param_intervall: 10
+  figure_intervall: 100
+  param_save_intervall: 100

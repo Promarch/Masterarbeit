@@ -1,0 +1,159 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "FrankaCmake",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "CartesianImpedance_example::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-CartesianImpedance_example-Debug-d9b16563a98113e20767.json",
+					"name" : "CartesianImpedance_example",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "CircleExplore::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-CircleExplore-Debug-547a8609e55511691742.json",
+					"name" : "CircleExplore",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "GetPosition::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-GetPosition-Debug-bbc1a81d454c549a03ea.json",
+					"name" : "GetPosition",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "HalfCircle::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-HalfCircle-Debug-d43c8d1aef09ee439642.json",
+					"name" : "HalfCircle",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ImpedanceCartesianControl::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ImpedanceCartesianControl-Debug-adc2b80e0ce74c60fc86.json",
+					"name" : "ImpedanceCartesianControl",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "JointImpedanceControl_example::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-JointImpedanceControl_example-Debug-20d78f7c8772a31e4a15.json",
+					"name" : "JointImpedanceControl_example",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "JointPositions2::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-JointPositions2-Debug-0b5576c4abf80576800c.json",
+					"name" : "JointPositions2",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ReadForce::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ReadForce-Debug-84d50c5de613b355f33b.json",
+					"name" : "ReadForce",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "VertForce::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-VertForce-Debug-874161b3cee404e7d3e9.json",
+					"name" : "VertForce",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "Waypoints::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-Waypoints-Debug-1edd9e798d6c615c8f70.json",
+					"name" : "Waypoints",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "examples_common::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-examples_common-Debug-4dbcd87dd7d9e3e335b7.json",
+					"name" : "examples_common",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "force_control_example::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-force_control_example-Debug-b3696fb8d5818c9e8264.json",
+					"name" : "force_control_example",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+		"source" : "/home/alexandergerard/Masterarbeit/Cmake_franka"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}
