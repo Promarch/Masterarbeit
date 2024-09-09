@@ -73,3 +73,27 @@ Die Woche mach ich daher vorraussichtlich keine Knietests, der Plan ist das Prog
 13.08
 Hab versucht mehrere Rotationen aneinander zu setzen, funktioniert mehr oder weniger gut, ich bekomm leider regelmäßig die Fehlermeldung, dass es einen nicht-kontinuierlichen Momentenverlauf hab. Hab parallel versucht, nicht die Positionsregelung auf null zu setzen und eher die Zielposition anzupassen, da sonst erstmal die Rotation durchgeführt wird, was zu problemen führt. 
 Andere Baustelle, bei der ich auch morgen weitermachen will, ist die Darstellung von mehreren Rotationen in python. Hab hier aber das große Problem, dass meine Zielrotation in c++ und python im Moment anders berechnet werden, wodurch ich noch den Zusammenhang zwischen Quaternion in c++ und Quaternion in python suche. Muss mir neben der reinen Darstellung insbesondere die Berechnung von Rotationen anschauen. 
+30.08.
+Heute geht's in Urlaub für ne Woche. 
+Die Probleme vom letzten Eintrag konnte ich zum Glück alle lösen. Das Problem der nicht-kontinuierlichen Momente wurde insbesondere Pausen zwischen Ende der Entschleunigung und Anfang einer neuen Position. Große Neuigkeit war zwischenzeitlich auch, dass die gewünschte Orientierung zuverlässig angefahren wurde, anstatt erstmal eine Rotation und dann eine Translation zurück zum Ursprung zu fahren. Ging durch die Libfranka Library, da man da die gewünschte Position bei Libfranka eingeben kann, und Libfranka dann die gewünschte Gelenkposition berechnet. 
+Momentanes Problem ist, die bisherigen gemessenen Werte vom Roboter in ein Kniemodell einzufügen. Da gibt's zwei Probleme:
+- Ich hab kein Modell. Nikos Modell beinhaltet deutlich mehr Bänder, wodurch sein Kniemodell im Vergleich zu meinem deutlich stabiler ist. Wenn ich die Bänder entferne, die nicht bei mir im physischen Modell sind, wird Nikos Knie ähnlich instabil wie das Modell, was ich erstellt habe (es basiert auch auf Nikos Modell, nur ist es gespiegelt und hat angepasste Bandpositionen). 
+- Die Kräfte sind für das Modell deutlich zu hoch und nicht verifiziert. Selbst wenn ich nur die Kraft in z-Richtung auf Nikos Modell spiele kugelt sich das Gelenk aus, und der Femur schwebt unkontrolliert im freien. Selbst die Stiffness auch 2000 zu schrauben ändert da nichts. Gerade bin ich dabei die gemessenen Kräfte anhand einer Kraftmessdose zu verifizieren, und es sieht leider danach aus als würde zumindest die Kraftmessungen (die Momente hab ich bisher nicht angeschaut) relativ präzise sein (Roboter misst an die -9,5N, Kraftmessdose -8,9)
+Muss ganz ehrlich sagen, dass ich nicht weiß wie ich hier weitermachen kann. Mal schauen ob der Urlaub die Erleuchtung bringt. 
+09.09
+Puh Erleuchtung hat es nicht gegeben, neue Erkenntnisse weiß ich nicht. So zum aktuellen Stand: 
+Ich kann den Roboter gut und sinnvoll steuern, wenn auch über die Libfranka "Blackbox", bei der Libfranka mir die Gelenkwinkel berechnet anstelle dass ich es über die Jacobi mache. Könnte daran liegen, dass ich die Position kontinuierlich verschiebe, anstatt dass ich ihm nur start- und endposition angebe. Das könnte man sich für iwann später mal anschauen, aber stand jetzt funktioniert es, und es ist wichtiger Fortschritte auf dem eigentlichen Projekt zu machen als herauszufinden wie Libfranka da funktioniert. 
+Das deutlich größere Problem ist jetzt, ein sinnvolles Kniemodell zu erstellen. Wie schon im letzten Eintrag beschrieben können weder mein Modell noch Nikos Modell auch nur ansatzweise die Kräfte aushalten, die mein Roboter misst. Dabei ist nicht die Messung des Roboters das Problem, da diese beim letzten Eintrag überprüft wurde. Ab circa 5N in negative z-Richtung springt der Femur aus dem Gelenk, auch wenn die Steifigkeit der Bänder sehr hoch eingestellt ist. Eine letzte Idee wäre, ein CT von meinem aktuellen künstlichen Knie zu machen. Dabei erhoffe ich mir weniger, dass ich ein funktionierendes Modell gewinne, als dass ich endgültig beweisen kann, dass ich mit Mujoco kein sinvolles Modell herbekomme. 
+Parallel dazu wäre es sinnvoll, meine Masterarbeit zu tippen, wobei das gerade ein bisschen weniger starke Priorität hat. 
+Daher, ToDo-Liste: 
+- Marcus und Pia schreiben, damit ich da einen halbfreien Kopf bekomme
+- Heute Vormittag schauen, wie sich Nikos Modell verhält und ob ich es nicht irgendwie stabil zu laufen bekomme
+- Wenn das nicht klappt, Niko nach dem CT fragen und eventuell auch fragen, was für Alternativen in Frage kämen
+
+
+
+
+
+
+
+

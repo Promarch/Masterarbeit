@@ -90,6 +90,7 @@
             <site name="PS_end" pos="0.015489018440246582 0.16296687316894531 -0.3892603149414063" size="0.001" type="sphere" />
             <site name="sMCL_end" pos="0.03592108917236328 0.13487907409667968 -0.3777944641113281" size="0.001" type="sphere" />
             <site name="VKB_end" pos="0.04289450454711914 0.17654144287109375 -0.36209667968750003" size="0.001" type="sphere" />
+            <site name="LP_end" pos="0.07079630279541016 0.18260380554199218 -0.40183831787109375" size="0.001" type="sphere" />
             <geom class="collision" mesh="tibia_0" name="tibia_0" type="mesh" />
             <geom class="collision" mesh="tibia_1" name="tibia_1" type="mesh" />
             <geom class="collision" mesh="tibia_2" name="tibia_2" type="mesh" />
@@ -103,8 +104,8 @@
             <geom class="collision" mesh="tibia_10" name="tibia_10" type="mesh" />
             <geom class="collision" mesh="tibia_11" name="tibia_11" type="mesh" />
             <geom class="collision" mesh="tibia_12" name="tibia_12" type="mesh" />
-            <site name="LP_end" pos="0.07079630279541016 0.18260380554199218 -0.40183831787109375" size="0.001" type="sphere" />
             <geom class="visual" fromto="0.048301631927490235 0.21166104125976562 -0.3733244934082031 0.04652249145507813 0.13440820312500001 -0.3769089660644531" name="PS_wrap" rgba=".2 .2 .5 0.0" size="0.025" type="cylinder" />
+            <geom class="visual" fromto="0.048 0.212 -0.384 0.048 0.134 -0.384" name="LP_wrap" rgba=".2 .2 .5 0.0" size="0.020" type="cylinder" />
         </body>
         <body name="femur" pos="0.0 0.0 0.6" quat="1 0 0 0">
             <site name="attachment_site2" rgba="0 1 1 1" size="0.005" group="1" quat="0 0.7071068 0.7071068 0" pos="0.042 0.175 -0.332" />
@@ -169,18 +170,20 @@
             <site site="VKB_start" />
             <site site="VKB_end" />
         </spatial>
-        <spatial name="LP" stiffness="2000.0" damping="200" springlength="0 0.046587925521048866" width="0.002" rgba="0.9 0.2 0.2 0.9">
+        <spatial name="LP" stiffness="6000.0" damping="200" springlength="0 0.046587925521048866" width="0.002" rgba="0.9 0.2 0.2 0.9">
             <site site="LP_start" />
+            <geom geom="LP_wrap"/>
             <site site="LP_end" />
         </spatial>
     </tendon>
     <actuator>
-        <motor name="F_x" site="attachment_site2" refsite="world_site" gear="1 0 0 0 0 0" class="translation"/>
-        <motor name="F_y" site="attachment_site2" refsite="world_site" gear="0 1 0 0 0 0" class="translation"/>
-        <motor name="F_z" site="attachment_site2" refsite="world_site" gear="0 0 1 0 0 0" class="translation"/>
-        <motor name="tau_x" site="attachment_site2" refsite="world_site" gear="0 0 0 1 0 0" class="rotation"/>
-        <motor name="tau_y" site="attachment_site2" refsite="world_site" gear="0 0 0 0 1 0" class="rotation"/>
-        <motor name="tau_z" site="attachment_site2" refsite="world_site" gear="0 0 0 0 0 1" class="rotation"/>
+        <motor name="F_x" site="attachment_site2" gear="1 0 0 0 0 0" class="translation"/>
+        <motor name="F_y" site="attachment_site2" gear="0 1 0 0 0 0" class="translation"/>
+        <motor name="F_z" site="attachment_site2" gear="0 0 1 0 0 0" class="translation"/>
+        <motor name="tau_x" site="attachment_site2" gear="0 0 0 1 0 0" class="rotation"/>
+        <motor name="tau_y" site="attachment_site2" gear="0 0 0 0 1 0" class="rotation"/>
+        <motor name="tau_z" site="attachment_site2" gear="0 0 0 0 0 1" class="rotation"/>
         <motor name="tendon stiffness" site="world_site" ctrlrange="10 4000"/>
+        <motor name="debug" site="world_site" ctrlrange="-5 5"/>
     </actuator>
 </mujoco>

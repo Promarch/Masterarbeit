@@ -38,6 +38,9 @@ actuator_ids = np.array([model.actuator(name).id for name in actuator_name])
 # general slider
 stiffness_slider = "tendon stiffness"
 stiffness_slider_id = model.actuator(stiffness_slider).id
+debug_slider = "debug"
+debug_slider_id = model.actuator(debug_slider).id
+
 
     # Get forces
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
@@ -45,6 +48,8 @@ folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output
 list_of_files_wrench = glob.glob(folder_path + 'force_data*')
 filePath_wrench = max(list_of_files_wrench, key=os.path.getctime)
 wrench = np.loadtxt(filePath_wrench, delimiter=",")
+wrench_world_cosy = np.array([-wrench[:,1], -wrench[:,0], wrench[:,2], -wrench[:,4], wrench[:,3], -wrench[:,5]]).transpose()
+# wrench_world_cosy = wrench_world_cosy * np.array([0, 0, 0, 1, 1, 0])
 force = -wrench[:,:3] * [0, 0, 1]
 torque = wrench[:,3:] * [0, 0, 0]
 
@@ -89,23 +94,26 @@ def main() -> None:
             # Set the stiffness of the tendon to the slider value
             # for i, tendon in enumerate(name_tendons):
             #     model.tendon(tendon)._stiffness = data.ctrl[stiffness_slider_id]
-                
+            
+            for i, actuator in enumerate(actuator_ids): 
+                data.ctrl[actuator] = wrench[time_ms, i]
             # # Current debug
             # model.tendon("ACL")._lengthspring = data.ctrl[model.actuator("L_ACL").id]
             # model.tendon("PCL")._lengthspring = data.ctrl[model.actuator("L_PCL").id]
             # model.tendon("sMCL")._lengthspring = data.ctrl[model.actuator("L_sMCL").id]
             # model.tendon("LCL")._lengthspring = data.ctrl[model.actuator("L_LCL").id]
+            
+            # data.xfrc_applied[body_id] = [0, 0, 0, 0, data.ctrl[debug_slider_id], 0] # data.ctrl[debug_slider_id]
+            # mujoco.mj_applyFT(model, data, force[time_ms-1, :], torque[time_ms-1, :], site_pos, body_id, data.qfrc_applied) 
 
                 # Debug loop
             if time_current>time_debug:
                 if time_ms>np.shape(wrench)[0]:
-                    mujoco.mj_applyFT(model, data, force[-1, :], torque[-1, :], site_pos, body_id, data.qfrc_applied)
                     if end_of_file==False:
                         print("End of file reached, time:", time_ms)
                         end_of_file=True
                 else:
-                    mujoco.mj_applyFT(model, data, force[time_ms-1, :], torque[time_ms-1, :], site_pos, body_id, data.qfrc_applied)
-                    print(f"Time: {np.round(time_current,1)}, Force: {np.round(force[time_ms-1, :],3)}, Torque: {np.round(torque[time_ms-1, :],3)}")
+                    print(f"Time: {np.round(time_current,1)}, Force: {np.round(wrench_world_cosy[time_ms,:],3)}")# {np.round(force[time_ms-1, :],3)}, Torque: {np.round(torque[time_ms-1, :],3)}")
 
                 time_debug += time_sample
 
