@@ -8,13 +8,14 @@ import matplotlib.pyplot as plt
 
 # %% 
     # Import all data
+folder_path = '/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/'
 # Torque without gravity
-list_of_files = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/tau_grav*')
+list_of_files = glob.glob(folder_path+'tau_grav*')
 filePath = max(list_of_files, key=os.path.getctime)
 df_tau_grav = pd.read_csv(filePath, header=None)
 
 # Torque filtered
-list_of_files = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/tau_filter*')
+list_of_files = glob.glob(folder_path+'tau_filter*')
 filePath = max(list_of_files, key=os.path.getctime)
 df_tau_filter = pd.read_csv(filePath, header=None)
 
@@ -24,14 +25,67 @@ df_tau_filter = pd.read_csv(filePath, header=None)
 # df_F_tau_grav = pd.read_csv(filePath, header=None)
 
 # Forces from filtered torque
-list_of_files = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/F_tau_filter*')
+list_of_files = glob.glob(folder_path+'F_tau_filter*')
 filePath = max(list_of_files, key=os.path.getctime)
 df_F_tau_filter = pd.read_csv(filePath, header=None)
 
 # Force from robot measurement (until 22/07 14:20 in K_frame)
-list_of_files = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/F_ext*')
+list_of_files = glob.glob(folder_path+'F_ext*')
 filePath = max(list_of_files, key=os.path.getctime)
 df_F_ext_orig = pd.read_csv(filePath, header=None)
+
+# # %%
+# # Low pass filter for data grav
+# Fs = 1000
+# F_cutoff = 5.0
+# sig = np.array(df_tau_grav.iloc[:,3])
+
+# fft_sig = np.fft.fft(sig)
+# plt.plot(np.abs(fft_sig)/sig.size);
+
+# cutoff_filter = 1.0 * np.abs(np.fft.fftfreq(fft_sig.size, 1.0/Fs)) <= F_cutoff
+# sig_filtered = np.real(np.fft.ifft(fft_sig * cutoff_filter))
+# plt.plot(np.abs(np.fft.fft(sig_filtered))/sig_filtered.size, '--')
+# # plt.show()
+
+# plt.plot(sig, '--')
+# plt.plot(sig_filtered)
+# plt.plot(df_tau_filter.iloc[:,3])
+# # plt.show()
+
+# %%
+# Full Low pass filter
+# from: https://colab.research.google.com/drive/1RR_9EYlApDMg4jAS2HuJIpSqwg5RLzGW?usp=sharing#scrollTo=KIbejmOR_rwI
+sample_rate = 1000
+F_cutoff = 10
+df_tau_grav_filter = df_tau_grav.copy()
+for i in range(np.size(df_tau_grav,1)):
+    data = np.array(df_tau_grav.iloc[:,i])
+    fft_sig = np.fft.fft(data)
+    cutoff_filter = 1.0 * np.abs(np.fft.fftfreq(fft_sig.size, 1.0/sample_rate)) <= F_cutoff
+    data_filter = np.real(np.fft.ifft(fft_sig * cutoff_filter))
+    df_tau_grav_filter.iloc[:,i] = data_filter
+
+# %%
+# Plot torque
+
+fig, axs = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
+x = df_tau_filter.index.values
+for i in range(7):
+    axs[i].plot(x, df_tau_grav.iloc[:,i].to_numpy(), label = "Tau minus grav")
+    axs[i].plot(x, df_tau_filter.iloc[:,i].to_numpy(), label = "Tau filter")
+    axs[i].plot(df_tau_grav_filter.iloc[:,i].to_numpy(), label = "Tau grav smooth")
+    axs[i].set_ylabel(i+1)
+    axs[i].grid(True)
+    #axs[i].set_ylim([df[useCols[1:]].min().min(), df[useCols[1:]].max().max()])
+    axs[i].legend(loc = "upper right")
+
+axs[-1].set_xlabel('Time')
+# Adjust layout
+plt.suptitle("Torque of each joint")
+# Show the plot
+plt.show()
+
 
 #%%
 # imported code to plot
@@ -79,7 +133,7 @@ try:
     pos_force = pos_force.reshape(int(len(pos_force)/4), 4)
     df_pos_force = pd.DataFrame(np.vstack(pos_force[:,0]))
     df_pos_test = df_pos_force[np.all(np.abs(df_pos_force)<50, axis=1)]
-    plot_position(df_pos_test)
+    # plot_position(df_pos_test)
 except:
 
     print(f"Failed at step {i}")
@@ -109,23 +163,3 @@ axs[-1].set_xlabel('Time')
 plt.suptitle("Force/Torque in workspace")
 # Show the plot
 #plt.show()
-
-# %%
-# Plot torque
-
-fig, axs = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
-x = df_tau_filter.index.values
-joint_num = np.arange(1,8)
-for i in range(7):
-    axs[i].plot(x, df_tau_grav.iloc[:,i].to_numpy(), label = "Tau minus grav")
-    axs[i].plot(x, df_tau_filter.iloc[:,i].to_numpy(), label = "Tau filter")
-    axs[i].set_ylabel(i+1)
-    axs[i].grid(True)
-    #axs[i].set_ylim([df[useCols[1:]].min().min(), df[useCols[1:]].max().max()])
-    axs[i].legend(loc = "upper right")
-
-axs[-1].set_xlabel('Time')
-# Adjust layout
-plt.suptitle("Torque of each joint")
-# Show the plot
-# plt.show()

@@ -85,11 +85,10 @@ Puh Erleuchtung hat es nicht gegeben, neue Erkenntnisse weiß ich nicht. So zum 
 Ich kann den Roboter gut und sinnvoll steuern, wenn auch über die Libfranka "Blackbox", bei der Libfranka mir die Gelenkwinkel berechnet anstelle dass ich es über die Jacobi mache. Könnte daran liegen, dass ich die Position kontinuierlich verschiebe, anstatt dass ich ihm nur start- und endposition angebe. Das könnte man sich für iwann später mal anschauen, aber stand jetzt funktioniert es, und es ist wichtiger Fortschritte auf dem eigentlichen Projekt zu machen als herauszufinden wie Libfranka da funktioniert. 
 Das deutlich größere Problem ist jetzt, ein sinnvolles Kniemodell zu erstellen. Wie schon im letzten Eintrag beschrieben können weder mein Modell noch Nikos Modell auch nur ansatzweise die Kräfte aushalten, die mein Roboter misst. Dabei ist nicht die Messung des Roboters das Problem, da diese beim letzten Eintrag überprüft wurde. Ab circa 5N in negative z-Richtung springt der Femur aus dem Gelenk, auch wenn die Steifigkeit der Bänder sehr hoch eingestellt ist. Eine letzte Idee wäre, ein CT von meinem aktuellen künstlichen Knie zu machen. Dabei erhoffe ich mir weniger, dass ich ein funktionierendes Modell gewinne, als dass ich endgültig beweisen kann, dass ich mit Mujoco kein sinvolles Modell herbekomme. 
 Parallel dazu wäre es sinnvoll, meine Masterarbeit zu tippen, wobei das gerade ein bisschen weniger starke Priorität hat. 
-Daher, ToDo-Liste: 
-- Marcus und Pia schreiben, damit ich da einen halbfreien Kopf bekomme
-- Heute Vormittag schauen, wie sich Nikos Modell verhält und ob ich es nicht irgendwie stabil zu laufen bekomme
-- Wenn das nicht klappt, Niko nach dem CT fragen und eventuell auch fragen, was für Alternativen in Frage kämen
-
+10.09
+Neue Idee, erstmal langsam rantasten und ein einfaches Kugelgelenk mit dem 3D Drucker fertigen. Weitere Idee ist, die Kraftmessdose anstatt der normalen Kraftsensoren zu verwenden, da die bisherigen Daten jetzt nicht schlecht sind, aber die Masse vom Roboter nicht genug kompensieren
+Daher heute Zeit mit Solidworks verbracht, einerseits um das Kugelgelenk zu basteln (als Kugel wird ein Golfball verwendet), andererseits um eine Verbindung zwischen dem Roboter und der Kraftmessdose herzustellen. Stand jetzt sind die ersten Entwürfe durch, ich lass das Mal über Nacht laufen und schau mir morgen an wie die Ergebnisse sind. 
+Nächster Schritt ist das Modell in Mujoco zu aktualisieren und die neuen Trägheitsmatrizen/Gewichte in der Franka Emika Oberfläche einzustellen. Wenn der ganze Spaß dann stimmt kann ich den Sensor wieder montieren und mit dem Kugelgelenk anfangen. 
 
 
 
