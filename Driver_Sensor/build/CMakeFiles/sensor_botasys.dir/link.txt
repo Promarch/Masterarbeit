@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsensor_botasys.a CMakeFiles/sensor_botasys.dir/BotaForceTorqueSensorComm.cpp.o
+/usr/bin/ranlib libsensor_botasys.a

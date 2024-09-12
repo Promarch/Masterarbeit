@@ -1,0 +1,17 @@
+[
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Driver_Sensor/build",
+  "command": "/usr/bin/c++   -g -std=gnu++14 -o CMakeFiles/sensor_botasys.dir/BotaForceTorqueSensorComm.cpp.o -c /home/alexandergerard/Masterarbeit/Driver_Sensor/BotaForceTorqueSensorComm.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Driver_Sensor/BotaForceTorqueSensorComm.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Driver_Sensor/build",
+  "command": "/usr/bin/c++   -g -std=gnu++14 -o CMakeFiles/sensor_setup.dir/SensorSetUp.cpp.o -c /home/alexandergerard/Masterarbeit/Driver_Sensor/SensorSetUp.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Driver_Sensor/SensorSetUp.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Driver_Sensor/build",
+  "command": "/usr/bin/c++   -g -std=gnu++14 -o CMakeFiles/sensor_cmake.dir/sensor_cmake.cpp.o -c /home/alexandergerard/Masterarbeit/Driver_Sensor/sensor_cmake.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Driver_Sensor/sensor_cmake.cpp"
+}
+]

@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/BotaForceTorqueSensorComm.dir/BotaForceTorqueSensorComm.cpp.o -o BotaForceTorqueSensorComm  libsensor_botasys.a 

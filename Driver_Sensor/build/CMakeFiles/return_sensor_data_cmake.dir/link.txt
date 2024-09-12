@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/return_sensor_data_cmake.dir/return_sensor_data_cmake.cpp.o -o return_sensor_data_cmake  libsensor_botasys.a 

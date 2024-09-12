@@ -1,0 +1,78 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "FrankaCmake",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "sensor_botasys::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-sensor_botasys-Debug-ef4e6d74b8f9f0a60e4d.json",
+					"name" : "sensor_botasys",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "sensor_cmake::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-sensor_cmake-Debug-664df51032f7287558cc.json",
+					"name" : "sensor_cmake",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "sensor_setup::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-sensor_setup-Debug-2802760971cc2dcd4dd9.json",
+					"name" : "sensor_setup",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/alexandergerard/Masterarbeit/Driver_Sensor/build",
+		"source" : "/home/alexandergerard/Masterarbeit/Driver_Sensor"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}
