@@ -6,6 +6,11 @@
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++ -g -std=gnu++14 -o CMakeFiles/sensor_botasys.dir/cmake/BotaForceTorqueSensorComm.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/cmake/BotaForceTorqueSensorComm.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/cmake/BotaForceTorqueSensorComm.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointPositions2.dir/JointPositions2.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/JointPositions2.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/JointPositions2.cpp"
 },

@@ -19,6 +19,10 @@ add_library(examples_common STATIC
   cmake/examples_common.cpp
 )
 
+add_library(sensor_botasys STATIC
+  cmake/BotaForceTorqueSensorComm.cpp
+)
+
 target_link_libraries(examples_common PUBLIC Franka::Franka Eigen3::Eigen3)
 
 SET(PROGRAM_files
@@ -37,7 +41,7 @@ SET(PROGRAM_files
 
 foreach(singleFile ${PROGRAM_files})
   add_executable(${singleFile} ${singleFile}.cpp)
-  target_link_libraries(${singleFile} Franka::Franka examples_common Eigen3::Eigen3)    
+  target_link_libraries(${singleFile} Franka::Franka examples_common Eigen3::Eigen3 sensor_botasys)
 endforeach()
 
 include(GNUInstallDirs)
