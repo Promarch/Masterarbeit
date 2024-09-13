@@ -13,6 +13,15 @@
 #include <franka/model.h>
 #include <franka/robot.h>
 
+// Linux headers
+#include <fcntl.h>      // Contains file controls like O_RDWR
+#include <errno.h>      // Error integer and strerror() function
+#include <termios.h>    // Contains POSIX terminal control definitions
+#include <unistd.h>     // write(), read(), close()
+#include <sys/ioctl.h>
+#include <linux/serial.h>
+#include "cmake/BotaForceTorqueSensorComm.h"
+
 // Sets default collision parameters, from https://frankaemika.github.io/libfranka/generate_joint_position_motion_8cpp-example.html
 void setDefaultBehavior(franka::Robot &robot) {
 
@@ -25,6 +34,7 @@ void setDefaultBehavior(franka::Robot &robot) {
     robot.setCartesianImpedance({{3000, 3000, 3000, 300, 300, 300}});
 };
 
+  // Function to write a vector to a text file
 // Macro to convert variable name to string for the function
 #define writeDataToFile(data) writeDataToFileImpl(data, #data)
 std::string getCurrentDateTime() {
@@ -33,9 +43,9 @@ std::string getCurrentDateTime() {
   std::strftime(buf, sizeof(buf), "%Y%m%d_%H%M%S", std::localtime(&now));
   return std::string(buf);
 }
-template <std::size_t N>
-void writeDataToFileImpl(const std::vector<std::array<double, N>>& data, const std::string& var_name) {
-  std::string filename = "data_output_knee/" + var_name + "_" + getCurrentDateTime() + ".txt";
+template <typename T, std::size_t N>
+void writeDataToFileImpl(const std::vector<std::array<T, N>>& data, const std::string& var_name) {
+  std::string filename = "data_ball_joint/" + var_name + "_" + getCurrentDateTime() + ".txt";
   std::ofstream data_file(filename);
   if (data_file.is_open()) {
     data_file << std::fixed << std::setprecision(4);
@@ -54,18 +64,159 @@ void writeDataToFileImpl(const std::vector<std::array<double, N>>& data, const s
   }
 }
 
+// Function and classes needed for the Botasys sensor, from: https://gitlab.com/botasys/bota_serial_driver
+int serial_port;
+class myBotaForceTorqueSensorComm : public BotaForceTorqueSensorComm
+{
+  public:
+  int serialReadBytes(uint8_t* data, size_t len) override {
+    return read(serial_port, data, len);
+  }
+  int serialAvailable() override {
+    int bytes;
+    ioctl(serial_port, FIONREAD, &bytes);
+    return bytes;
+  }
+} sensor;
+void set_up_serial(){
+
+    // Open the serial port. Change device path as needed.
+    printf("Open serial port.\n");
+    serial_port = open("/dev/ttyUSB0", O_RDWR);
+    printf("Opened port %i.\n",serial_port);
+
+    if (serial_port < 0) {
+      printf("Error %i from opening device: %s\n", errno, strerror(errno));
+      if (errno == 13) {
+        printf("Add the current user to the dialout group");
+      }
+      return;
+    }
+
+    // Create new termios struc, we call it 'tty' for convention
+    struct termios tty;
+    struct serial_struct ser_info;
+    memset(&tty, 0, sizeof(tty));
+
+    // Read in existing settings, and handle any error
+    if(tcgetattr(serial_port, &tty) != 0) {
+        printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
+    }
+
+    tty.c_cflag &= ~PARENB; // Disable parity
+    tty.c_cflag &= ~CSTOPB; // 1 stop bit
+    tty.c_cflag |= CS8; // 8 bits per byte
+    tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control
+    tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
+
+    tty.c_lflag &= ~ICANON; // Disable canonical mode
+    tty.c_lflag &= ~ECHO; // Disable echo
+    tty.c_lflag &= ~ECHOE; // Disable erasure
+    tty.c_lflag &= ~ECHONL; // Disable new-line echo
+    tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
+    tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
+    tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); // Disable any special handling of received bytes
+    tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
+    tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
+    tty.c_cc[VTIME] = 10; // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
+    tty.c_cc[VMIN] = 0;
+
+    // Set in/out baud rate to be 460800
+    cfsetispeed(&tty, B460800);
+    cfsetospeed(&tty, B460800);
+
+    // Save tty settings, also checking for error
+    if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
+        printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
+    }
+
+    // Enable linux FTDI low latency mode
+    ioctl(serial_port, TIOCGSERIAL, &ser_info);
+    ser_info.flags |= ASYNC_LOW_LATENCY;
+    ioctl(serial_port, TIOCSSERIAL, &ser_info);
+    printf("Finished serial port set up\n");
+}
+void check_sensor(){
+
+    // Variables for debug/ensure the program cancels correctly
+    int counter=0;  // Counts how many times the sensor could be read
+    auto t_start = std::chrono::high_resolution_clock::now();
+    auto t_current = std::chrono::high_resolution_clock::now();
+    auto t_limit = std::chrono::seconds(5);
+    auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(t_current - t_start);
+
+    while (counter<20) {
+      switch(sensor.readFrame())
+      {
+        case BotaForceTorqueSensorComm::VALID_FRAME:
+          if (sensor.frame.data.status.val>0)
+          {
+            printf("No valid forces:\n");
+            printf(" app_took_too_long: %i\n",sensor.frame.data.status.app_took_too_long);
+            printf(" overrange: %i\n",sensor.frame.data.status.overrange);
+            printf(" invalid_measurements: %i\n",sensor.frame.data.status.invalid_measurements);
+            printf(" raw_measurements: %i\n",sensor.frame.data.status.raw_measurements);
+          }
+          else
+          {
+            // for (uint8_t i=0; i<6; i++)
+            // {
+            //   printf("%f",sensor.frame.data.forces[i]);
+            //   printf("\t");
+            // }
+            counter++;
+            // printf("Counter: %i\n", counter);
+          }
+          break;
+        case BotaForceTorqueSensorComm::NOT_VALID_FRAME:
+          printf("No valid frame: %i\n",sensor.get_crc_count());
+          break;
+        case BotaForceTorqueSensorComm::NOT_ALLIGNED_FRAME:
+          printf("lost sync, trying to reconnect\n");
+          break;
+        case BotaForceTorqueSensorComm::NO_FRAME:
+          break;
+        default:
+          // Break the loop if it takes above 5 seconds
+          t_current = std::chrono::high_resolution_clock::now();
+          elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(t_current - t_start);
+          if (elapsedTime>t_limit) {
+              printf("Sensor set up failed\n");
+              return;
+          }
+          break;
+      }
+    }// while app run
+    printf("Sensor set up finished.\n");
+}
+
+
 int main() {
 
   // Variables to store the torque or position of the robot during the movement
   std::vector<std::array<double, 7>> tau_data, tau_filter_data, tau_desired_data, joint_position_data; // Stores joint torque 
-  std::vector<std::array<double, 6>> force_data, force_tau_d_data; // Stores wrench acting on EE
+  std::vector<std::array<double, 6>> F_robot_data, force_tau_d_data; // Stores wrench acting on EE
+  std::vector<std::array<float , 6>> F_sensor_data, F_sensor_total_data; 
   std::vector<std::array<double, 5>> rotation_time_data; // stores the desired rotation with the current time
+
+    // Sensor set up
+  // Serial port set up
+  set_up_serial();
+  // Set up sensor
+  check_sensor();
+  // Get starting values of the external sensor
+  float F_sensor_start_aligned[6];
+  std::array<float, 6> F_sensor_start_array; 
+  std::memcpy(F_sensor_start_aligned, sensor.frame.data.forces, 6 * sizeof(float));
+  std::copy(F_sensor_start_aligned, F_sensor_start_aligned + 6, F_sensor_start_array.begin());
+  Eigen::Map<Eigen::Matrix<float, 1, 6>> F_sensor_start(F_sensor_start_aligned);
+  std::cout << "Starting sensor force: " << F_sensor_start << "\n";
 
   try {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector
-    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.200, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.05, 1.0});
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
     franka::RobotState initial_state = robot.readOnce();
@@ -78,7 +229,7 @@ int main() {
       // Time variables
     double time_global = 0.0; // Time the robot has been running for
     double time_cycle = 0.0;  // Time since new position
-    double time_max = 29;     // Maximum runtime
+    double time_max = 5;     // Maximum runtime
     double period_acc = 4;    // Time between old and new commanded position
     double period_reacceleration = 3; // Time to reaccelerate the joints if starting config is not the initial position
     double period_dec = 0.5; // time for decceleration, to stop abrubt braking
@@ -124,27 +275,34 @@ int main() {
     std::array<double, 7> tau_d_array{}; 
     Eigen::Matrix<double, 6, 1> error; 
     Eigen::Matrix<double, 7,1> tau_d;
+    std::array<float, 6> F_sensor_array;
+    std::array<float, 6> F_sensor_temp_array;
 
       // Variables to set new position
     // Decceleration
     bool decceleration = false; // if true, robot deccelerates, used to stop the motion before setting a new position
     bool acceleration = false; // set true when external wrench is too high, will cause the robot to slowly accelerate again
     double t_dec = 0;   // will be set the moment a decceleration is called
+
     // New position
     Eigen::Affine3d transform_temp;
-
     Eigen::Matrix<double, 3, 1> pos_temp = pos_d;
     bool new_pos = false;   // state variable, if true new position will be set
     std::srand(std::time(nullptr)); // initialize random seed
     double max_flexion = -M_PI*2/9;    // Max possible flexion
     double max_internal = M_PI/12;   // Max possible internal-external rotation
     double range_internal = 2*max_internal; // Possible values (max_internal-min_internal)
+
     // Debug stuff
     Eigen::Matrix<double, 5, 1> rotation_time; 
     rotation_time << rot_d.coeffs(), time_global;
     std::array<double, 5> rotation_time_array{}; 
     Eigen::VectorXd::Map(&rotation_time_array[0], 5) = rotation_time;
     rotation_time_data.push_back(rotation_time_array);
+
+    std::cout << "Robot will start moving now \n"
+              << "Press Enter to continue... \n";
+    std::cin.ignore();    
 
 // --------------------------------------------------------------------------------------------
 // ----                                                                                    ----
@@ -264,6 +422,17 @@ int main() {
       Eigen::Map<const Eigen::Matrix<double, 7,1>> q(robot_state.q.data());
       Eigen::Map<const Eigen::Matrix<double, 7,1>> q_d(robot_state.q_d.data());
       Eigen::Map<const Eigen::Matrix<double, 6,1>> F_ext(robot_state.K_F_ext_hat_K.data());
+      // Get sensor values
+      alignas(alignof(float[6])) float aligned_forces[6]; // necessary cause otherwise i get the warning: taking address of packed member of ‘BotaForceTorqueSensorComm::AppOutput::<unnamed struct>’ may result in an unaligned pointer value
+      if (sensor.readFrame() == BotaForceTorqueSensorComm::VALID_FRAME){
+        std::memcpy(aligned_forces, sensor.frame.data.forces, sizeof(aligned_forces));
+        std::copy(aligned_forces, aligned_forces + 6, F_sensor_temp_array.begin());
+        for (size_t i=0; i<6; i++) {
+          F_sensor_array[i] = F_sensor_temp_array[i] - F_sensor_start_array[i];
+        }
+        F_sensor_data.push_back(F_sensor_array);
+      }
+      F_sensor_total_data.push_back(F_sensor_array);
 
         // Deccelerate if forces to high, or set new pos if desired position reached or no joint movement present
       if (decceleration==false) {
@@ -326,30 +495,41 @@ int main() {
       tau_data.push_back(tau_d_array);
       tau_filter_data.push_back(robot_state.tau_ext_hat_filtered);
       // force_tau_d_data.push_back(F_tau_d_array);
-      force_data.push_back(robot_state.K_F_ext_hat_K);
+      F_robot_data.push_back(robot_state.K_F_ext_hat_K);
       joint_position_data.push_back(robot_state.q);
 
       // Send desired tau to the robot
       return tau_d_array;
 
+      // // Return 0 for debugging
+      // std::array<double, 7> return_0 = {0, 0, 0, 0, 0, 0, 0}; 
+      // return return_0; 
+      
     };
 
     // start control loop
     robot.control(force_control_callback, cartesian_pose_callback);
 
+    std::cout << "Len(F_sensor): " << F_sensor_data.size() << ", entries per second: " << F_sensor_data.size()/time_max << ", len(F_sensor_total): "<< F_sensor_total_data.size() << "\n";
+    
+
+
     // Write Data to .txt file
     writeDataToFile(tau_data);
     writeDataToFile(tau_filter_data);
-    writeDataToFile(force_data);
+    writeDataToFile(F_robot_data);
     writeDataToFile(joint_position_data);
     writeDataToFile(rotation_time_data);
+    writeDataToFile(F_sensor_data);
+    writeDataToFile(F_sensor_total_data);
+
   }
   // Catches Exceptions caused within the execution of a program (I think)
   catch (const franka::ControlException& e) {
     std::cout << "Control Exception: \n" << e.what() << std::endl;
     writeDataToFile(tau_data);
     writeDataToFile(tau_filter_data);
-    writeDataToFile(force_data);
+    writeDataToFile(F_robot_data);
     writeDataToFile(joint_position_data);
     writeDataToFile(rotation_time_data);
     return -1;

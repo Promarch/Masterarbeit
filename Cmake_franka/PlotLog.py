@@ -217,6 +217,7 @@ def plot7(df_array):
 # folder path
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/"
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
 
 # %%
 # Plot torques
@@ -244,8 +245,7 @@ df_q = df_orig_q.copy()
 plot_torque(df_tau, df_tau_filter, df_q)
 # %%
     # Get external force data
-list_of_files_force_ext = glob.glob(folder_path + 'force*')
-list_of_files_force_ext = glob.glob(folder_path + 'F_*')
+list_of_files_force_ext = glob.glob(folder_path + 'F_robot_*')
 filePath_force_ext = max(list_of_files_force_ext, key=os.path.getctime)
 df_orig_force_ext = pd.read_csv(filePath_force_ext, header=None)
 df_force_ext = df_orig_force_ext.copy()
@@ -256,8 +256,16 @@ df_force_ext = df_orig_force_ext.copy()
 # df_orig_force_tau = pd.read_csv(filePath_force_tau, header=None)
 # df_force_tau = df_orig_force_tau.copy()
 
+    # Get force data from sensor
+list_of_files_F_sensor = glob.glob(folder_path + 'F_sensor_to*')
+filePath_F_sensor = max(list_of_files_F_sensor, key=os.path.getctime)
+df_orig_F_sensor = pd.read_csv(filePath_F_sensor, header=None)
+df_F_sensor = df_orig_F_sensor.copy()
+
+
     # Plot Force
-plot_force_F_T(df_force_ext)
+# plot_force_F_T(df_force_ext)
+plot_force_tau_F(df_force_ext, df_F_sensor, labels = ["F_robot", "F_sens"])
 # %%
 # # Plot orientation error
 #     # Get position
