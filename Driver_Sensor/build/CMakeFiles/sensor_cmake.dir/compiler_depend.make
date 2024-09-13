@@ -202,6 +202,7 @@ CMakeFiles/sensor_cmake.dir/sensor_cmake.cpp.o: ../sensor_cmake.cpp \
   /usr/include/c++/11/bits/refwrap.h \
   /usr/include/c++/11/bits/unique_ptr.h \
   /usr/include/c++/11/bits/this_thread_sleep.h \
+  /usr/include/c++/11/cstring \
   /usr/include/fcntl.h \
   /usr/include/x86_64-linux-gnu/bits/fcntl.h \
   /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
@@ -250,8 +251,7 @@ CMakeFiles/sensor_cmake.dir/sensor_cmake.cpp.o: ../sensor_cmake.cpp \
   /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
   /usr/include/asm-generic/posix_types.h \
   /usr/include/linux/tty_flags.h \
-  ../BotaForceTorqueSensorComm.h \
-  ../SensorSetUp.h
+  ../BotaForceTorqueSensorComm.h
 
 
 /usr/include/linux/posix_types.h:
@@ -496,6 +496,8 @@ CMakeFiles/sensor_cmake.dir/sensor_cmake.cpp.o: ../sensor_cmake.cpp \
 
 /usr/include/stdc-predef.h:
 
+/usr/include/c++/11/cstring:
+
 /usr/include/c++/11/ratio:
 
 /usr/include/c++/11/ext/type_traits.h:
@@ -565,8 +567,6 @@ CMakeFiles/sensor_cmake.dir/sensor_cmake.cpp.o: ../sensor_cmake.cpp \
 /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h:
 
 /usr/include/time.h:
-
-../SensorSetUp.h:
 
 /usr/include/x86_64-linux-gnu/bits/termios-baud.h:
 

@@ -9,6 +9,7 @@
 #include <array>
 #include <vector>
 #include <thread>
+#include <cstring> // for std::memcpy
 
 // Linux headers
 #include <fcntl.h>      // Contains file controls like O_RDWR
@@ -19,7 +20,7 @@
 #include <linux/serial.h>
 
 #include "BotaForceTorqueSensorComm.h"
-#include "SensorSetUp.h"
+
 
 int serial_port;
 
@@ -36,7 +37,7 @@ class myBotaForceTorqueSensorComm : public BotaForceTorqueSensorComm
   }
 } sensor;
 
-/**/
+
 void set_up_serial(){
 
     // Open the serial port. Change device path as needed.
@@ -168,21 +169,31 @@ int main()
     std::array<float, 6> F_sensor_array;
     std::vector<std::array<float, 6>> F_sensor_data;
     while (elapsedTime<t_limit) {
-        std::copy(sensor.frame.data.forces, sensor.frame.data.forces+6, F_sensor_array.begin());
+        // Align adress before copying because of packaged data
+        alignas(alignof(float[6])) float aligned_forces[6];
+        std::memcpy(aligned_forces, sensor.frame.data.forces, sizeof(aligned_forces));
+        std::copy(aligned_forces, aligned_forces + 6, F_sensor_array.begin());
         F_sensor_data.push_back(F_sensor_array);
+        // Print for debugging
+        for (uint8_t i=0; i<6; i++)
+          {
+              printf("%f",sensor.frame.data.forces[i]);
+              printf("\t");
+          }
+        printf("\n");
         t_current = std::chrono::high_resolution_clock::now();
         elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(t_current - t_start);
-        std::this_thread::sleep_for(std::chrono::microseconds(500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
-
+ 
     // Check the amount of entries added during t_limit
     std::cout << "Time passed: " << time_limit << ", length of F_sensor_data: " << F_sensor_data.size() << ", entries per second: " << F_sensor_data.size()/time_limit << std::endl;
 
-/*    for (uint8_t i=0; i<6; i++)
+   for (uint8_t i=0; i<6; i++)
     {
         printf("%f",sensor.frame.data.forces[i]);
         printf("\t");
-    } */
+    } 
 
     printf("\nclose serial port.\n");
     close(serial_port);

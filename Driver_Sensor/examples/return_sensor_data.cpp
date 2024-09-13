@@ -104,7 +104,7 @@ void check_sensor(){
     auto t_limit = std::chrono::seconds(5);
     auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(t_current - t_start);
 
-    while (counter<20) {
+    while (counter<50) {
       switch(sensor.readFrame())
       {
         case BotaForceTorqueSensorComm::VALID_FRAME:
@@ -118,11 +118,11 @@ void check_sensor(){
           }
           else
           {
-            // for (uint8_t i=0; i<6; i++)
-            // {
-            //   printf("%f",sensor.frame.data.forces[i]);
-            //   printf("\t");
-            // }
+            for (uint8_t i=0; i<6; i++)
+            {
+              printf("%f",sensor.frame.data.forces[i]);
+              printf("\t");
+            }
             counter++;
             printf("Counter: %i\n", counter);
           }
@@ -152,27 +152,39 @@ int main()
 {
     // Serial port set up
     set_up_serial();
-    printf("Do i get here\n");
     // Set up sensor
     check_sensor();
+    printf("Sensor Check finished \n\n");
+
+    // set up vector that stores force data
+    std::array<float, 6> F_sensor_array;
+    std::vector<std::array<float, 6>> F_sensor_data;
 
     // Variables for time limited while lopp
     auto t_start = std::chrono::high_resolution_clock::now();
     auto t_current = std::chrono::high_resolution_clock::now();
-    int time_limit = 3;
+    int time_limit = 4;
     auto t_limit = std::chrono::seconds(time_limit);
     auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(t_current - t_start);
     
-    // set up vector that stores force data
-    std::array<float, 6> F_sensor_array;
-    std::vector<std::array<float, 6>> F_sensor_data;
     while (elapsedTime<t_limit) {
-        std::copy(sensor.frame.data.forces, sensor.frame.data.forces+6, F_sensor_array.begin());
-        F_sensor_data.push_back(F_sensor_array);
         t_current = std::chrono::high_resolution_clock::now();
         elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(t_current - t_start);
-        std::this_thread::sleep_for(std::chrono::microseconds(500));
-    }
+        if (sensor.readFrame() == BotaForceTorqueSensorComm::VALID_FRAME) {
+          // Copy the float[6] array to an std::array<float, 6> array
+          std::copy(sensor.frame.data.forces, sensor.frame.data.forces+6, F_sensor_array.begin());
+          F_sensor_data.push_back(F_sensor_array);
+
+          for (uint8_t i=0; i<6; i++)
+          {
+            printf("%f",sensor.frame.data.forces[i]);
+            printf("\t");
+          }
+          printf("\n");
+
+        }
+        // std::this_thread::sleep_for(std::chrono::microseconds(500));
+      }
 
     // Check the amount of entries added during t_limit
     std::cout << "Length of F_sensor_data: " << F_sensor_data.size() << ", entries per second: " << F_sensor_data.size()/time_limit << std::endl;

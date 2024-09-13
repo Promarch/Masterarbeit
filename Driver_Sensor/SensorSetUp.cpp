@@ -22,30 +22,17 @@
 #include "SensorSetUp.h"
 
 
-int serial_port;
 
-class myBotaForceTorqueSensorComm : public BotaForceTorqueSensorComm
-{
-  public:
-  int serialReadBytes(uint8_t* data, size_t len) override {
-    return read(serial_port, data, len);
-  }
-  int serialAvailable() override {
-    int bytes;
-    ioctl(serial_port, FIONREAD, &bytes);
-    return bytes;
-  }
-} sensor;
 
-void set_up_serial(int serial_port){
+void set_up_serial(int _serial_port){
 
     /* Open the serial port. Change device path as needed.
      */
     printf("Open serial port.\n");
-    serial_port = open("/dev/ttyUSB0", O_RDWR);
-    printf("Opened port %i.\n",serial_port);
+    _serial_port = open("/dev/ttyUSB0", O_RDWR);
+    printf("Opened port %i.\n",_serial_port);
 
-    if (serial_port < 0) {
+    if (_serial_port < 0) {
       printf("Error %i from opening device: %s\n", errno, strerror(errno));
       if (errno == 13) {
         printf("Add the current user to the dialout group");
@@ -59,7 +46,7 @@ void set_up_serial(int serial_port){
     memset(&tty, 0, sizeof(tty));
 
     // Read in existing settings, and handle any error
-    if(tcgetattr(serial_port, &tty) != 0) {
+    if(tcgetattr(_serial_port, &tty) != 0) {
         printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
     }
 
@@ -86,18 +73,18 @@ void set_up_serial(int serial_port){
     cfsetospeed(&tty, B460800);
 
     // Save tty settings, also checking for error
-    if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
+    if (tcsetattr(_serial_port, TCSANOW, &tty) != 0) {
         printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
     }
 
     // Enable linux FTDI low latency mode
-    ioctl(serial_port, TIOCGSERIAL, &ser_info);
+    ioctl(_serial_port, TIOCGSERIAL, &ser_info);
     ser_info.flags |= ASYNC_LOW_LATENCY;
-    ioctl(serial_port, TIOCSSERIAL, &ser_info);
+    ioctl(_serial_port, TIOCSSERIAL, &ser_info);
     printf("Finished serial port set up\n");
 }
 
-void check_sensor(){
+void check_sensor(myBotaForceTorqueSensorComm _sensor){
 
     // Variables for debug/ensure the program cancels correctly
     int counter=0;  // Counts how many times the sensor could be read
@@ -107,16 +94,16 @@ void check_sensor(){
     auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(t_current - t_start);
 
     while (counter<20) {
-      switch(sensor.readFrame())
+      switch(_sensor.readFrame())
       {
         case BotaForceTorqueSensorComm::VALID_FRAME:
-          if (sensor.frame.data.status.val>0)
+          if (_sensor.frame.data.status.val>0)
           {
             printf("No valid forces:\n");
-            printf(" app_took_too_long: %i\n",sensor.frame.data.status.app_took_too_long);
-            printf(" overrange: %i\n",sensor.frame.data.status.overrange);
-            printf(" invalid_measurements: %i\n",sensor.frame.data.status.invalid_measurements);
-            printf(" raw_measurements: %i\n",sensor.frame.data.status.raw_measurements);
+            printf(" app_took_too_long: %i\n",_sensor.frame.data.status.app_took_too_long);
+            printf(" overrange: %i\n",_sensor.frame.data.status.overrange);
+            printf(" invalid_measurements: %i\n",_sensor.frame.data.status.invalid_measurements);
+            printf(" raw_measurements: %i\n",_sensor.frame.data.status.raw_measurements);
           }
           else
           {
@@ -130,7 +117,7 @@ void check_sensor(){
           }
           break;
         case BotaForceTorqueSensorComm::NOT_VALID_FRAME:
-          printf("No valid frame: %i\n",sensor.get_crc_count());
+          printf("No valid frame: %i\n",_sensor.get_crc_count());
           break;
         case BotaForceTorqueSensorComm::NOT_ALLIGNED_FRAME:
           printf("lost sync, trying to reconnect\n");
