@@ -42,7 +42,8 @@ int main(int argc, char** argv) {
     // Positions
     std::array<double, 7> initial_position;
     std::array<double, 7> start_position = robot.readOnce().q_d;
-    std::array<double, 7> pos1 = {{-0.19, -0.12, -0.06, -2.09, -0.04, 1.98, -1.02}}; // above the fake knee
+    // std::array<double, 7> pos1 = {{-0.19, -0.12, -0.06, -2.09, -0.04, 1.98, -1.02}}; // above the fake knee
+    std::array<double, 7> pos1 = {{-0.0, -0.12, -0.00, -2.09, -0.00, 1.98, -0.3827}}; // Position for orientation testing of the EE
     std::array<double, 7> deltaPos;
     // Substract the initial position from the second position
     std::transform(pos1.begin(), pos1.end(), start_position.begin(), deltaPos.begin(), std::minus<double>() );

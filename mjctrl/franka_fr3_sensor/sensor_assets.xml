@@ -1,0 +1,8 @@
+<mujoco model="sensor_assets">
+    <asset>
+        <material name="PLA_black" rgba="0.8 0.8 0.8 1"/>
+        <mesh file="../assets/Assembly_Sensor_V2.STL" name="sensor_ee" scale="0.001 0.001 0.001"/>
+        <mesh file="../assets/Assembly_Sensor_V2_2.STL" name="sensor_ee_2" scale="0.001 0.001 0.001"/>
+        <mesh file="../assets/Kugelgelenk_adapter_V1.STL" name="Kugelgelenk" scale="0.001 0.001 0.001"/>
+    </asset>
+</mujoco>

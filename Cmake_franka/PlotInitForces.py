@@ -56,6 +56,18 @@ df_F_ext_orig = pd.read_csv(filePath, header=None)
 # %%
 # Full Low pass filter
 # from: https://colab.research.google.com/drive/1RR_9EYlApDMg4jAS2HuJIpSqwg5RLzGW?usp=sharing#scrollTo=KIbejmOR_rwI
+def lowpassFilter(df, F_cutoff=10):
+    sample_rate = 1000
+    df_filter = df.copy()
+    for i in range(np.size(df, 1)):
+        data = np.array(df.iloc[:,i])
+        fft_sig = np.fft.fft(data)
+        cutoff_filter = 1.0 * np.abs(np.fft.fftfreq(fft_sig.size, 1.0/sample_rate)) <= F_cutoff
+        data_filter = np.real(np.fft.ifft(fft_sig * cutoff_filter))
+        df_filter.iloc[:,i] = data_filter
+    return df_filter
+
+#%%
 sample_rate = 1000
 F_cutoff = 10
 df_tau_grav_filter = df_tau_grav.copy()

@@ -216,7 +216,7 @@ int main() {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector
-    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.05, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.053, 1.0});
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
     franka::RobotState initial_state = robot.readOnce();
@@ -245,20 +245,20 @@ int main() {
     
       // Create desired rotation with rotation matrix
     // Flexion (rotation around EEs x-axis)
-    double angle_flexion = -M_PI/9;
+    double angle_flexion = -M_PI/18;
     Eigen::AngleAxisd vector_flexion(angle_flexion, Eigen::Vector3d::UnitX());
     Eigen::Matrix3d rotation_flexion = vector_flexion.toRotationMatrix();
     Eigen::Affine3d transform_flexion = Eigen::Affine3d(rotation_flexion);
     Eigen::Quaterniond quaternion_flexion(rotation_flexion);
-    // Internal-external (rotation around EEs x-axis)
+    // Internal-external (rotation around EEs y-axis)
     double angle_internal = 0;
     Eigen::AngleAxisd vector_internal(angle_internal, Eigen::Vector3d::UnitY());
     Eigen::Matrix3d rotation_internal = vector_internal.toRotationMatrix();
     Eigen::Affine3d transform_internal = Eigen::Affine3d(rotation_internal);
     Eigen::Quaterniond quaternion_internal(rotation_internal);
-    // Combine rotations (first flexion then rotation)
+    // Transformation matrix: combine rotations (first flexion then rotation)
     Eigen::Affine3d transform_d = transform_init * transform_flexion * transform_internal; 
-    // Combine rotation quaternion for error plotting
+    // Quaternions: combine rotation quaternion for error plotting
     Eigen::Quaterniond quaternion_combined = quaternion_internal * quaternion_flexion;
     Eigen::Quaterniond rot_d = rotation_init * quaternion_combined;
 
@@ -432,7 +432,6 @@ int main() {
         }
         F_sensor_data.push_back(F_sensor_array);
       }
-      F_sensor_total_data.push_back(F_sensor_array);
 
         // Deccelerate if forces to high, or set new pos if desired position reached or no joint movement present
       if (decceleration==false) {
@@ -496,6 +495,7 @@ int main() {
       tau_filter_data.push_back(robot_state.tau_ext_hat_filtered);
       // force_tau_d_data.push_back(F_tau_d_array);
       F_robot_data.push_back(robot_state.K_F_ext_hat_K);
+      F_sensor_total_data.push_back(F_sensor_array);
       joint_position_data.push_back(robot_state.q);
 
       // Send desired tau to the robot

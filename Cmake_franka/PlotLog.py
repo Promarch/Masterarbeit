@@ -136,15 +136,15 @@ def plot_orientation_error(df_pos, df_rot):
 def plot_force_F_T(df_force):
     fig, ax = plt.subplots(2, 1, figsize=(8,8), sharex=True)
         # Plot Forces
-    ax[0].plot(df_force.iloc[:,0].to_numpy(), 'r', label="X")
-    ax[0].plot(df_force.iloc[:,1].to_numpy(), 'g', label="Y")
-    ax[0].plot(df_force.iloc[:,2].to_numpy(), 'b', label="Z")
+    ax[0].plot(df_force.iloc[:,0].to_numpy(), 'r', label="$F_x$")
+    ax[0].plot(df_force.iloc[:,1].to_numpy(), 'g', label="$F_y$")
+    ax[0].plot(df_force.iloc[:,2].to_numpy(), 'b', label="$F_z$")
     ax[0].legend(loc = "upper right")
     ax[0].set_title("Forces [N]")
         # Plot torque
-    ax[1].plot(df_force.iloc[:,3].to_numpy(), 'r', label="X")
-    ax[1].plot(df_force.iloc[:,4].to_numpy(), 'g', label="Y")
-    ax[1].plot(df_force.iloc[:,5].to_numpy(), 'b', label="Z")
+    ax[1].plot(df_force.iloc[:,3].to_numpy(), 'r', label=r"$\tau _x$")
+    ax[1].plot(df_force.iloc[:,4].to_numpy(), 'g', label=r"$\tau _y$")
+    ax[1].plot(df_force.iloc[:,5].to_numpy(), 'b', label=r"$\tau _z$")
     ax[1].legend(loc = "upper right")
     ax[1].set_title("Torques [Nm]")
 
@@ -214,6 +214,17 @@ def plot7(df_array):
         axs[i].legend(loc = "upper right")
     plt.show()
 
+def lowpassFilter(df, F_cutoff=10):
+    sample_rate = 1000
+    df_filter = df.copy()
+    for i in range(np.size(df, 1)):
+        data = np.array(df.iloc[:,i])
+        fft_sig = np.fft.fft(data)
+        cutoff_filter = 1.0 * np.abs(np.fft.fftfreq(fft_sig.size, 1.0/sample_rate)) <= F_cutoff
+        data_filter = np.real(np.fft.ifft(fft_sig * cutoff_filter))
+        df_filter.iloc[:,i] = data_filter
+    return df_filter
+
 # folder path
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/"
@@ -261,11 +272,11 @@ list_of_files_F_sensor = glob.glob(folder_path + 'F_sensor_to*')
 filePath_F_sensor = max(list_of_files_F_sensor, key=os.path.getctime)
 df_orig_F_sensor = pd.read_csv(filePath_F_sensor, header=None)
 df_F_sensor = df_orig_F_sensor.copy()
-
+df_F_lowpass = lowpassFilter(df_F_sensor)
 
     # Plot Force
-# plot_force_F_T(df_force_ext)
-plot_force_tau_F(df_force_ext, df_F_sensor, labels = ["F_robot", "F_sens"])
+plot_force_F_T(df_F_sensor)
+plot_force_tau_F(df_F_sensor, df_F_lowpass, labels = ["F_robot", "F_sens"])
 # %%
 # # Plot orientation error
 #     # Get position

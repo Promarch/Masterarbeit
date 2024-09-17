@@ -89,8 +89,19 @@ Parallel dazu wäre es sinnvoll, meine Masterarbeit zu tippen, wobei das gerade 
 Neue Idee, erstmal langsam rantasten und ein einfaches Kugelgelenk mit dem 3D Drucker fertigen. Weitere Idee ist, die Kraftmessdose anstatt der normalen Kraftsensoren zu verwenden, da die bisherigen Daten jetzt nicht schlecht sind, aber die Masse vom Roboter nicht genug kompensieren
 Daher heute Zeit mit Solidworks verbracht, einerseits um das Kugelgelenk zu basteln (als Kugel wird ein Golfball verwendet), andererseits um eine Verbindung zwischen dem Roboter und der Kraftmessdose herzustellen. Stand jetzt sind die ersten Entwürfe durch, ich lass das Mal über Nacht laufen und schau mir morgen an wie die Ergebnisse sind. 
 Nächster Schritt ist das Modell in Mujoco zu aktualisieren und die neuen Trägheitsmatrizen/Gewichte in der Franka Emika Oberfläche einzustellen. Wenn der ganze Spaß dann stimmt kann ich den Sensor wieder montieren und mit dem Kugelgelenk anfangen. 
-
-
+13.09 (Freitag)
+Gute Fortschritte gemacht, die Kraftmessdose ist verbunden, und die Messwerte werden auch schon im code ausgelesen mithilfe der treiber von Botasystems. 
+Kugelgelenk ist gedruckt, am Montag verbind ich das Gelenk mit dem Unterteil und fahr die ersten tests. Davon abgesehen werden die Sensorwerte schon automatisch ausgelesen und auch in eine Textfile geschrieben wie alle anderen Werte auch, daher kann ich schon gut vergleichsplots erstellen. Anmerkung hier: da die Seile nicht elastisch sind wird das Gelenk vorerst quasi keinen Bewegungsfreiraum haben. 
+16.09
+Ersten Tracker gedruckt, in meinen Augen sieht der gut aus, ich muss aber noch schauen wie ich das Gewinde sinnvoll schneiden kann, damit die Kugeln draufpassen, gerade rutschen die Kugeln teilweise direkt drauf weil das Gewinde zu klein ist. 
+Hab jetzt auch den EE in der Interface so eingestellt, dass die Koordinaten vom Endeffektor mit den Koordinaten vom Sensor übereinstimmen. Der erste Test mit dem Kugelgelenk ist gemacht, hab statt seilen ein Gummiband verwendet, die Daten sehen zumindest vielversprechend aus. 
+Nächste Schritte: 
+- Mujoco Simulation vom Kugelgelenk erstellen
+- Zweiten Tracker drucken, davor muss ich aber mit Niko besprechen ob der erste in Ordnung ist. 
+17.09
+Muss die Tracker ein bisschen größer machen, aber das muss erst Ende dieser Woche fertig sein
+Simulation mit Kugelgelenk ist erstellt, wobei ich noch große Schwierigkeiten mit meinem eigentlichen Gelenk hab. Ist der übliche Spaß dass ein Gelenk mit seinem Elternbody verbunden ist, ich in dem Fall aber nicht die untere Halbkugel an den Body fixieren kann. Bzw ich hab's probiert, aber es ist keine feste Verbindung. Hab gerade gesehen, dass man mit equality/connect eventuell einen balljoint definieren kann. 
+Davon abgesehen heute nichts wirklich anderes gemacht, aber prinzipiell ist zumindest rein geometrisch das modell erstellt, es fehlt halt die Verbindung der oberen mit der unteren halbkugel. Mit den Tendons ist es schon erstellt, aber bei denen hab ich nicht wirklich realistisches verhalten, die obere halbkugel kollidiert mit der Kugel auf nicht normale art und weise (die Kugel schmiegt sich nicht in die Einbuchtung der oberen Halbkugel)
 
 
 
