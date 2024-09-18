@@ -193,7 +193,7 @@ def plot_force_error(df_error):
     plt.suptitle("Force Error")
     plt.show()
 
-def plot7(df_array):
+def plot7(df_array, labels=[r"$\tau_{robotsensor}$", r"$\tau_{command}$"]):
     # If array is of size one make it iteratable
     num_df = len(df_array)
     if num_df > 10:
@@ -207,12 +207,64 @@ def plot7(df_array):
     fig, axs = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
     for i in range(7):
         for j, df in enumerate(df_array):
-            axs[i].plot(x, df.iloc[:,i].to_numpy(), label = f"df{j}")
+            axs[i].plot(x, df.iloc[:,i].to_numpy(), label = labels[j])
         axs[i].set_ylabel(i+1)
         axs[i].set_ylim(min_tau-.2, max_tau+.2)
         axs[i].grid(True)
         axs[i].legend(loc = "upper right")
     plt.show()
+
+def plot_PosOri(O_T_EE, F_T_EE):
+    # Reshape the 5000x16 array into an array of 5000 4x4 matrices
+    O_T_EE_mat = np.transpose(O_T_EE.reshape(5000,4,4), axes=(0,2,1))
+    F_T_EE_mat = np.transpose(F_T_EE.reshape(5000,4,4), axes=(0,2,1))
+
+    # Calculate the transformation matrix from base to flange
+    O_T_F_mat = O_T_EE_mat@np.linalg.inv(F_T_EE_mat)
+    O_T_F_flat = O_T_F_mat.reshape(5000,16)
+
+    # Only plot every hundreth entry
+    pos_matrix = O_T_F_flat[:-1:100,:] # position of the flange
+    x = pos_matrix[:,3]
+    y = pos_matrix[:,7]
+    z = pos_matrix[:,11]
+    orient_matrix = O_T_EE_orig[:-1:100,:] # orientation of the EE
+
+    # Get ranges for the plot
+    x_max = np.max((x.max(), O_T_EE[0,12]))
+    x_min = np.min((x.min(), O_T_EE[0,12]))
+    y_max = np.max((y.max(), O_T_EE[0,13]))
+    y_min = np.min((y.min(), O_T_EE[0,13]))
+    z_max = np.max((z.max(), O_T_EE[0,14]))
+    z_min = np.min((z.min(), O_T_EE[0,14]))
+
+    
+    max_range = np.array([x_max-x_min, y_max-y_min, z_max-z_min]).max() / 2.0
+    mid_x = (x_max+x_min) * 0.5
+    mid_y = (y_max+y_min) * 0.5
+    mid_z = (z_max+z_min) * 0.5
+
+    # Plot original position and position
+    l_quiver = 0.01
+    fig = plt.figure(figsize=(6,6))
+    ax = fig.add_subplot(projection="3d")
+    ax.quiver(x, y, z, orient_matrix[:,0], orient_matrix[:,1], orient_matrix[:,2], length=l_quiver)
+    ax.quiver(x, y, z, orient_matrix[:,4], orient_matrix[:,5], orient_matrix[:,6], length=l_quiver)
+    ax.quiver(x, y, z, orient_matrix[:,8], orient_matrix[:,9], orient_matrix[:,10], length=l_quiver)
+    ax.plot(x, y, z, "c-")
+    ax.plot(O_T_EE_orig[0,12], O_T_EE_orig[0,13], O_T_EE_orig[0,14], "r+")
+
+    ax.view_init(elev=22, azim=22)
+    ax.set_xlim(mid_x - max_range, mid_x + max_range)
+    ax.set_ylim(mid_y - max_range, mid_y + max_range)
+    ax.set_zlim(mid_z - max_range, mid_z + max_range)
+
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    plt.show()
+
 
 def lowpassFilter(df, F_cutoff=10):
     sample_rate = 1000
@@ -231,6 +283,18 @@ folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
 
 # %%
+# Plot position and orientation
+list_of_files_O_T_EE = glob.glob(folder_path + 'O_T_EE*')
+filePath_O_T_EE = max(list_of_files_O_T_EE, key=os.path.getctime)
+O_T_EE_orig = np.loadtxt(filePath_O_T_EE, delimiter=",")
+
+list_of_files_F_T_EE = glob.glob(folder_path + 'F_T_EE*')
+filePath_F_T_EE = max(list_of_files_F_T_EE, key=os.path.getctime)
+F_T_EE_orig = np.loadtxt(filePath_F_T_EE, delimiter=",")
+
+plot_PosOri(O_T_EE_orig, F_T_EE_orig)
+
+#%%
 # Plot torques
 list_of_files_tau = glob.glob(folder_path + 'tau_da*')
 filePath_tau = max(list_of_files_tau, key=os.path.getctime)
@@ -242,30 +306,19 @@ filePath_tau_filter = max(list_of_files_tau_filter, key=os.path.getctime)
 df_orig_tau_filter = pd.read_csv(filePath_tau_filter, header=None)
 df_tau_filter = df_orig_tau_filter.copy()
 
-# list_of_files_tau_mass = glob.glob('/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/tau_mass*')
-# filePath_tau_mass = max(list_of_files_tau_mass, key=os.path.getctime)
-# df_orig_tau_mass = pd.read_csv(filePath_tau_mass, header=None)
-# df_tau_mass = df_orig_tau_mass.copy()
-
 list_of_files_q = glob.glob(folder_path + 'joint_pos*')
 filePath_q = max(list_of_files_q, key=os.path.getctime)
 df_orig_q = pd.read_csv(filePath_q, header=None)
 df_q = df_orig_q.copy()
 
-# plot7([df_tau, df_q])
-plot_torque(df_tau, df_tau_filter, df_q)
+plot7([df_tau, df_tau_filter], labels=[r"$\tau_{command}$", r"$\tau_{robotsensor}$"])
+# plot_torque(df_tau, df_tau_filter, df_q)
 # %%
     # Get external force data
-list_of_files_force_ext = glob.glob(folder_path + 'F_robot_*')
-filePath_force_ext = max(list_of_files_force_ext, key=os.path.getctime)
-df_orig_force_ext = pd.read_csv(filePath_force_ext, header=None)
-df_force_ext = df_orig_force_ext.copy()
-
-#     # Get force data from torque+jacobian
-# list_of_files_force_tau = glob.glob(folder_path + 'tau_force*')
-# filePath_force_tau = max(list_of_files_force_tau, key=os.path.getctime)
-# df_orig_force_tau = pd.read_csv(filePath_force_tau, header=None)
-# df_force_tau = df_orig_force_tau.copy()
+list_of_files_F_ext = glob.glob(folder_path + 'F_robot_*')
+filePath_F_ext = max(list_of_files_F_ext, key=os.path.getctime)
+df_orig_F_ext = pd.read_csv(filePath_F_ext, header=None)
+df_F_ext = df_orig_F_ext.copy()
 
     # Get force data from sensor
 list_of_files_F_sensor = glob.glob(folder_path + 'F_sensor_to*')
@@ -275,8 +328,8 @@ df_F_sensor = df_orig_F_sensor.copy()
 df_F_lowpass = lowpassFilter(df_F_sensor)
 
     # Plot Force
-plot_force_F_T(df_F_sensor)
-plot_force_tau_F(df_F_sensor, df_F_lowpass, labels = ["F_robot", "F_sens"])
+# plot_force_F_T(df_F_ext)
+plot_force_tau_F(df_F_ext, df_F_sensor, labels = [r"$F_{robot}$", r"$F_{sensor}$"])
 # %%
 # # Plot orientation error
 #     # Get position

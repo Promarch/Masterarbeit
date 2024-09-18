@@ -198,6 +198,7 @@ int main() {
   std::vector<std::array<double, 6>> F_robot_data, force_tau_d_data; // Stores wrench acting on EE
   std::vector<std::array<float , 6>> F_sensor_data, F_sensor_total_data; 
   std::vector<std::array<double, 5>> rotation_time_data; // stores the desired rotation with the current time
+  std::vector<std::array<double, 16>> O_T_EE_data, F_T_EE_data; 
 
     // Sensor set up
   // Serial port set up
@@ -245,7 +246,7 @@ int main() {
     
       // Create desired rotation with rotation matrix
     // Flexion (rotation around EEs x-axis)
-    double angle_flexion = -M_PI/18;
+    double angle_flexion = -M_PI/6;
     Eigen::AngleAxisd vector_flexion(angle_flexion, Eigen::Vector3d::UnitX());
     Eigen::Matrix3d rotation_flexion = vector_flexion.toRotationMatrix();
     Eigen::Affine3d transform_flexion = Eigen::Affine3d(rotation_flexion);
@@ -497,6 +498,8 @@ int main() {
       F_robot_data.push_back(robot_state.K_F_ext_hat_K);
       F_sensor_total_data.push_back(F_sensor_array);
       joint_position_data.push_back(robot_state.q);
+      O_T_EE_data.push_back(robot_state.O_T_EE);
+      F_T_EE_data.push_back(robot_state.F_T_EE);
 
       // Send desired tau to the robot
       return tau_d_array;
@@ -519,6 +522,8 @@ int main() {
     writeDataToFile(tau_filter_data);
     writeDataToFile(F_robot_data);
     writeDataToFile(joint_position_data);
+    writeDataToFile(O_T_EE_data);
+    writeDataToFile(F_T_EE_data);
     writeDataToFile(rotation_time_data);
     writeDataToFile(F_sensor_data);
     writeDataToFile(F_sensor_total_data);
