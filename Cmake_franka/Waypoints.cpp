@@ -21,14 +21,6 @@ void setDefaultBehavior(franka::Robot& robot) {
   robot.setCartesianImpedance({{3000, 3000, 3000, 300, 300, 300}});
 }
 
-// Helper function to linearly interpolate between two positions
-std::array<double, 7> interpolate(const std::array<double, 7>& start, const std::array<double, 7>& end, double t) {
-  std::array<double, 7> result;
-  for (size_t i = 0; i < start.size(); ++i) {
-    result[i] = start[i] + t * (end[i] - start[i]);
-  }
-  return result;
-}
 
 int main(int argc, char** argv) {
 

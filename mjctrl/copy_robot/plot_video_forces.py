@@ -8,6 +8,17 @@ import cv2
 import glob 
 import os 
 
+def lowpassFilter(signal, F_cutoff=10):
+    sample_rate = 1000
+    signal_filtered = np.array(signal)
+    for i in range(np.size(signal, 1)):
+        data = signal[:,i]
+        fft_sig = np.fft.fft(data)
+        cutoff_filter = 1.0 * np.abs(np.fft.fftfreq(fft_sig.size, 1.0/sample_rate)) <= F_cutoff
+        data_filter = np.real(np.fft.ifft(fft_sig * cutoff_filter))
+        signal_filtered[:,i] = data_filter
+    return signal_filtered
+
 #%%
 # Load video file
 video_path = 'copy_robot/video.mp4'
@@ -45,9 +56,11 @@ print(f"Extracted {frame_count} frames")
 # path =  "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_data_20240809_154101.txt"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 list_of_files_wrench = glob.glob(folder_path + 'force_data*')
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
+list_of_files_wrench = glob.glob(folder_path + 'F_sensor_tot*')
 filePath_wrench = max(list_of_files_wrench, key=os.path.getctime)
-wrench = np.loadtxt(filePath_wrench, delimiter=",")
-
+wrench_orig = np.loadtxt(filePath_wrench, delimiter=",")
+wrench = lowpassFilter(wrench_orig, F_cutoff=5)
     # Set up plot
 fig, (ax_img, ax_force) = plt.subplots(2,1)
 # Plot img
@@ -77,7 +90,7 @@ def update(frame_id):
     # update force
     t = frame_id * len(wrench)/frame_count/1000
     vert_line.set_xdata(t)
-    print(f"Current frame: {frame_id}, current time: {t}")
+    print(f"Current frame: {frame_id}, current time: {np.round(t,3)}")
     return (img, vert_line)
 
 ani = animation.FuncAnimation(fig=fig, func=update, frames=frame_count, interval=25)

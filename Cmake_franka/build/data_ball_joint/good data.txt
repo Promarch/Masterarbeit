@@ -1,0 +1,2 @@
+20240919_155345: 25s, O_T_EE+F_T_EE, good positions
+20240919_181453: Abrubt stop because the robot started to rotate too much, I dont know why though

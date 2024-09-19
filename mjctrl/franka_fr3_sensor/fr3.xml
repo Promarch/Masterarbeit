@@ -146,7 +146,7 @@
                       <geom name="fr3_link7_collision" class="collision" mesh="link7_coll"/>
                       <!-- Here comes my stuff -->
                       <body name="flange" pos="0 0 0.107" quat="0 0 0 1">
-                        <site name="flange_site" rgba="1 0 0 1" size="0.01" group="1" quat="0 0 0 1"/>
+                        <!-- <site name="flange_site" rgba="1 0 0 1" size="0.01" group="1" quat="0 0 0 1"/> -->
                       </body>
                       <include file="sensor_EE.xml"/>
                       <!-- This was my stuff -->
@@ -169,9 +169,9 @@
     </body> -->
   </worldbody>
 
-  <equality>
+  <!-- <equality>
     <weld name="fixstuff" body1="base" body2="Kugelgelenk_unten" relpose="0.5 0.0 0.092 0 0 -1 0" anchor="0 0 0"/>
-  </equality>
+  </equality> -->
 
   <!-- <actuator>
     <motor class="fr3" name="joint1" joint="joint1"/>
@@ -196,8 +196,8 @@
   </actuator>
 
   <keyframe>
-    <key name="home" qpos="0.0 -0.12 0.00 -2.09 0.00 1.98 -0.3827 0 0 0 0" ctrl="0.0 -0.12 0.00 -2.09 0.00 1.98 -0.3827 200"/>
-    <key name="actr_pos" qpos="0.0 -0.12 0.00 -2.09 0.00 1.98 -0.3827 0 0 0 0" ctrl="0.57 0.53 -0.51 -2.24 0.25 2.57 -0.24 200"/>
-    <key name="actr_motor" qpos='-0.0314726 0.408146 0.0291868 -2.42262 0.0650231 2.90349 -0.450025 0 0 0 0' ctrl="0.0 0.0 0.0 0.0 0.0 0.0 0.0 20"/>
+    <key name="home" qpos="0.0 -0.12 0.00 -2.09 0.00 1.98 -0.3827" ctrl="0.0 -0.12 0.00 -2.09 0.00 1.98 -0.3827 200"/>
+    <!-- <key name="actr_pos" qpos="0.0 -0.12 0.00 -2.09 0.00 1.98 -0.3827 0 0 0 0" ctrl="0.57 0.53 -0.51 -2.24 0.25 2.57 -0.24 200"/>
+    <key name="actr_motor" qpos='-0.0314726 0.408146 0.0291868 -2.42262 0.0650231 2.90349 -0.450025 0 0 0 0' ctrl="0.0 0.0 0.0 0.0 0.0 0.0 0.0 20"/> -->
   </keyframe>
 </mujoco>

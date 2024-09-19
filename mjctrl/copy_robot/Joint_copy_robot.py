@@ -40,7 +40,9 @@ def main() -> None:
     # ------------------------------------------------------------------------
 
     # Load the model and data.
-    model = mujoco.MjModel.from_xml_path("/home/alexandergerard/Masterarbeit/mjctrl/franka_fr3/scene_joint_actuator.xml")
+    scene_path = "/home/alexandergerard/Masterarbeit/mjctrl/franka_fr3/scene_joint_actuator.xml"
+    scene_path = "/home/alexandergerard/Masterarbeit/mjctrl/franka_fr3_sensor/scene.xml"
+    model = mujoco.MjModel.from_xml_path(scene_path)
     data = mujoco.MjData(model)
 
     # Enable gravity compensation. Set to 0.0 to disable.
@@ -48,7 +50,7 @@ def main() -> None:
     model.opt.timestep = dt
 
     # End-effector site we wish to control.
-    site_name = "attachment_site"
+    site_name = "virtual_ee"
     site_id = model.site(site_name).id
 
     # Get the dof and actuator ids for the joints we wish to control. These are copied
@@ -79,7 +81,7 @@ def main() -> None:
     # -----------          Calculate desired positions            ------------
     # ------------------------------------------------------------------------
 
-    folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
+    folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
         # Joint positions
     path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_cartesian/joint_position_data_20240820_115946.txt"
     list_of_files_q = glob.glob(folder_path + 'joint_posi*')
@@ -117,10 +119,6 @@ def main() -> None:
     # Pre-allocation
     rotation_init = np.zeros(4)
     pos_init = np.zeros(3)
-    desired_quat = np.zeros(4) 
-    desired_quat_conj = np.zeros(4)
-    quat_temp1 = np.zeros(4)
-    quat_temp2 = np.zeros(4)
 
     with mujoco.viewer.launch_passive(
         model=model,
@@ -150,7 +148,6 @@ def main() -> None:
             if time_current>0.01 and set_mocap_pos:
                 # This line only exists cause I dont know how to run this loop only once
                 set_mocap_pos = False   
-
                     # Calculate desired rotation of mocap body
                 # Get initial position
                 pos_init = data.site(site_id).xpos
@@ -158,18 +155,6 @@ def main() -> None:
                 model.body("target").pos = pos_init
                 # Extract the rotation from the txt file
                 model.body("target").quat = rot_time[0,:4]
-                
-                # # Get initial orientation
-                # mujoco.mju_mat2Quat(rotation_init, data.site(site_id).xmat)
-                # # Rotate to the desired configuration
-                # mujoco.mju_axisAngle2Quat(desired_quat, rotation_axis, desired_angle)
-                # mujoco.mju_mulQuat(model.body("target").quat, rotation_init, desired_quat)
-                # # Print to debug
-                # print("Quaternion Flexion", np.round(desired_quat,4))
-                # print("Init quat", np.round(rotation_init,4))
-                # print("Desired quat", np.round(model.body("target").quat,4))
-                # print(f"Quaternion of libfranka: {libfranka_quat}")
-                # print("debug")
             
             # Set new desired rotation according to text file
             if n_pos<len(rot_time):
@@ -183,7 +168,8 @@ def main() -> None:
             # if (time.time()-t_init)>time_debug:
             #     time_pc = round(1000*(time.time()-t_init))
             #     time_data = round(1000*data.time)
-            #     print(f"Current step: {step_current}; Time wall: {time_pc}ms; Time data:{time_data}")
+            #     print(f"Position of the target: {model.body('target').pos}")
+            #     # print(f"Current step: {step_current}; Time wall: {time_pc}ms; Time data:{time_data}")
             #     time_debug += time_sample
 
             # Set the control signal and step the simulation.

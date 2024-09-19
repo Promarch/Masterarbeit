@@ -48,7 +48,7 @@ void writeDataToFileImpl(const std::vector<std::array<T, N>>& data, const std::s
   std::string filename = "data_ball_joint/" + var_name + "_" + getCurrentDateTime() + ".txt";
   std::ofstream data_file(filename);
   if (data_file.is_open()) {
-    data_file << std::fixed << std::setprecision(4);
+    data_file << std::fixed << std::setprecision(5);
     for (const auto& sample : data) {
       for (size_t i = 0; i < sample.size(); ++i) {
         data_file << sample[i];
@@ -230,7 +230,7 @@ int main() {
       // Time variables
     double time_global = 0.0; // Time the robot has been running for
     double time_cycle = 0.0;  // Time since new position
-    double time_max = 5;     // Maximum runtime
+    double time_max = 25;     // Maximum runtime
     double period_acc = 4;    // Time between old and new commanded position
     double period_reacceleration = 3; // Time to reaccelerate the joints if starting config is not the initial position
     double period_dec = 0.5; // time for decceleration, to stop abrubt braking
@@ -246,7 +246,7 @@ int main() {
     
       // Create desired rotation with rotation matrix
     // Flexion (rotation around EEs x-axis)
-    double angle_flexion = -M_PI/6;
+    double angle_flexion = -M_PI/9;
     Eigen::AngleAxisd vector_flexion(angle_flexion, Eigen::Vector3d::UnitX());
     Eigen::Matrix3d rotation_flexion = vector_flexion.toRotationMatrix();
     Eigen::Affine3d transform_flexion = Eigen::Affine3d(rotation_flexion);
@@ -279,19 +279,19 @@ int main() {
     std::array<float, 6> F_sensor_array;
     std::array<float, 6> F_sensor_temp_array;
 
-      // Variables to set new position
-    // Decceleration
+      // Variables to set a new position
     bool decceleration = false; // if true, robot deccelerates, used to stop the motion before setting a new position
     bool acceleration = false; // set true when external wrench is too high, will cause the robot to slowly accelerate again
+    bool new_pos = false;   // state variable, if true new position will be set
     double t_dec = 0;   // will be set the moment a decceleration is called
 
-    // New position
+      // Variables to calculate a new position
     Eigen::Affine3d transform_temp;
     Eigen::Matrix<double, 3, 1> pos_temp = pos_d;
-    bool new_pos = false;   // state variable, if true new position will be set
     std::srand(std::time(nullptr)); // initialize random seed
-    double max_flexion = -M_PI*2/9;    // Max possible flexion
-    double max_internal = M_PI/12;   // Max possible internal-external rotation
+    double max_flexion = M_PI/9;    // Max possible flexion
+    double range_flexion = 2*max_flexion; 
+    double max_internal = M_PI/9;   // Max possible internal-external rotation
     double range_internal = 2*max_internal; // Possible values (max_internal-min_internal)
 
     // Debug stuff
@@ -332,22 +332,23 @@ int main() {
         transform_start = transform_temp; 
           // Set new angles and compute new rotation
         // New Flexion
-        angle_flexion = (std::rand()/(RAND_MAX/max_flexion)); 
+        angle_flexion = (std::rand()/(RAND_MAX/range_flexion))-max_flexion; 
         vector_flexion = Eigen::AngleAxisd(angle_flexion, Eigen::Vector3d::UnitX());
         transform_flexion = Eigen::Affine3d(vector_flexion.toRotationMatrix());
         // New Internal-external rotation
-        if (abs(angle_flexion) < M_PI/18) {
+/*        if (abs(angle_flexion) < M_PI/18) {
           angle_internal = 0; // No internal rotation if the knee is extended
         }
         else {
           angle_internal = (std::rand()/(RAND_MAX/range_internal))-max_internal;
-        }
+        }*/
+        angle_internal = (std::rand()/(RAND_MAX/range_internal))-max_internal;
         vector_internal = Eigen::AngleAxisd (angle_internal, Eigen::Vector3d::UnitY());
         transform_internal = Eigen::Affine3d(vector_internal.toRotationMatrix());
         // Combine rotations (first flexion then rotation)
         transform_d = transform_init * transform_flexion * transform_internal;
         // Set new position to false since new position was just set
-        new_pos = false; 
+        new_pos = false;
         time_cycle = 0;
         // Debug: Combine rotation quaternion for error plotting
         quaternion_flexion = Eigen::Quaterniond(vector_flexion.toRotationMatrix());
@@ -436,19 +437,19 @@ int main() {
 
         // Deccelerate if forces to high, or set new pos if desired position reached or no joint movement present
       if (decceleration==false) {
-        if (F_ext.tail(3).norm()>4) {   // Forces too high
+        if (F_ext.tail(3).norm()>6) {   // Forces too high
           decceleration = true;
           acceleration = true; 
           t_dec = time_cycle;
           std::cout << "Torques too high; Time: " << time_global << ", wrench: \n" << F_ext << "\n";
         }
-        else if (F_ext.head(3).norm()>12) {   // Torque too high
+        else if (F_ext.head(3).norm()>15) {   // Torque too high
           decceleration = true;
           acceleration = true; 
           t_dec = time_cycle;
           std::cout << "Forces too high; Time: " << time_global << ", wrench: \n" << F_ext << "\n";
         }
-        else if (error.tail(3).norm()<0.04 and (time_cycle>period_acc or time_cycle<0.01) and (time_global+period_acc)<time_max) { // Position reached, acceleration finished, not too close to end of time_max
+        else if (error.tail(3).norm()<0.04 and (time_cycle>period_acc or time_cycle<0.01) and (time_global+period_acc)<time_max) { // Position reached & acceleration finished & not too close to end of time_max
           new_pos = true;
           std::cout << "Desired rotation reached; Time: " << time_global << ", error: \n" << error << std::endl;
         }
@@ -536,7 +537,11 @@ int main() {
     writeDataToFile(tau_filter_data);
     writeDataToFile(F_robot_data);
     writeDataToFile(joint_position_data);
+    writeDataToFile(O_T_EE_data);
+    writeDataToFile(F_T_EE_data);
     writeDataToFile(rotation_time_data);
+    writeDataToFile(F_sensor_data);
+    writeDataToFile(F_sensor_total_data);
     return -1;
   }
   // General exceptions

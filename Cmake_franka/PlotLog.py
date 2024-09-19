@@ -6,6 +6,17 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+def lowpassFilter(df, F_cutoff=10):
+    sample_rate = 1000
+    df_filter = df.copy()
+    for i in range(np.size(df, 1)):
+        data = np.array(df.iloc[:,i])
+        fft_sig = np.fft.fft(data)
+        cutoff_filter = 1.0 * np.abs(np.fft.fftfreq(fft_sig.size, 1.0/sample_rate)) <= F_cutoff
+        data_filter = np.real(np.fft.ifft(fft_sig * cutoff_filter))
+        df_filter.iloc[:,i] = data_filter
+    return df_filter
+
 # Function to create 7 Subplots from a dataframe
 def plot_torque(df_tau, df_filter, df_q, columns = None):
     if "time" in df_tau.columns:
@@ -199,7 +210,7 @@ def plot7(df_array, labels=[r"$\tau_{robotsensor}$", r"$\tau_{command}$"]):
     if num_df > 10:
         df_array = [df_array]
 
-    x = df_array[0].index.values
+    x = np.arange(0,len(df_array[0]))
     # Get min and max of torque
     min_tau = np.min(df_array)
     max_tau = np.max(df_array)
@@ -207,7 +218,7 @@ def plot7(df_array, labels=[r"$\tau_{robotsensor}$", r"$\tau_{command}$"]):
     fig, axs = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
     for i in range(7):
         for j, df in enumerate(df_array):
-            axs[i].plot(x, df.iloc[:,i].to_numpy(), label = labels[j])
+            axs[i].plot(x, df[:,i], label = labels[j])
         axs[i].set_ylabel(i+1)
         axs[i].set_ylim(min_tau-.2, max_tau+.2)
         axs[i].grid(True)
@@ -215,13 +226,14 @@ def plot7(df_array, labels=[r"$\tau_{robotsensor}$", r"$\tau_{command}$"]):
     plt.show()
 
 def plot_PosOri(O_T_EE, F_T_EE):
-    # Reshape the 5000x16 array into an array of 5000 4x4 matrices
-    O_T_EE_mat = np.transpose(O_T_EE.reshape(5000,4,4), axes=(0,2,1))
-    F_T_EE_mat = np.transpose(F_T_EE.reshape(5000,4,4), axes=(0,2,1))
+    # Reshape the nx16 array into an array of n 4x4 matrices
+    size_mat = len(O_T_EE)
+    O_T_EE_mat = np.transpose(O_T_EE.reshape(size_mat,4,4), axes=(0,2,1))
+    F_T_EE_mat = np.transpose(F_T_EE.reshape(size_mat,4,4), axes=(0,2,1))
 
     # Calculate the transformation matrix from base to flange
     O_T_F_mat = O_T_EE_mat@np.linalg.inv(F_T_EE_mat)
-    O_T_F_flat = O_T_F_mat.reshape(5000,16)
+    O_T_F_flat = O_T_F_mat.reshape(size_mat,16)
 
     # Only plot every hundreth entry
     pos_matrix = O_T_F_flat[:-1:100,:] # position of the flange
@@ -231,12 +243,12 @@ def plot_PosOri(O_T_EE, F_T_EE):
     orient_matrix = O_T_EE_orig[:-1:100,:] # orientation of the EE
 
     # Get ranges for the plot
-    x_max = np.max((x.max(), O_T_EE[0,12]))
-    x_min = np.min((x.min(), O_T_EE[0,12]))
-    y_max = np.max((y.max(), O_T_EE[0,13]))
-    y_min = np.min((y.min(), O_T_EE[0,13]))
-    z_max = np.max((z.max(), O_T_EE[0,14]))
-    z_min = np.min((z.min(), O_T_EE[0,14]))
+    x_max = np.max((x.max(), O_T_EE[:,12].max()))
+    x_min = np.min((x.min(), O_T_EE[:,12].min()))
+    y_max = np.max((y.max(), O_T_EE[:,13].max()))
+    y_min = np.min((y.min(), O_T_EE[:,13].min()))
+    z_max = np.max((z.max(), O_T_EE[:,14].max()))
+    z_min = np.min((z.min(), O_T_EE[:,14].min()))
 
     
     max_range = np.array([x_max-x_min, y_max-y_min, z_max-z_min]).max() / 2.0
@@ -252,7 +264,7 @@ def plot_PosOri(O_T_EE, F_T_EE):
     ax.quiver(x, y, z, orient_matrix[:,4], orient_matrix[:,5], orient_matrix[:,6], length=l_quiver)
     ax.quiver(x, y, z, orient_matrix[:,8], orient_matrix[:,9], orient_matrix[:,10], length=l_quiver)
     ax.plot(x, y, z, "c-")
-    ax.plot(O_T_EE_orig[0,12], O_T_EE_orig[0,13], O_T_EE_orig[0,14], "r+")
+    ax.plot(O_T_EE[:,12], O_T_EE[:,13], O_T_EE[:,14], "r-")
 
     ax.view_init(elev=22, azim=22)
     ax.set_xlim(mid_x - max_range, mid_x + max_range)
@@ -265,22 +277,111 @@ def plot_PosOri(O_T_EE, F_T_EE):
 
     plt.show()
 
-
-def lowpassFilter(df, F_cutoff=10):
-    sample_rate = 1000
-    df_filter = df.copy()
-    for i in range(np.size(df, 1)):
-        data = np.array(df.iloc[:,i])
-        fft_sig = np.fft.fft(data)
-        cutoff_filter = 1.0 * np.abs(np.fft.fftfreq(fft_sig.size, 1.0/sample_rate)) <= F_cutoff
-        data_filter = np.real(np.fft.ifft(fft_sig * cutoff_filter))
-        df_filter.iloc[:,i] = data_filter
-    return df_filter
+def plot_PosError(O_T_EE):
+    pos = np.array([O_T_EE[:,12], O_T_EE[:,13], O_T_EE[:,14]])
+    pos_abs = np.linalg.norm(pos.transpose()-pos[:,0], axis=1)*1000
+    plt.plot(pos_abs)
+    plt.xlabel("Time [ms]")
+    plt.ylabel("Position error [mm]")
+    plt.title("Absolute positional error during the trajectory")
+    plt.show()
 
 # folder path
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
+
+#%%
+    # Plot force at specific point in 3D
+# Get Data
+list_of_files_O_T_EE = glob.glob(folder_path + 'O_T_EE*')
+filePath_O_T_EE = max(list_of_files_O_T_EE, key=os.path.getctime)
+O_T_EE_orig = np.loadtxt(filePath_O_T_EE, delimiter=",")
+O_T_EE = O_T_EE_orig
+list_of_files_F_T_EE = glob.glob(folder_path + 'F_T_EE*')
+filePath_F_T_EE = max(list_of_files_F_T_EE, key=os.path.getctime)
+F_T_EE_orig = np.loadtxt(filePath_F_T_EE, delimiter=",")
+F_T_EE = F_T_EE_orig
+list_of_files_sensor = glob.glob(folder_path + 'F_sensor_tota*')
+filePath_sensor = max(list_of_files_sensor, key=os.path.getctime)
+F_sensor = np.loadtxt(filePath_sensor, delimiter=",")
+
+# Reshape the nx16 array into an array of n 4x4 matrices
+size_mat = len(O_T_EE)
+O_T_EE_mat = np.transpose(O_T_EE.reshape(size_mat,4,4), axes=(0,2,1))
+F_T_EE_mat = np.transpose(F_T_EE.reshape(size_mat,4,4), axes=(0,2,1))
+
+# Calculate the transformation matrix from base to flange
+O_T_F_mat = O_T_EE_mat@np.linalg.inv(F_T_EE_mat)
+O_T_F_flat = O_T_F_mat.reshape(size_mat,16)
+
+# Only plot every hundreth entry
+pos_matrix = O_T_F_flat[:-1:100,:] # position of the flange
+x = pos_matrix[:,3]
+y = pos_matrix[:,7]
+z = pos_matrix[:,11]
+orient_matrix = O_T_EE_orig[:-1:100,:] # orientation of the EE
+
+    # Sort values by absolut torque into n different categories
+torque_abs = np.linalg.norm(F_sensor[:-1:100,3:], axis=1)
+# Sort the indices to then sort the values (and calculate percentiles from there)
+sorted_indices = np.argsort(torque_abs)
+sorted_data = torque_abs[sorted_indices]
+# Calculate the percentiles on the sorted values
+n_colors = 4
+percentiles = np.percentile(sorted_data, np.round(np.linspace(0, 100, n_colors+1))[1:])
+# Use a loop to create subsets of indices
+percentile_index = []
+prev = -np.inf
+for p in percentiles:
+    subset_mask = (sorted_data > prev) & (sorted_data <= p)
+    percentile_index.append(sorted_indices[subset_mask])
+    prev = p
+
+# Calculate the hex values for the points
+opacity = 0.9
+percentiles_red = -np.percentile(np.linspace(0,-2,100), np.round(np.linspace(0,100, n_colors+1))[:-1])
+percentiles_green = np.percentile(np.linspace(0,2,100), np.round(np.linspace(0,100, n_colors+1))[1:])
+percentiles_red[percentiles_red>1]=1
+percentiles_green[percentiles_green>1]=1
+# print("Red: ", percentiles_red)
+# print("Green: ", percentiles_green)
+
+    # Get ranges for the plot
+# Calculate maximum values
+x_max = np.max((x.max(), O_T_EE[:,12].max()))
+x_min = np.min((x.min(), O_T_EE[:,12].min()))
+y_max = np.max((y.max(), O_T_EE[:,13].max()))
+y_min = np.min((y.min(), O_T_EE[:,13].min()))
+z_max = np.max((z.max(), O_T_EE[:,14].max()))
+z_min = np.min((z.min(), O_T_EE[:,14].min()))
+# Calculate limits of the plot
+max_range = np.array([x_max-x_min, y_max-y_min, z_max-z_min]).max() / 2.0
+mid_x = (x_max+x_min) * 0.5
+mid_y = (y_max+y_min) * 0.5
+mid_z = (z_max+z_min) * 0.5
+
+# Plot original position and position
+l_quiver = 0.01
+fig = plt.figure(figsize=(6,6))
+ax = fig.add_subplot(projection="3d")
+ax.plot(x, y, z, "k-")
+for i, index in enumerate(percentile_index):
+    ax.plot(x[index], y[index], z[index], "o", color=(percentiles_red[i], percentiles_green[i], 0, opacity))
+
+ax.plot(O_T_EE_orig[:,12], O_T_EE_orig[:,13], O_T_EE_orig[:,14], "r-")
+
+
+ax.view_init(elev=22, azim=22)
+ax.set_xlim(mid_x - max_range, mid_x + max_range)
+ax.set_ylim(mid_y - max_range, mid_y + max_range)
+ax.set_zlim(mid_z - max_range, mid_z + max_range)
+
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+
+plt.show()
 
 # %%
 # Plot position and orientation
@@ -292,8 +393,25 @@ list_of_files_F_T_EE = glob.glob(folder_path + 'F_T_EE*')
 filePath_F_T_EE = max(list_of_files_F_T_EE, key=os.path.getctime)
 F_T_EE_orig = np.loadtxt(filePath_F_T_EE, delimiter=",")
 
-plot_PosOri(O_T_EE_orig, F_T_EE_orig)
+# plot_PosOri(O_T_EE_orig, F_T_EE_orig)
+# plot_PosError(O_T_EE_orig)
 
+#%%
+    # Import torque with numpy
+list_of_files_tau = glob.glob(folder_path + 'tau_da*')
+filePath_tau = max(list_of_files_tau, key=os.path.getctime)
+np_tau = np.loadtxt(filePath_tau, delimiter=",")
+
+list_of_files_tau_filter = glob.glob(folder_path + 'tau_filter*')
+filePath_tau_filter = max(list_of_files_tau_filter, key=os.path.getctime)
+np_tau_filter = np.loadtxt(filePath_tau_filter, delimiter=",")
+
+list_of_files_q = glob.glob(folder_path + 'joint_pos*')
+filePath_q = max(list_of_files_q, key=os.path.getctime)
+np_q = np.loadtxt(filePath_q, delimiter=",")
+dq = (np_q[:-1:100,:] - np_q[1::100,:])*1000
+
+# plot7(dq) #, labels=[r"$\tau_c$", r"$\tau_r$"]
 #%%
 # Plot torques
 list_of_files_tau = glob.glob(folder_path + 'tau_da*')
@@ -311,7 +429,7 @@ filePath_q = max(list_of_files_q, key=os.path.getctime)
 df_orig_q = pd.read_csv(filePath_q, header=None)
 df_q = df_orig_q.copy()
 
-plot7([df_tau, df_tau_filter], labels=[r"$\tau_{command}$", r"$\tau_{robotsensor}$"])
+# plot7([df_tau, df_tau_filter], labels=[r"$\tau_{command}$", r"$\tau_{robotsensor}$"])
 # plot_torque(df_tau, df_tau_filter, df_q)
 # %%
     # Get external force data
@@ -329,7 +447,8 @@ df_F_lowpass = lowpassFilter(df_F_sensor)
 
     # Plot Force
 # plot_force_F_T(df_F_ext)
-plot_force_tau_F(df_F_ext, df_F_sensor, labels = [r"$F_{robot}$", r"$F_{sensor}$"])
+# plot_force_tau_F(df_F_ext, df_F_lowpass, labels = [r"$F_{robot}$", r"$F_{sensor}$"])
+
 # %%
 # # Plot orientation error
 #     # Get position
