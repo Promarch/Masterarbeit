@@ -28,8 +28,6 @@ target_link_libraries(examples_common PUBLIC Franka::Franka Eigen3::Eigen3)
 SET(PROGRAM_files
   JointPositions2
   Waypoints
-  HalfCircle
-  CircleExplore
   JointImpedanceControl_example
   CartesianImpedance_example
   GetPosition
@@ -37,6 +35,7 @@ SET(PROGRAM_files
   ImpedanceCartesianControl
   VertForce
   force_control_example
+  HandMoveRobot
 )
 
 foreach(singleFile ${PROGRAM_files})

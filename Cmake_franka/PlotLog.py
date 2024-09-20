@@ -277,6 +277,81 @@ def plot_PosOri(O_T_EE, F_T_EE):
 
     plt.show()
 
+def plot_ForcePos(O_T_EE, F_T_EE, F_sensor, n_colors = 6):
+    # Reshape the nx16 array into an array of n 4x4 matrices
+    size_mat = len(O_T_EE)
+    O_T_EE_mat = np.transpose(O_T_EE.reshape(size_mat,4,4), axes=(0,2,1))
+    F_T_EE_mat = np.transpose(F_T_EE.reshape(size_mat,4,4), axes=(0,2,1))
+
+    # Calculate the transformation matrix from base to flange
+    O_T_F_mat = O_T_EE_mat@np.linalg.inv(F_T_EE_mat)
+    O_T_F_flat = O_T_F_mat.reshape(size_mat,16)
+
+    # Only plot every hundreth entry
+    pos_matrix = O_T_F_flat[:-1:100,:] # position of the flange
+    x = pos_matrix[:,3]
+    y = pos_matrix[:,7]
+    z = pos_matrix[:,11]
+    orient_matrix = O_T_EE_orig[:-1:100,:] # orientation of the EE
+
+    # Get ranges for the plot
+    x_max = np.max((x.max(), O_T_EE[:,12].max()))
+    x_min = np.min((x.min(), O_T_EE[:,12].min()))
+    y_max = np.max((y.max(), O_T_EE[:,13].max()))
+    y_min = np.min((y.min(), O_T_EE[:,13].min()))
+    z_max = np.max((z.max(), O_T_EE[:,14].max()))
+    z_min = np.min((z.min(), O_T_EE[:,14].min()))
+
+    
+    max_range = np.array([x_max-x_min, y_max-y_min, z_max-z_min]).max() / 2.0
+    mid_x = (x_max+x_min) * 0.5
+    mid_y = (y_max+y_min) * 0.5
+    mid_z = (z_max+z_min) * 0.5
+
+        # Sort values by absolut torque into n different categories
+    torque_abs = np.linalg.norm(F_sensor[:-1:100,3:], axis=1)
+    # Sort the indices to then sort the values (and calculate percentiles from there)
+    sorted_indices = np.argsort(torque_abs)
+    sorted_data = torque_abs[sorted_indices]
+    # Calculate the percentiles on the sorted values
+    percentiles = np.percentile(sorted_data, np.round(np.linspace(0, 100, n_colors+1))[1:])
+    # Use a loop to create subsets of indices
+    percentile_index = []
+    prev = -np.inf
+    for p in percentiles:
+        subset_mask = (sorted_data > prev) & (sorted_data <= p)
+        percentile_index.append(sorted_indices[subset_mask])
+        prev = p
+
+    # Calculate the hex values for the points
+    opacity = 0.8
+    percentiles_red = -np.percentile(np.linspace(0,-2,100), np.round(np.linspace(0,100, n_colors+1))[:-1])
+    percentiles_green = np.percentile(np.linspace(0,2,100), np.round(np.linspace(0,100, n_colors+1))[1:])
+    percentiles_red[percentiles_red>1]=1
+    percentiles_green[percentiles_green>1]=1
+
+        # Plot 
+    fig = plt.figure(figsize=(6,6))
+    ax = fig.add_subplot(projection="3d")
+    # Plot path of the robot
+    ax.plot(x, y, z, "k-")
+    # Plot points with colors according to the force
+    for i, index in enumerate(percentile_index):
+        ax.plot(x[index], y[index], z[index], "o", color=(percentiles_red[i], percentiles_green[i], 0, opacity))
+    # Plot path of the virtuel center of rotation (configured EE)
+    ax.plot(O_T_EE_orig[:,12], O_T_EE_orig[:,13], O_T_EE_orig[:,14], "r-")
+
+    ax.view_init(elev=22, azim=22)
+    ax.set_xlim(mid_x - max_range, mid_x + max_range)
+    ax.set_ylim(mid_y - max_range, mid_y + max_range)
+    ax.set_zlim(mid_z - max_range, mid_z + max_range)
+
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    plt.show()
+
 def plot_PosError(O_T_EE):
     pos = np.array([O_T_EE[:,12], O_T_EE[:,13], O_T_EE[:,14]])
     pos_abs = np.linalg.norm(pos.transpose()-pos[:,0], axis=1)*1000
@@ -286,22 +361,41 @@ def plot_PosError(O_T_EE):
     plt.title("Absolute positional error during the trajectory")
     plt.show()
 
+def CartSphere(x, y, z, center):
+    x = x-center[0]
+    y = y-center[1]
+    z = z-center[2]
+    r = np.sqrt(x**2 + y**2 + z**2)
+    theta = np.arccos(z / r)
+    phi = np.arctan2(y, x)
+    return theta, phi
+
+def SphereCartesian(r, theta, phi, center):
+    if (np.size(theta)>1):
+        u, v = np.meshgrid(theta, phi)
+    else:
+        u = theta
+        v = phi
+    x = r * np.sin(u)*np.cos(v)+ center[0]
+    y = r * np.sin(u)*np.sin(v)+ center[1]
+    z = r * np.cos(u)+ center[2]
+    return x,y,z
+
 # folder path
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint_manual/"
 
 #%%
     # Plot force at specific point in 3D
 # Get Data
 list_of_files_O_T_EE = glob.glob(folder_path + 'O_T_EE*')
 filePath_O_T_EE = max(list_of_files_O_T_EE, key=os.path.getctime)
-O_T_EE_orig = np.loadtxt(filePath_O_T_EE, delimiter=",")
-O_T_EE = O_T_EE_orig
+O_T_EE = np.loadtxt(filePath_O_T_EE, delimiter=",")
 list_of_files_F_T_EE = glob.glob(folder_path + 'F_T_EE*')
 filePath_F_T_EE = max(list_of_files_F_T_EE, key=os.path.getctime)
-F_T_EE_orig = np.loadtxt(filePath_F_T_EE, delimiter=",")
-F_T_EE = F_T_EE_orig
+F_T_EE = np.loadtxt(filePath_F_T_EE, delimiter=",")
 list_of_files_sensor = glob.glob(folder_path + 'F_sensor_tota*')
 filePath_sensor = max(list_of_files_sensor, key=os.path.getctime)
 F_sensor = np.loadtxt(filePath_sensor, delimiter=",")
@@ -320,32 +414,49 @@ pos_matrix = O_T_F_flat[:-1:100,:] # position of the flange
 x = pos_matrix[:,3]
 y = pos_matrix[:,7]
 z = pos_matrix[:,11]
-orient_matrix = O_T_EE_orig[:-1:100,:] # orientation of the EE
 
-    # Sort values by absolut torque into n different categories
+    # Plot sphere with radius of F_T_EE
+r = F_T_EE[0,14]
+pos_EE = O_T_EE[0,12:15]
+n_full = 15
+theta_full = np.linspace(0,np.pi/2, n_full)
+phi_full = np.linspace(0,2*np.pi, n_full)
+x_full, y_full, z_full = SphereCartesian(r, theta_full, phi_full, pos_EE)
+
+    # Calculate nearest gridpoint to random point of x,y,z
+theta_test, phi_test = CartSphere(x[93], y[93], z[93], pos_EE)
+theta_diff = theta_full - theta_test
+theta_index = np.abs(theta_diff).argmin()
+theta_surf = np.array([theta_index, theta_index - np.sign(theta_diff[theta_index])]).astype(int)
+phi_diff = phi_full - phi_test
+phi_index = np.abs(phi_diff).argmin()
+phi_surf = np.array([phi_index, phi_index - np.sign(phi_diff[phi_index])]).astype(int)
+x_surf, y_surf, z_surf = SphereCartesian(r, theta_full[theta_surf], phi_full[phi_surf], pos_EE)
+
+x_test, y_test, z_test = SphereCartesian(r, theta_full[theta_index], phi_full[phi_index], pos_EE)
+print(phi_surf, "next", theta_surf)
+
+# ------------------------------------------------------
+# -----              Get Surface                   -----
+# ------------------------------------------------------
+theta, phi = CartSphere(x, y, z, pos_EE)
+theta_surf_help = np.array([])
+phi_surf_help = np.array([])
+for i in range(len(theta)):
+    theta_diff_help = theta_full - theta[i]
+    phi_diff_help = phi_full - phi[i]
+    theta_index_help = np.abs(theta_diff_help).argmin()
+    phi_index_help = np.abs(phi_diff_help).argmin()
+    theta_surf_help = np.append(theta_surf_help, np.array([theta_index_help, theta_index_help - np.sign(theta_diff_help[theta_index_help])]).astype(int))
+    phi_surf_help = np.append(phi_surf_help, np.array([phi_index_help, phi_index_help - np.sign(phi_diff_help[phi_index_help])]).astype(int))
+    if i==93:
+        print("here")
+
+    # Sort values by absolut torque
 torque_abs = np.linalg.norm(F_sensor[:-1:100,3:], axis=1)
-# Sort the indices to then sort the values (and calculate percentiles from there)
 sorted_indices = np.argsort(torque_abs)
-sorted_data = torque_abs[sorted_indices]
-# Calculate the percentiles on the sorted values
-n_colors = 4
-percentiles = np.percentile(sorted_data, np.round(np.linspace(0, 100, n_colors+1))[1:])
-# Use a loop to create subsets of indices
-percentile_index = []
-prev = -np.inf
-for p in percentiles:
-    subset_mask = (sorted_data > prev) & (sorted_data <= p)
-    percentile_index.append(sorted_indices[subset_mask])
-    prev = p
-
-# Calculate the hex values for the points
-opacity = 0.9
-percentiles_red = -np.percentile(np.linspace(0,-2,100), np.round(np.linspace(0,100, n_colors+1))[:-1])
-percentiles_green = np.percentile(np.linspace(0,2,100), np.round(np.linspace(0,100, n_colors+1))[1:])
-percentiles_red[percentiles_red>1]=1
-percentiles_green[percentiles_green>1]=1
-# print("Red: ", percentiles_red)
-# print("Green: ", percentiles_green)
+# Generate colormap
+c = torque_abs[sorted_indices]
 
     # Get ranges for the plot
 # Calculate maximum values
@@ -361,16 +472,22 @@ mid_x = (x_max+x_min) * 0.5
 mid_y = (y_max+y_min) * 0.5
 mid_z = (z_max+z_min) * 0.5
 
-# Plot original position and position
-l_quiver = 0.01
+    # Plots
+opacity = 0.9
 fig = plt.figure(figsize=(6,6))
-ax = fig.add_subplot(projection="3d")
+ax = fig.add_subplot(111, projection="3d")
+# Plot nearest gridpoint to testpoint
+ax.plot(x_test, y_test, z_test, "mo", markersize=10)
+ax.plot_surface(x_surf, y_surf, z_surf, alpha = 1, color="black")
+# Plot robot trajectory
 ax.plot(x, y, z, "k-")
-for i, index in enumerate(percentile_index):
-    ax.plot(x[index], y[index], z[index], "o", color=(percentiles_red[i], percentiles_green[i], 0, opacity))
-
-ax.plot(O_T_EE_orig[:,12], O_T_EE_orig[:,13], O_T_EE_orig[:,14], "r-")
-
+# Plot trajectory of virtual EE
+ax.plot(O_T_EE[:,12], O_T_EE[:,13], O_T_EE[:,14], "r-")
+# Plot points with force as color and add colorbar
+p = ax.scatter(x[sorted_indices], y[sorted_indices], z[sorted_indices], alpha = opacity, c = c, cmap=plt.cm.jet)
+fig.colorbar(p, ax=ax)
+# Plot half sphere
+ax_sphere = ax.plot_surface(x_full, y_full, z_full, color = (0.99, 0.99, 0.99, 0.5), linewidth=0, antialiased=False)
 
 ax.view_init(elev=22, azim=22)
 ax.set_xlim(mid_x - max_range, mid_x + max_range)

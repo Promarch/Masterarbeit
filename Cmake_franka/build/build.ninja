@@ -170,72 +170,6 @@ build Waypoints: CXX_EXECUTABLE_LINKER__Waypoints_Debug CMakeFiles/Waypoints.dir
   TARGET_PDB = Waypoints.dbg
 
 # =============================================================================
-# Object build statements for EXECUTABLE target HalfCircle
-
-
-#############################################
-# Order-only phony target for HalfCircle
-
-build cmake_object_order_depends_target_HalfCircle: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
-
-build CMakeFiles/HalfCircle.dir/HalfCircle.cpp.o: CXX_COMPILER__HalfCircle_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/HalfCircle.cpp || cmake_object_order_depends_target_HalfCircle
-  DEP_FILE = CMakeFiles/HalfCircle.dir/HalfCircle.cpp.o.d
-  FLAGS = -g -std=gnu++14
-  INCLUDES = -isystem /usr/include/eigen3
-  OBJECT_DIR = CMakeFiles/HalfCircle.dir
-  OBJECT_FILE_DIR = CMakeFiles/HalfCircle.dir
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target HalfCircle
-
-
-#############################################
-# Link the executable HalfCircle
-
-build HalfCircle: CXX_EXECUTABLE_LINKER__HalfCircle_Debug CMakeFiles/HalfCircle.dir/HalfCircle.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
-  FLAGS = -g
-  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
-  OBJECT_DIR = CMakeFiles/HalfCircle.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = HalfCircle
-  TARGET_PDB = HalfCircle.dbg
-
-# =============================================================================
-# Object build statements for EXECUTABLE target CircleExplore
-
-
-#############################################
-# Order-only phony target for CircleExplore
-
-build cmake_object_order_depends_target_CircleExplore: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
-
-build CMakeFiles/CircleExplore.dir/CircleExplore.cpp.o: CXX_COMPILER__CircleExplore_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/CircleExplore.cpp || cmake_object_order_depends_target_CircleExplore
-  DEP_FILE = CMakeFiles/CircleExplore.dir/CircleExplore.cpp.o.d
-  FLAGS = -g -std=gnu++14
-  INCLUDES = -isystem /usr/include/eigen3
-  OBJECT_DIR = CMakeFiles/CircleExplore.dir
-  OBJECT_FILE_DIR = CMakeFiles/CircleExplore.dir
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target CircleExplore
-
-
-#############################################
-# Link the executable CircleExplore
-
-build CircleExplore: CXX_EXECUTABLE_LINKER__CircleExplore_Debug CMakeFiles/CircleExplore.dir/CircleExplore.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
-  FLAGS = -g
-  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
-  OBJECT_DIR = CMakeFiles/CircleExplore.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = CircleExplore
-  TARGET_PDB = CircleExplore.dbg
-
-# =============================================================================
 # Object build statements for EXECUTABLE target JointImpedanceControl_example
 
 
@@ -466,6 +400,39 @@ build force_control_example: CXX_EXECUTABLE_LINKER__force_control_example_Debug 
   TARGET_FILE = force_control_example
   TARGET_PDB = force_control_example.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target HandMoveRobot
+
+
+#############################################
+# Order-only phony target for HandMoveRobot
+
+build cmake_object_order_depends_target_HandMoveRobot: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+
+build CMakeFiles/HandMoveRobot.dir/HandMoveRobot.cpp.o: CXX_COMPILER__HandMoveRobot_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/HandMoveRobot.cpp || cmake_object_order_depends_target_HandMoveRobot
+  DEP_FILE = CMakeFiles/HandMoveRobot.dir/HandMoveRobot.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/HandMoveRobot.dir
+  OBJECT_FILE_DIR = CMakeFiles/HandMoveRobot.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target HandMoveRobot
+
+
+#############################################
+# Link the executable HandMoveRobot
+
+build HandMoveRobot: CXX_EXECUTABLE_LINKER__HandMoveRobot_Debug CMakeFiles/HandMoveRobot.dir/HandMoveRobot.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/HandMoveRobot.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = HandMoveRobot
+  TARGET_PDB = HandMoveRobot.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -546,7 +513,7 @@ build sensor_botasys: phony libsensor_botasys.a
 #############################################
 # Folder: /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
-build all: phony libexamples_common.a libsensor_botasys.a JointPositions2 Waypoints HalfCircle CircleExplore JointImpedanceControl_example CartesianImpedance_example GetPosition ReadForce ImpedanceCartesianControl VertForce force_control_example
+build all: phony libexamples_common.a libsensor_botasys.a JointPositions2 Waypoints JointImpedanceControl_example CartesianImpedance_example GetPosition ReadForce ImpedanceCartesianControl VertForce force_control_example HandMoveRobot
 
 # =============================================================================
 # Built-in targets

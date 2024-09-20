@@ -21,16 +21,6 @@
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/HalfCircle.dir/HalfCircle.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/HalfCircle.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/HalfCircle.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/CircleExplore.dir/CircleExplore.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/CircleExplore.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/CircleExplore.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl_example.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl_example.cpp"
 },
@@ -63,5 +53,10 @@
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/force_control_example.dir/force_control_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/force_control_example.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/force_control_example.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/HandMoveRobot.dir/HandMoveRobot.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/HandMoveRobot.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/HandMoveRobot.cpp"
 }
 ]

@@ -14,7 +14,7 @@ plt.grid(False)
 plt.title("Acceleration factors")
 plt.xlabel("Time [s]")
 plt.legend(loc="center right")
-plt.show()
+# plt.show()
 #%%
 # Plot Rotation of EE
 def plot_quiver(X,Y,axs):
@@ -46,4 +46,46 @@ x_lim = [-0.1, 1.1]
 axs.grid(True)
 axs.set_axis_off()
 axs.axis("equal")
+# plt.show()
+
+#%%
+    # Plot sphere
+# draw sphere
+r = 10
+n_fine = 8
+theta = np.linspace(0,np.pi/2, n_fine)
+phi = np.linspace(0,2*np.pi, n_fine)
+u, v = np.meshgrid(theta, phi)
+x = r * np.sin(u)*np.cos(v)
+y = r * np.sin(u)*np.sin(v)
+z = r * np.cos(u)
+n_grid = 8
+theta_grid = np.linspace(0,np.pi/2, n_grid)[1:]
+# theta_grid = np.arccos(np.linspace(1, 0, n_grid))[1:]
+phi_grid = np.linspace(0,np.pi*2, n_grid)
+u_grid, v_grid = np.meshgrid(theta_grid, phi_grid)
+x_grid = r * np.sin(u_grid)*np.cos(v_grid)
+y_grid = r * np.sin(u_grid)*np.sin(v_grid)
+z_grid = r * np.cos(u_grid)
+
+u_surf, v_surf = np.meshgrid(theta_grid[5:8], phi_grid[1:3])
+x_surf = r * np.sin(u_surf)*np.cos(v_surf)
+y_surf = r * np.sin(u_surf)*np.sin(v_surf)
+z_surf = r * np.cos(u_surf)
+
+fig = plt.figure(figsize=(6,6))
+ax = fig.add_subplot(projection="3d")
+# ax.plot_surface(x, y, z, alpha = 0.4, cmap=plt.cm.coolwarm, linewidth=0, antialiased=False)
+ax.plot_wireframe(x_grid, y_grid, z_grid, alpha=0.7, color="red")
+ax.plot_surface(x_surf, y_surf, z_surf, alpha = 1, color="black")
+lim = (-10,10)
+ax.set_xlim(lim)
+ax.set_ylim(lim)
+ax.set_zlim(lim)
+
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
 plt.show()
+
+
