@@ -414,32 +414,40 @@ pos_matrix = O_T_F_flat[:-1:100,:] # position of the flange
 x = pos_matrix[:,3]
 y = pos_matrix[:,7]
 z = pos_matrix[:,11]
-
+dic_points = {"x": x, "y": y, "z": z}
+df_points = pd.DataFrame(dic_points)
     # Plot sphere with radius of F_T_EE
 r = F_T_EE[0,14]
 pos_EE = O_T_EE[0,12:15]
 n_full = 15
 theta_full = np.linspace(0,np.pi/2, n_full)
-phi_full = np.linspace(0,2*np.pi, n_full)
+phi_full = np.linspace(-np.pi,np.pi, n_full)
+dic_surface = {"theta_0": theta_full[:-1,:-1].flatten(), "theta_1":theta_full[1:,1:].flatten(), "phi_0":phi_full[:-1,:-1].flatten(), "phi_1":phi_full[1:,1:].flatten()}
+df_surf = pd.DataFrame(dic_surface)
 x_full, y_full, z_full = SphereCartesian(r, theta_full, phi_full, pos_EE)
 
-    # Calculate nearest gridpoint to random point of x,y,z
-theta_test, phi_test = CartSphere(x[93], y[93], z[93], pos_EE)
-theta_diff = theta_full - theta_test
+    # Calculate nearest gridpoint to sample point of x,y,z
+sample_point = 0
+theta_sample, phi_sample = CartSphere(x[sample_point], y[sample_point], z[sample_point], pos_EE)
+theta_diff = theta_full - theta_sample
 theta_index = np.abs(theta_diff).argmin()
 theta_surf = np.array([theta_index, theta_index - np.sign(theta_diff[theta_index])]).astype(int)
-phi_diff = phi_full - phi_test
+phi_diff = phi_full - phi_sample
 phi_index = np.abs(phi_diff).argmin()
 phi_surf = np.array([phi_index, phi_index - np.sign(phi_diff[phi_index])]).astype(int)
+# theta_surf = np.array([0, 1])
+# phi_surf = np.array([0, 1])
+# print(phi_surf, "next", theta_surf)
 x_surf, y_surf, z_surf = SphereCartesian(r, theta_full[theta_surf], phi_full[phi_surf], pos_EE)
 
-x_test, y_test, z_test = SphereCartesian(r, theta_full[theta_index], phi_full[phi_index], pos_EE)
-print(phi_surf, "next", theta_surf)
+x_sample, y_sample, z_sample = SphereCartesian(r, theta_full[theta_index], phi_full[phi_index], pos_EE)
 
 # ------------------------------------------------------
 # -----              Get Surface                   -----
 # ------------------------------------------------------
 theta, phi = CartSphere(x, y, z, pos_EE)
+df_points["theta"] = theta
+df_points["phi"] = phi
 theta_surf_help = np.array([])
 phi_surf_help = np.array([])
 for i in range(len(theta)):
@@ -447,10 +455,15 @@ for i in range(len(theta)):
     phi_diff_help = phi_full - phi[i]
     theta_index_help = np.abs(theta_diff_help).argmin()
     phi_index_help = np.abs(phi_diff_help).argmin()
-    theta_surf_help = np.append(theta_surf_help, np.array([theta_index_help, theta_index_help - np.sign(theta_diff_help[theta_index_help])]).astype(int))
-    phi_surf_help = np.append(phi_surf_help, np.array([phi_index_help, phi_index_help - np.sign(phi_diff_help[phi_index_help])]).astype(int))
-    if i==93:
-        print("here")
+    theta_surf_help = np.append(theta_surf_help, np.array([theta_index_help, theta_index_help - np.sign(theta_diff_help[theta_index_help])])).astype(int)
+    phi_surf_help = np.append(phi_surf_help, np.array([phi_index_help, phi_index_help - np.sign(phi_diff_help[phi_index_help])])).astype(int)
+    # if i==93:
+    #     print("here")
+phi_surf_help = np.sort(phi_surf_help.reshape(int(len(phi_surf_help)/2),2))
+theta_surf_help = np.sort(theta_surf_help.reshape(int(len(theta_surf_help)/2),2))
+angles_together = np.concatenate([theta_surf_help, phi_surf_help], 1)
+unique_indexes = np.unique(angles_together,axis=0, return_index=True)[1]
+
 
     # Sort values by absolut torque
 torque_abs = np.linalg.norm(F_sensor[:-1:100,3:], axis=1)
@@ -477,8 +490,13 @@ opacity = 0.9
 fig = plt.figure(figsize=(6,6))
 ax = fig.add_subplot(111, projection="3d")
 # Plot nearest gridpoint to testpoint
-ax.plot(x_test, y_test, z_test, "mo", markersize=10)
-ax.plot_surface(x_surf, y_surf, z_surf, alpha = 1, color="black")
+# ax.plot(x_sample, y_sample, z_sample, "mo", markersize=10)
+# ax.plot(x[sample_point], y[sample_point], z[sample_point], "co", markersize=15)
+# ax.plot_surface(x_surf, y_surf, z_surf, alpha = 0.6, color="black")
+for i, index in enumerate(unique_indexes):
+    x_surf, y_surf, z_surf = SphereCartesian(r, theta_full[theta_surf_help[index]], phi_full[phi_surf_help[index]], pos_EE)    
+    ax.plot_surface(x_surf, y_surf, z_surf, alpha = 0.95, color="black")
+
 # Plot robot trajectory
 ax.plot(x, y, z, "k-")
 # Plot trajectory of virtual EE
