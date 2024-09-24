@@ -1,6 +1,8 @@
 #%%
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+import pandas as pd
 #%%
 # Plot Acceleration and deceleration factor
 period_acc = 4
@@ -61,14 +63,15 @@ y = r * np.sin(u)*np.sin(v)
 z = r * np.cos(u)
 n_grid = 8
 theta_grid = np.linspace(0,np.pi/2, n_grid)[1:]
-# theta_grid = np.arccos(np.linspace(1, 0, n_grid))[1:]
 phi_grid = np.linspace(0,np.pi*2, n_grid)
+theta_grid = np.array([np.pi/9, np.pi/8, np.pi/3, np.pi/2])
+phi_grid = np.array([np.pi/9, np.pi/8, np.pi/3, np.pi/2, 3*np.pi/2, 3.2*np.pi/2])
 u_grid, v_grid = np.meshgrid(theta_grid, phi_grid)
 x_grid = r * np.sin(u_grid)*np.cos(v_grid)
 y_grid = r * np.sin(u_grid)*np.sin(v_grid)
 z_grid = r * np.cos(u_grid)
 
-u_surf, v_surf = np.meshgrid(theta_grid[5:8], phi_grid[1:3])
+u_surf, v_surf = np.meshgrid(theta_grid[0:2], phi_grid[1:3])
 x_surf = r * np.sin(u_surf)*np.cos(v_surf)
 y_surf = r * np.sin(u_surf)*np.sin(v_surf)
 z_surf = r * np.cos(u_surf)
@@ -77,7 +80,49 @@ fig = plt.figure(figsize=(6,6))
 ax = fig.add_subplot(projection="3d")
 # ax.plot_surface(x, y, z, alpha = 0.4, cmap=plt.cm.coolwarm, linewidth=0, antialiased=False)
 ax.plot_wireframe(x_grid, y_grid, z_grid, alpha=0.7, color="red")
-ax.plot_surface(x_surf, y_surf, z_surf, alpha = 1, color="black")
+# ax.plot_surface(x_surf, y_surf, z_surf, alpha = 1, color="black")
+lim = (-10,10)
+ax.set_xlim(lim)
+ax.set_ylim(lim)
+ax.set_zlim(lim)
+
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+# plt.show()
+
+#%%
+    # testing meshgrids
+
+r=10
+n_grid = 4
+theta_grid = np.arange(n_grid)
+phi_grid = np.arange(10, 10 + n_grid)
+u_grid, v_grid = np.meshgrid(theta_grid, phi_grid)
+x_grid = r * np.sin(u_grid)*np.cos(v_grid)
+y_grid = r * np.sin(u_grid)*np.sin(v_grid)
+z_grid = r * np.cos(u_grid)
+
+# Try some colors
+test = np.arange((n_grid-1)**2).reshape((n_grid-1), (n_grid-1))
+norm = mpl.colors.Normalize(vmin=test.min(), vmax=test.max())
+norm(test)
+print(test)
+
+# Plot some points
+pts_start = 1
+pts = 3
+
+fig = plt.figure(figsize=(6,6))
+ax = fig.add_subplot(projection="3d")
+ax.plot_surface(x_grid, y_grid, z_grid, facecolors=plt.cm.jet(norm(test))) #, facecolors = colors
+
+# ax.plot_surface(x_grid[pts_start:pts], y_grid[pts_start:pts], z_grid[pts_start:pts], alpha=0.7, color = "c")
+
+m = mpl.cm.ScalarMappable(cmap=plt.cm.jet, norm=norm)
+m.set_array([])
+plt.colorbar(m)
+
 lim = (-10,10)
 ax.set_xlim(lim)
 ax.set_ylim(lim)
@@ -89,3 +134,19 @@ ax.set_zlabel('Z')
 plt.show()
 
 
+
+#%%
+    # Not really plotting, only testing meshgrid
+
+n_grid = 5
+x_range = np.arange(n_grid)
+y_range = np.arange(10, 10+n_grid)
+u,v = np.meshgrid(x_range, y_range)
+print("u: \n", u, "\nv: \n", v)
+
+for i in range(n_grid):
+    print(f"u_test: {u[i]}, v_test: {v[i]}")
+
+# dic = {"theta_0": u_grid[:-1,:-1].flatten(), "theta_1":u_grid[1:,1:].flatten(), "phi_0":v_grid[:-1,:-1].flatten(), "phi_1":v_grid[1:,1:].flatten()}
+# df = pd.DataFrame(dic)
+# print(df)

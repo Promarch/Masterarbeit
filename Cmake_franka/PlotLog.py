@@ -5,6 +5,8 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+
 
 def lowpassFilter(df, F_cutoff=10):
     sample_rate = 1000
@@ -422,54 +424,83 @@ pos_EE = O_T_EE[0,12:15]
 n_full = 15
 theta_full = np.linspace(0,np.pi/2, n_full)
 phi_full = np.linspace(-np.pi,np.pi, n_full)
-dic_surface = {"theta_0": theta_full[:-1,:-1].flatten(), "theta_1":theta_full[1:,1:].flatten(), "phi_0":phi_full[:-1,:-1].flatten(), "phi_1":phi_full[1:,1:].flatten()}
-df_surf = pd.DataFrame(dic_surface)
+theta_grid, phi_grid = np.meshgrid(np.arange(n_full), np.arange(n_full))
+dic_surf_index = {"theta_0": theta_grid[:-1,:-1].flatten(), "theta_1":theta_grid[1:,1:].flatten(), "phi_0":phi_grid[:-1,:-1].flatten(), "phi_1":phi_grid[1:,1:].flatten()}
+df_surf_index = pd.DataFrame(dic_surf_index)
+
 x_full, y_full, z_full = SphereCartesian(r, theta_full, phi_full, pos_EE)
 
     # Calculate nearest gridpoint to sample point of x,y,z
 sample_point = 0
 theta_sample, phi_sample = CartSphere(x[sample_point], y[sample_point], z[sample_point], pos_EE)
-theta_diff = theta_full - theta_sample
-theta_index = np.abs(theta_diff).argmin()
-theta_surf = np.array([theta_index, theta_index - np.sign(theta_diff[theta_index])]).astype(int)
-phi_diff = phi_full - phi_sample
-phi_index = np.abs(phi_diff).argmin()
-phi_surf = np.array([phi_index, phi_index - np.sign(phi_diff[phi_index])]).astype(int)
-# theta_surf = np.array([0, 1])
-# phi_surf = np.array([0, 1])
-# print(phi_surf, "next", theta_surf)
-x_surf, y_surf, z_surf = SphereCartesian(r, theta_full[theta_surf], phi_full[phi_surf], pos_EE)
+theta_diff_sample = theta_full - theta_sample
+theta_index_sample = np.abs(theta_diff_sample).argmin()
+theta_surf_sample = np.array([theta_index_sample, theta_index_sample - np.sign(theta_diff_sample[theta_index_sample])]).astype(int)
+phi_diff_sample = phi_full - phi_sample
+phi_index_sample = np.abs(phi_diff_sample).argmin()
+phi_surf_sample = np.array([phi_index_sample, phi_index_sample - np.sign(phi_diff_sample[phi_index_sample])]).astype(int)
+# x_surf, y_surf, z_surf = SphereCartesian(r, theta_full[theta_surf_sample], phi_full[phi_surf_sample], pos_EE)
 
-x_sample, y_sample, z_sample = SphereCartesian(r, theta_full[theta_index], phi_full[phi_index], pos_EE)
+x_sample, y_sample, z_sample = SphereCartesian(r, theta_full[theta_index_sample], phi_full[phi_index_sample], pos_EE)
 
 # ------------------------------------------------------
 # -----              Get Surface                   -----
 # ------------------------------------------------------
-theta, phi = CartSphere(x, y, z, pos_EE)
-df_points["theta"] = theta
-df_points["phi"] = phi
+
+# Calculate theta and phi angle of the data points
+df_points["theta"], df_points["phi"] = CartSphere(x, y, z, pos_EE)
 theta_surf_help = np.array([])
 phi_surf_help = np.array([])
-for i in range(len(theta)):
-    theta_diff_help = theta_full - theta[i]
-    phi_diff_help = phi_full - phi[i]
+# Find closest gridpoints to data point
+for i in range(len(df_points["theta"])):
+    # Subtract data point from gridpoints
+    theta_diff_help = theta_full - df_points["theta"][i]
+    phi_diff_help = phi_full - df_points["phi"][i]
+    # Find the closest gridpoint
     theta_index_help = np.abs(theta_diff_help).argmin()
     phi_index_help = np.abs(phi_diff_help).argmin()
+    # Find if the second closest gridpoint is before of after the closest gridpoint
     theta_surf_help = np.append(theta_surf_help, np.array([theta_index_help, theta_index_help - np.sign(theta_diff_help[theta_index_help])])).astype(int)
     phi_surf_help = np.append(phi_surf_help, np.array([phi_index_help, phi_index_help - np.sign(phi_diff_help[phi_index_help])])).astype(int)
-    # if i==93:
-    #     print("here")
+# Reshape the angle indexes to size [n x 2]
 phi_surf_help = np.sort(phi_surf_help.reshape(int(len(phi_surf_help)/2),2))
 theta_surf_help = np.sort(theta_surf_help.reshape(int(len(theta_surf_help)/2),2))
 angles_together = np.concatenate([theta_surf_help, phi_surf_help], 1)
-unique_indexes = np.unique(angles_together,axis=0, return_index=True)[1]
 
+    # Chat GPT solution to find the surface each point corresponds to 
+# Use broadcasting and np.all() to compare each row
+matches = np.all(df_surf_index.values[:, None] == angles_together, axis=2)
+# Find the indices where there is a match
+matching_indices = np.where(matches)
+df_points.loc[matching_indices[1], "surface"] = matching_indices[0]
 
     # Sort values by absolut torque
 torque_abs = np.linalg.norm(F_sensor[:-1:100,3:], axis=1)
+df_points["force"] = torque_abs
 sorted_indices = np.argsort(torque_abs)
 # Generate colormap
 c = torque_abs[sorted_indices]
+
+# Add the average abs. torque to the surface dataframe
+df_surf_index["force"] = np.nan
+df_surf_index["count"] = np.nan
+colored_surfaces = np.unique(df_points["surface"]).astype(int)
+for surf_id in colored_surfaces:
+    pts = np.where(df_points["surface"]==surf_id)
+    avrg_force = df_points.loc[pts, "force"].mean()
+    df_surf_index.loc[surf_id, "force"] = avrg_force
+    df_surf_index.loc[surf_id, "count"] = np.size(pts)
+
+    # Create colors array
+# Trying real stuff
+forces_surf = df_surf_index.loc[colored_surfaces, "force"]
+norm = mpl.colors.Normalize(vmin=forces_surf.min(), vmax=forces_surf.max())
+forces_color = plt.cm.jet(norm(forces_surf))
+forces_color[:,-1] = 0.4
+colors = np.zeros([len(df_surf_index), 4])
+colors = np.full((len(df_surf_index),4), [0.99, 0.99, 0.99, 0.3])
+colors[colored_surfaces] = forces_color
+colors = colors.reshape(14,14,4)
 
     # Get ranges for the plot
 # Calculate maximum values
@@ -485,16 +516,24 @@ mid_x = (x_max+x_min) * 0.5
 mid_y = (y_max+y_min) * 0.5
 mid_z = (z_max+z_min) * 0.5
 
+#%%
     # Plots
 opacity = 0.9
 fig = plt.figure(figsize=(6,6))
 ax = fig.add_subplot(111, projection="3d")
-# Plot nearest gridpoint to testpoint
+
+    # Plot nearest gridpoint to testpoint
 # ax.plot(x_sample, y_sample, z_sample, "mo", markersize=10)
 # ax.plot(x[sample_point], y[sample_point], z[sample_point], "co", markersize=15)
 # ax.plot_surface(x_surf, y_surf, z_surf, alpha = 0.6, color="black")
-for i, index in enumerate(unique_indexes):
-    x_surf, y_surf, z_surf = SphereCartesian(r, theta_full[theta_surf_help[index]], phi_full[phi_surf_help[index]], pos_EE)    
+
+# Plot surfaces that have a force average
+surf_to_plot = np.where(~df_surf_index["force"].isna())[0]
+for surf_id in colored_surfaces: 
+    theta_index = df_surf_index.loc[surf_id,["theta_0", "theta_1"]].astype(int)
+    phi_index = df_surf_index.loc[surf_id,["phi_0", "phi_1"]].astype(int)
+    
+    x_surf, y_surf, z_surf = SphereCartesian(r, theta_full[theta_index], phi_full[phi_index], pos_EE)    
     ax.plot_surface(x_surf, y_surf, z_surf, alpha = 0.95, color="black")
 
 # Plot robot trajectory
@@ -505,7 +544,7 @@ ax.plot(O_T_EE[:,12], O_T_EE[:,13], O_T_EE[:,14], "r-")
 p = ax.scatter(x[sorted_indices], y[sorted_indices], z[sorted_indices], alpha = opacity, c = c, cmap=plt.cm.jet)
 fig.colorbar(p, ax=ax)
 # Plot half sphere
-ax_sphere = ax.plot_surface(x_full, y_full, z_full, color = (0.99, 0.99, 0.99, 0.5), linewidth=0, antialiased=False)
+ax_sphere = ax.plot_surface(x_full, y_full, z_full,facecolors=colors, color = (0.99, 0.99, 0.99, 0.5), linewidth=0, antialiased=False) #
 
 ax.view_init(elev=22, azim=22)
 ax.set_xlim(mid_x - max_range, mid_x + max_range)
