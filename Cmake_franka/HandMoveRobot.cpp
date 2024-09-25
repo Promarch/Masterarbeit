@@ -13,7 +13,12 @@
 #include <franka/model.h>
 #include <franka/robot.h>
 
-// Linux headers
+// Headers for parallelization
+#include <thread>
+#include <mutex>
+#include <atomic>
+
+// Linux headers (for external sensor)
 #include <fcntl.h>      // Contains file controls like O_RDWR
 #include <errno.h>      // Error integer and strerror() function
 #include <termios.h>    // Contains POSIX terminal control definitions
@@ -62,6 +67,40 @@ void writeDataToFileImpl(const std::vector<std::array<T, N>>& data, const std::s
   } else {
     std::cerr << "Unable to open file for writing" << std::endl;
   }
+}
+
+// Function to write the elements of a vector into a temporary file that gets updated regularly
+#define writeTempData(data) writeTempDataImpl(data, #data)
+template <typename T, std::size_t N>
+void writeTempDataImpl(const std::vector<std::array<T, N>>& data, const std::string& var_name) {
+  std::string filename = "data_ball_joint_manual/" + var_name + ".txt";
+  std::ofstream data_file(filename, std::ios_base::out | std::ios_base::app);
+  if (data_file.is_open()) {
+    data_file << std::fixed << std::setprecision(4);
+    for (const auto& sample : data) {
+      for (size_t i = 0; i < sample.size(); ++i) {
+        data_file << sample[i];
+        if (i < sample.size() - 1) {
+          data_file << ", ";
+        }
+      }
+      data_file << "\n";
+    }
+    data_file.close();
+  } else {
+    std::cerr << "Unable to open file for writing" << std::endl;
+  }
+}
+
+// Function that wipes the content of a textfile, needed for the temporary variables
+void wipeFile(const std::string& fileName){
+  std::string filePath = "data_ball_joint_manual/" + fileName + ".txt";
+  std::ofstream fileStream(filePath, std::ofstream::out | std::ofstream::trunc); 
+  if (!fileStream) {
+    std::cerr << "Error opening file: " << filePath << std::endl;
+    return;
+  }
+  fileStream.close();
 }
 
 // Function and classes needed for the Botasys sensor, from: https://gitlab.com/botasys/bota_serial_driver
@@ -193,6 +232,58 @@ void check_sensor(){
 
 int main() {
 
+  double time = 0;
+    // Set up separate thread to write files during the control loop
+  // Variables for the thread
+  int print_rate = 4; // How many times per second is the data written
+  std::atomic_bool running{true}; // Thread is active
+  std::atomic_bool thread_running{true}; // Terminates the thread if true
+  struct {
+    std::mutex mutex;
+    bool has_data;
+    std::vector<std::array<double, 16>> O_T_EE_temp_data; 
+    std::vector<std::array<double, 16>> F_T_EE_temp_data; 
+    std::vector<std::array<float, 6>>   F_sensor_temp_data; 
+  } print_data{};
+  // Printing thread
+  std::thread write_thread([print_rate, &print_data, &running, &thread_running, &time]() {
+    while (thread_running) {
+      if (running) {
+        // Sleep to achieve the desired print rate.
+        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>((1.0/print_rate * 1000))));
+        // Try to lock data to avoid read write collisions
+        if (print_data.mutex.try_lock()) {
+          // printf("\nData Mutex locked\n");
+          if (print_data.has_data) {
+            // Append existing temporary file
+            writeTempData(print_data.O_T_EE_temp_data);
+            writeTempData(print_data.F_T_EE_temp_data);
+            writeTempData(print_data.F_sensor_temp_data);
+            // Clear vector
+            print_data.O_T_EE_temp_data.clear();
+            print_data.F_T_EE_temp_data.clear();            
+            print_data.F_sensor_temp_data.clear();
+            // Set bool to false
+            print_data.has_data = false; 
+            // printf("Data was written\n");
+          }
+          print_data.mutex.unlock();
+          // std::cout << "Data Mutex unlocked, t: " << time << "\n\n"; 
+        }
+        else { // Avoid tight looping when paused (zitat gpt)
+          std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+      }
+    }
+    printf("Thread was exited\n");
+  });
+  
+  // Clear the temp variables since the tempWrite function only appends
+  std::string name_tempVar[3] = {"print_data.O_T_EE_temp_data", "print_data.F_T_EE_temp_data", "print_data.F_sensor_temp_data"};
+  for (std::string fileName:name_tempVar){
+    wipeFile(fileName);
+  }
+  // return 0;
   // Variables to store the torque or position of the robot during the movement
   std::vector<std::array<double, 7>> joint_position_data, tau_grav_data, tau_filter_data; 
   std::vector<std::array<double, 6>> F_robot_data; // Robot sensor data
@@ -231,8 +322,10 @@ int main() {
     Eigen::Map<Eigen::Matrix<double, 1, 6>> F_ext_start(F_ext_start_array.data());
 
     // Variables to control loop time
-    double time{0};
-    double time_max{25};
+    
+    double time_max = 10;
+    double time_fileWrite = 1;
+    double next_fileWrite = 0;
     double sampling_interval = 0.25; // Interval at which the console outputs the current error
     double next_sampling_time = 0;  // Needed for the sampling interval
 
@@ -300,17 +393,56 @@ int main() {
       O_T_EE_data.push_back(robot_state.O_T_EE);
       F_T_EE_data.push_back(robot_state.F_T_EE);
 
+        // Update temp data to write if the thread is not locked for writing
+      if (print_data.mutex.try_lock()) {
+        print_data.has_data = true;
+        print_data.O_T_EE_temp_data.push_back(robot_state.O_T_EE);
+        print_data.F_T_EE_temp_data.push_back(robot_state.F_T_EE);
+        print_data.F_sensor_temp_data.push_back(F_sensor_array);
+        print_data.mutex.unlock();
+      }
+      else {
+        // std::cout << "Failed to push data to temp, t=" << time << "\n";
+      }
+
         // Send torque = 0 to ensure no movement
       std::array<double, 7> tau_d = {0,0,0,0,0,0,0};
       if (time >= time_max) {
+        std::cout << "Time end: " << time << "\nForce sensor: " << F_sensor-F_sensor_start << "\nForce robot:  " << F_ext-F_ext_start << "\n \n"; 
         franka::Torques output = tau_d;
+        running = false; 
+        // thread_running = false;
         return franka::MotionFinished(output);
       }
       return tau_d;
     };
 
+
+    char userInput = 'y';  // Initialize with 'y' to enter the loop
+    while (true) {
+      robot.control(force_control_callback);
+      std::cout << "Do you want to continue? (y/n): , running=" << running << "\n";
+      std::cin >> userInput; 
+
+      if (userInput == 'n') { // Exit the loop if 'n' is entered
+        std::cout << "Exiting the loop." << std::endl;
+        thread_running = false; 
+        break;  
+      } 
+      else if (userInput == 'y') {
+        time = 0;
+        next_sampling_time = 0;
+        running = true;
+        std::cout << "Continuing, bool running: " << running << std::endl;
+      } 
+      else {
+        std::cout << "Invalid input. Please enter 'y' or 'n'." << std::endl;
+      }
+
+    }
+
     // start control loop
-    robot.control(force_control_callback);
+    // robot.control(force_control_callback);
 
     std::cout << "Length of F_sensor_data: " << F_sensor_data.size() << ", entries per second: " << F_sensor_data.size()/time_max << std::endl;
 
@@ -346,5 +478,12 @@ int main() {
     std::cout << e.what() << std::endl;
     return -1;
   }
-  
+  // Join threads 
+  std::cout << "Just before the threads are joined" << std::endl;
+  if (write_thread.joinable()) {
+    printf("Trying to join\n");
+    write_thread.join();
+    printf("Threads joined\n");
+  }
+  return 0;
 }

@@ -550,5 +550,5 @@ int main() {
     writeDataToFile(tau_data);
     return -1;
   }
-  
+  return 0;
 }

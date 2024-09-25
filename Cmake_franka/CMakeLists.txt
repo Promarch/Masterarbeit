@@ -50,3 +50,4 @@ install(TARGETS ${singleFile}
 )
 
 target_link_libraries(JointImpedanceControl_example Threads::Threads)
+target_link_libraries(HandMoveRobot Threads::Threads)
