@@ -127,8 +127,8 @@ def CalculateColormap(df_points, df_surf_index, lim_forces=[]):
     forces_color[:,-1] = surf_opacity
     surf_colors = np.zeros([len(df_surf_index), 4])
     # Base color is white with low opacity
-    surf_unused_opacity = 0.2
-    surf_unused_color = [0.99, 0.99, 0.99, surf_unused_opacity]
+    surf_unused_opacity = 0.5
+    surf_unused_color = [0.90, 0.90, 0.90, surf_unused_opacity]
     surf_colors = np.full((len(df_surf_index),4), surf_unused_color)
     # Add colors to the concerned surfaces
     surf_colors[colored_surfaces] = forces_color
@@ -161,7 +161,7 @@ F_sensor = readFile(folder_path + fileName_temp + 'F_sensor*')
 r = F_T_EE[0,14]
 pos_EE = O_T_EE[0,12:15]
 # Generate angle values for polar coordinates
-n_full = 10
+n_full = 30
 theta_full = np.linspace(0,np.pi/2, n_full)
 phi_full = np.linspace(-np.pi,np.pi, n_full)
 # Generate meshgrid in polar CoSy and transform into cartesian CoSy
@@ -173,10 +173,11 @@ surf_data = np.array([theta_grid[:-1,:-1].flatten(), theta_grid[1:,1:].flatten()
 df_surf_index = pd.DataFrame(surf_data.transpose(), columns=surf_columns)
 
 # Create Point dataframe
-samples = 5
+samples = 1
 df_points = createPointDf(O_T_EE, F_T_EE, F_sensor, df_surf_index, sample=samples)
 # Calculate the colors of the individual surfaces
-colors, norm = CalculateColormap(df_points, df_surf_index, lim_forces=[0,1])
+force_minmax = []
+colors, norm = CalculateColormap(df_points, df_surf_index) #, lim_forces=force_minmax
 
     # DEBUG: Calculate nearest gridpoint to sample point of x,y,z
 sample_point = 0
@@ -221,6 +222,8 @@ ax.plot(O_T_EE[:,12], O_T_EE[:,13], O_T_EE[:,14], "r-")
 # fig.colorbar(p, ax=ax)
 # Plot half sphere and add colorbar
 ax_sphere = ax.plot_surface(x_full, y_full, z_full,facecolors=colors, linewidth=0, antialiased=False) #
+ax_sphere.set_facecolors(colors.reshape((n_full-1)**2,4))
+ax_wireframe = ax.plot_wireframe(x_full, y_full, z_full, linewidth=0.5, color=(0.6, 0.6, 0.6), alpha=0.3)
 m = mpl.cm.ScalarMappable(cmap=plt.cm.jet, norm=norm)
 m.set_array([])
 cbar = plt.colorbar(m)
@@ -259,8 +262,8 @@ while True:
             print("Error occured during file reading")
         if len(O_T_EE) == len(F_T_EE) == len(F_sensor):
             # Calculate new points and colors
-            df_points = createPointDf(O_T_EE, F_T_EE, F_sensor, df_surf_index)
-            colors_new, norm_new = CalculateColormap(df_points, df_surf_index)
+            df_points = createPointDf(O_T_EE, F_T_EE, F_sensor, df_surf_index, sample=samples)
+            colors_new, norm_new = CalculateColormap(df_points, df_surf_index, lim_forces=force_minmax)
             # Update the facecolors and colorbar 
             ax_sphere.set_facecolors(colors_new.reshape((n_full-1)**2,4))
             m_new = mpl.cm.ScalarMappable(cmap=plt.cm.jet, norm=norm_new)

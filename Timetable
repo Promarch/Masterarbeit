@@ -102,6 +102,29 @@ Nächste Schritte:
 Muss die Tracker ein bisschen größer machen, aber das muss erst Ende dieser Woche fertig sein
 Simulation mit Kugelgelenk ist erstellt, wobei ich noch große Schwierigkeiten mit meinem eigentlichen Gelenk hab. Ist der übliche Spaß dass ein Gelenk mit seinem Elternbody verbunden ist, ich in dem Fall aber nicht die untere Halbkugel an den Body fixieren kann. Bzw ich hab's probiert, aber es ist keine feste Verbindung. Hab gerade gesehen, dass man mit equality/connect eventuell einen balljoint definieren kann. 
 Davon abgesehen heute nichts wirklich anderes gemacht, aber prinzipiell ist zumindest rein geometrisch das modell erstellt, es fehlt halt die Verbindung der oberen mit der unteren halbkugel. Mit den Tendons ist es schon erstellt, aber bei denen hab ich nicht wirklich realistisches verhalten, die obere halbkugel kollidiert mit der Kugel auf nicht normale art und weise (die Kugel schmiegt sich nicht in die Einbuchtung der oberen Halbkugel)
+30.09
+Boah ist viel passiert. Schnell zu den trackern, inzwischen sind Löcher reingebohrt und ich pack eine Wurmschraube rein, damit die Tracker sinnvoll mit dem Gestell verbunden sind. 
+Kugelgelenk an sich ist fertig, aber auch nicht mehr im Betrieb. War gut um ein paar basics zu testen, aber die eigentlichen Werte die man rausbekommt sind nicht counterintuitive. 
+Die große Neuigkeit ist, dass ich die Position bzw die Kräfte in echtzeit darstellen kann. Ich hab eine Verbindung zwischen Sensor und Kniegelenk, und kann damit auch recht gut die sachen darstellen. 
+
+01.10
+So, jetzt muss mal überlegt werden, wie ich die Masterarbeit strukturiere. Nach dem Gespräch letzte Woche mit Niko ist ein guter Teil meiner Arbeit rausgeflogen, nämlich die Simulation und wahrscheinlich auch die Parameteroptimierung. Dadurch ist auch die eigentlich Idee der Masterarbeit raus, dass man mit dem Roboter ein Knie ausmessen kann und durch eine Simulation feststellen kann ob es passt oder nicht. Was bleibt jetzt übrig? Eigentlich nur noch der robotische Teil :/
+Was ist jetzt die Idee des Roboters? Ich hab einen Roboter, der von selbst das Knie ausmessen kann. Im Grunde genommen hab ich den "intelligenten" Teil aus der Arbeit genommen. Anstatt, dass der Roboter selbst analysieren kann, ob das Knie den Anforderungen entspricht, fährt der Roboter einfach nur die Trajektorien ab. Das Denken übernimmt der Anwender. Hierdurch ändert sich aber enorm viel beim Gedanken der MA, da ich nicht mehr ein intelligentes Tool herstelle, sondern einfach nur verbesserte Datenaufnahme verspreche. 
+SdT wird daher um alles was Simulationen angeht gekürzt, dafür werd ich das Kapitel über mögliche Messmethoden von Knieparametern erweitern müssen. Im Grundlagenteil kommt nur noch das Kapitel zu Kniegelenkersätzen hin, da werd ich aber Acht geben müssen, dass betont wird, dass der Arzt am Ende die Auswertung macht. Auch der ganze Teil mit KI fliegt, weil ich das nicht mehr behandelt bekomme in der restlichen Zeit. Anmerkung hier, der Ausblick wird dadurch sehr viel einfacher. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
