@@ -111,7 +111,8 @@ Die große Neuigkeit ist, dass ich die Position bzw die Kräfte in echtzeit dars
 So, jetzt muss mal überlegt werden, wie ich die Masterarbeit strukturiere. Nach dem Gespräch letzte Woche mit Niko ist ein guter Teil meiner Arbeit rausgeflogen, nämlich die Simulation und wahrscheinlich auch die Parameteroptimierung. Dadurch ist auch die eigentlich Idee der Masterarbeit raus, dass man mit dem Roboter ein Knie ausmessen kann und durch eine Simulation feststellen kann ob es passt oder nicht. Was bleibt jetzt übrig? Eigentlich nur noch der robotische Teil :/
 Was ist jetzt die Idee des Roboters? Ich hab einen Roboter, der von selbst das Knie ausmessen kann. Im Grunde genommen hab ich den "intelligenten" Teil aus der Arbeit genommen. Anstatt, dass der Roboter selbst analysieren kann, ob das Knie den Anforderungen entspricht, fährt der Roboter einfach nur die Trajektorien ab. Das Denken übernimmt der Anwender. Hierdurch ändert sich aber enorm viel beim Gedanken der MA, da ich nicht mehr ein intelligentes Tool herstelle, sondern einfach nur verbesserte Datenaufnahme verspreche. 
 SdT wird daher um alles was Simulationen angeht gekürzt, dafür werd ich das Kapitel über mögliche Messmethoden von Knieparametern erweitern müssen. Im Grundlagenteil kommt nur noch das Kapitel zu Kniegelenkersätzen hin, da werd ich aber Acht geben müssen, dass betont wird, dass der Arzt am Ende die Auswertung macht. Auch der ganze Teil mit KI fliegt, weil ich das nicht mehr behandelt bekomme in der restlichen Zeit. Anmerkung hier, der Ausblick wird dadurch sehr viel einfacher. 
-
+04.10.
+Präsi muss weniger technisch sein, besserer roter Faden, erstmal zeigen was man beim Knie alles messen kann, Messaufbau zeigen. 
 
 
 

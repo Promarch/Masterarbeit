@@ -9,7 +9,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-
 def CartSphere(x, y, z, center):
     x = x-center[0]
     y = y-center[1]
@@ -77,6 +76,11 @@ def createPointDf(O_T_EE, F_T_EE, F_sensor, df_surf_index, sample=1):
     # Calculate second closest gridpoints
     theta_signs = np.sign(theta_diff[theta_indices, np.arange(len(theta_indices))])
     phi_signs = np.sign(phi_diff[phi_indices, np.arange(len(phi_indices))])
+    if np.any(theta_signs==0):
+        theta_signs[np.where(theta_signs==0)] = 1
+    if np.any(phi_signs==0):
+        phi_signs[np.where(phi_signs==0)] = 1
+
     # Create arrays with the closest and second closest gridpoints
     theta_surf = np.vstack((theta_indices, theta_indices - theta_signs)).astype(int).T
     phi_surf = np.vstack((phi_indices, phi_indices - phi_signs)).astype(int).T
@@ -142,6 +146,8 @@ t_start = time.time()
 
     # Get Data
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint_manual/"
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
+
 # Determine if a valid temp variable is present
 list_filePath_temp = glob.glob(folder_path + 'print_data.F_sensor*')
 list_filePath_full = glob.glob(folder_path + 'F_sensor_total*')

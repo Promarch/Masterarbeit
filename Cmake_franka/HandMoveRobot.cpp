@@ -308,7 +308,7 @@ int main() {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector position
-    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.053, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.220, 1.0});
     // robot.setK({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -0.0105, 1.0});
     // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
     // robot.setK({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
@@ -323,7 +323,7 @@ int main() {
 
     // Variables to control loop time
     
-    double time_max = 10;
+    double time_max = 20;
     double time_fileWrite = 1;
     double next_fileWrite = 0;
     double sampling_interval = 0.25; // Interval at which the console outputs the current error
@@ -481,7 +481,7 @@ int main() {
   // Join threads 
   std::cout << "Just before the threads are joined" << std::endl;
   if (write_thread.joinable()) {
-    printf("Trying to join\n");
+    printf("Trying to join threads\n");
     write_thread.join();
     printf("Threads joined\n");
   }

@@ -45,7 +45,7 @@ std::string getCurrentDateTime() {
 }
 template <typename T, std::size_t N>
 void writeDataToFileImpl(const std::vector<std::array<T, N>>& data, const std::string& var_name) {
-  std::string filename = "data_ball_joint/" + var_name + "_" + getCurrentDateTime() + ".txt";
+  std::string filename = "data_output_knee/" + var_name + "_" + getCurrentDateTime() + ".txt";
   std::ofstream data_file(filename);
   if (data_file.is_open()) {
     data_file << std::fixed << std::setprecision(5);
@@ -217,7 +217,7 @@ int main() {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector
-    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.053, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.220, 1.0});
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
     franka::RobotState initial_state = robot.readOnce();
@@ -289,7 +289,7 @@ int main() {
     Eigen::Affine3d transform_temp;
     Eigen::Matrix<double, 3, 1> pos_temp = pos_d;
     std::srand(std::time(nullptr)); // initialize random seed
-    double max_flexion = M_PI/9;    // Max possible flexion
+    double max_flexion = -M_PI/6;    // Max possible flexion
     double range_flexion = 2*max_flexion; 
     double max_internal = M_PI/9;   // Max possible internal-external rotation
     double range_internal = 2*max_internal; // Possible values (max_internal-min_internal)
@@ -332,16 +332,16 @@ int main() {
         transform_start = transform_temp; 
           // Set new angles and compute new rotation
         // New Flexion
-        angle_flexion = (std::rand()/(RAND_MAX/range_flexion))-max_flexion; 
+        angle_flexion = (std::rand()/(RAND_MAX/max_flexion)); 
         vector_flexion = Eigen::AngleAxisd(angle_flexion, Eigen::Vector3d::UnitX());
         transform_flexion = Eigen::Affine3d(vector_flexion.toRotationMatrix());
         // New Internal-external rotation
-/*        if (abs(angle_flexion) < M_PI/18) {
+        if (abs(angle_flexion) < M_PI/18) {
           angle_internal = 0; // No internal rotation if the knee is extended
         }
         else {
           angle_internal = (std::rand()/(RAND_MAX/range_internal))-max_internal;
-        }*/
+        }
         angle_internal = (std::rand()/(RAND_MAX/range_internal))-max_internal;
         vector_internal = Eigen::AngleAxisd (angle_internal, Eigen::Vector3d::UnitY());
         transform_internal = Eigen::Affine3d(vector_internal.toRotationMatrix());
@@ -360,7 +360,6 @@ int main() {
         Eigen::VectorXd::Map(&rotation_time_array[0], 5) = rotation_time;
         rotation_time_data.push_back(rotation_time_array);
         std::cout << "\nNew flexion: " << angle_flexion*180/M_PI << ", New internal: " << angle_internal*180/M_PI << ", Time: " << time_global << std::endl;
-
       }
 
       // -------------------------------------------------------------------
@@ -517,7 +516,7 @@ int main() {
     std::cout << "Len(F_sensor): " << F_sensor_data.size() << ", entries per second: " << F_sensor_data.size()/time_max << ", len(F_sensor_total): "<< F_sensor_total_data.size() << "\n";
     
 
-
+ 
     // Write Data to .txt file
     writeDataToFile(tau_data);
     writeDataToFile(tau_filter_data);
