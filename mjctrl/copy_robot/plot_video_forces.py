@@ -54,9 +54,9 @@ print(f"Extracted {frame_count} frames")
     # Get Data
 # Force data from sensor
 # path =  "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_data_20240809_154101.txt"
-folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
-list_of_files_wrench = glob.glob(folder_path + 'force_data*')
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
+list_of_files_wrench = glob.glob(folder_path + 'F_sensor_tot*')
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 list_of_files_wrench = glob.glob(folder_path + 'F_sensor_tot*')
 filePath_wrench = max(list_of_files_wrench, key=os.path.getctime)
 wrench_orig = np.loadtxt(filePath_wrench, delimiter=",")

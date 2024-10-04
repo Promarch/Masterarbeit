@@ -43,8 +43,8 @@ def main() -> None:
     # ------------------------------------------------------------------------
 
     # Load the model and data.
-    scene_path = "/home/alexandergerard/Masterarbeit/mjctrl/franka_fr3/scene_joint_actuator.xml"
     scene_path = "/home/alexandergerard/Masterarbeit/mjctrl/franka_fr3_sensor/scene.xml"
+    scene_path = "/home/alexandergerard/Masterarbeit/mjctrl/franka_fr3/scene_joint_actuator.xml"
     model = mujoco.MjModel.from_xml_path(scene_path)
     data = mujoco.MjData(model)
 
@@ -53,7 +53,7 @@ def main() -> None:
     model.opt.timestep = dt
 
     # End-effector site we wish to control.
-    site_name = "virtual_ee"
+    site_name = "attachment_site"
     site_id = model.site(site_name).id
 
     # Get the dof and actuator ids for the joints we wish to control. These are copied
@@ -88,8 +88,8 @@ def main() -> None:
     # -----------          Calculate desired positions            ------------
     # ------------------------------------------------------------------------
 
-    folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
     folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
+    folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
         # Joint positions        
     list_of_files_q = glob.glob(folder_path + 'joint_posi*')
     filePath_q = max(list_of_files_q, key=os.path.getctime)

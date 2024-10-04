@@ -163,6 +163,8 @@
                       <geom mesh="link7_2" material="white" class="visual"/>
                       <geom mesh="link7_3" material="black" class="visual"/>
                       <geom name="fr3_link7_collision" class="collision" mesh="link7_coll"/>
+                      <include file="sensor_EE.xml"/>
+                      <!--  Hand End Effektor
                       <body name="hand" pos="0 0 0.107" quat="0.9238795 0 0 -0.3826834">
                         <inertial mass="0.73" pos="-0.01 0 0.03" diaginertia="0.001 0.0025 0.0017"/>
                         <geom mesh="hand_0" material="off_white" class="visual"/>
@@ -174,7 +176,7 @@
                         <body name="femur" pos="0.055 -0.055 0.095" quat="0 0 0 1">
                           <geom class="visual" euler="0 0 -1.5708" mesh="femur_block_mesh" pos="0 0 0" type="mesh" material="bone"/>
                           <body name="attachment" pos="0.055 -0.055 0.20" quat="0 0 0 1">
-                            <site name="attachment_site" rgba="1 0 0 1" size="0.01" group="1"/>
+                            <site name="attachment_site" rgba="1 0 0 1" quat="0.9807853 0 0 -0.1950903" size="0.01" group="1"/>
                           </body>
                         </body>
                         <body name="left_finger" pos="0 0.033 0.0584">
@@ -200,6 +202,7 @@
                           <geom class="fingertip_pad_collision_5"/>
                         </body>
                       </body>
+                      -->
                     </body>
                   </body>
                 </body>
