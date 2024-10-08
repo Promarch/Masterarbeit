@@ -62,7 +62,7 @@ filePath_wrench = max(list_of_files_wrench, key=os.path.getctime)
 wrench_orig = np.loadtxt(filePath_wrench, delimiter=",")
 wrench = lowpassFilter(wrench_orig, F_cutoff=5)
     # Set up plot
-fig, (ax_img, ax_force) = plt.subplots(2,1)
+fig, (ax_img, ax_force) = plt.subplots(2,1, figsize=(8,6))
 # Plot img
 ax_img.axis('off')
 ax_img.set_title('Video of Motion')
