@@ -53,9 +53,10 @@ def createPointDf(O_T_EE, F_T_EE, F_sensor, df_surf_index, sample=1):
     pos_matrix = O_T_F_flat#[:-1:100,:] # position of the flange
     dic_points = {"x": pos_matrix[:,3], "y": pos_matrix[:,7], "z": pos_matrix[:,11]}
     df_points = pd.DataFrame(dic_points)
+    # Calculate rotation around z-axis (internal-external rotation)
+    df_points["z_angle"] = np.round(np.arctan2(O_T_EE[:,1], O_T_EE[:,0])*180/np.pi)
     # Calculate theta and phi angle of the data points
     df_points["theta"], df_points["phi"] = CartSphere(df_points["x"], df_points["y"], df_points["z"], pos_EE)
-
     # Add abs. torque to each point
     df_points["force"] =  np.linalg.norm(F_sensor[:,3:], axis=1) #:-1:100
 
@@ -106,11 +107,14 @@ def CalculateColormap(df_points, df_surf_index, lim_forces=[]):
 
     df_surf_index["force"] = np.nan
     df_surf_index["count"] = np.nan
+    df_surf_index["n_angles"] = np.nan
     colored_surfaces = np.unique(df_points["surface"]).astype(int)
     # Add the average abs. torque to the surface dataframe
     for surf_id in colored_surfaces:
         pts = np.where(df_points["surface"]==surf_id)
         avrg_force = df_points.loc[pts, "force"].mean()
+        n_angles = df_points.loc[pts, "z_angle"].nunique()
+        df_surf_index.loc[surf_id, "n_angles"] = n_angles
         df_surf_index.loc[surf_id, "force"] = avrg_force
         df_surf_index.loc[surf_id, "count"] = np.size(pts)
 
@@ -121,13 +125,17 @@ def CalculateColormap(df_points, df_surf_index, lim_forces=[]):
     # Get the force value of each surface
     forces_surf = df_surf_index.loc[colored_surfaces, "force"]
     # Normalize the forces for colormap (see: https://stackoverflow.com/questions/42924993/colorbar-for-matplotlib-plot-surface-using-facecolors)
-    if lim_forces==[]:
+    if lim_forces==[]: # If no limits for the colors given, use min/max values
         norm = mpl.colors.Normalize(vmin=forces_surf.min(), vmax=forces_surf.max())
     else:
         norm = mpl.colors.Normalize(vmin=lim_forces[0], vmax=lim_forces[1])
     forces_color = plt.cm.jet(norm(forces_surf))
     # Create color array where only valid surfaces get the colormap
     surf_opacity = 0.8
+    # surf_opacity = 1/15*df_surf_index.loc[colored_surfaces, "n_angles"]
+    # surf_opacity[surf_opacity>1]=1
+    # surf_opacity[surf_opacity>0.3]=0.3
+    
     forces_color[:,-1] = surf_opacity
     surf_colors = np.zeros([len(df_surf_index), 4])
     # Base color is white with low opacity
@@ -167,7 +175,7 @@ F_sensor = readFile(folder_path + fileName_temp + 'F_sensor*')
 r = F_T_EE[0,14]
 pos_EE = O_T_EE[0,12:15]
 # Generate angle values for polar coordinates
-n_full = 30
+n_full = 20
 theta_full = np.linspace(0,np.pi/2, n_full)
 phi_full = np.linspace(-np.pi,np.pi, n_full)
 # Generate meshgrid in polar CoSy and transform into cartesian CoSy

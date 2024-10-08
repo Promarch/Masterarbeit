@@ -230,7 +230,7 @@ int main() {
       // Time variables
     double time_global = 0.0; // Time the robot has been running for
     double time_cycle = 0.0;  // Time since new position
-    double time_max = 25;     // Maximum runtime
+    double time_max = 29;     // Maximum runtime
     double period_acc = 4;    // Time between old and new commanded position
     double period_reacceleration = 3; // Time to reaccelerate the joints if starting config is not the initial position
     double period_dec = 0.5; // time for decceleration, to stop abrubt braking

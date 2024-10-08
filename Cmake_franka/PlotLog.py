@@ -7,7 +7,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-
 def lowpassFilter(df, F_cutoff=10):
     sample_rate = 1000
     df_filter = df.copy()

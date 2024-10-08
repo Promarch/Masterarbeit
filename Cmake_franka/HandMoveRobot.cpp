@@ -323,7 +323,7 @@ int main() {
 
     // Variables to control loop time
     
-    double time_max = 20;
+    double time_max = 30;
     double time_fileWrite = 1;
     double next_fileWrite = 0;
     double sampling_interval = 0.25; // Interval at which the console outputs the current error
