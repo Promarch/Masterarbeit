@@ -244,7 +244,7 @@ def plot_PosOri(O_T_EE, F_T_EE):
     x = pos_matrix[:,3]
     y = pos_matrix[:,7]
     z = pos_matrix[:,11]
-    orient_matrix = O_T_EE_orig[:-1:100,:] # orientation of the EE
+    orient_matrix = O_T_EE[:-1:100,:] # orientation of the EE
 
     # Get ranges for the plot
     x_max = np.max((x.max(), O_T_EE[:,12].max()))
@@ -267,6 +267,7 @@ def plot_PosOri(O_T_EE, F_T_EE):
     ax.quiver(x, y, z, orient_matrix[:,0], orient_matrix[:,1], orient_matrix[:,2], length=l_quiver)
     ax.quiver(x, y, z, orient_matrix[:,4], orient_matrix[:,5], orient_matrix[:,6], length=l_quiver)
     ax.quiver(x, y, z, orient_matrix[:,8], orient_matrix[:,9], orient_matrix[:,10], length=l_quiver)
+    # ax.quiver(x[40], y[40], z[40], orient_matrix[40,8], orient_matrix[40,9], orient_matrix[40,10], length=l_quiver, color="r")
     ax.plot(x, y, z, "c-")
     ax.plot(O_T_EE[:,12], O_T_EE[:,13], O_T_EE[:,14], "r-")
 
@@ -386,10 +387,10 @@ def SphereCartesian(r, theta, phi, center):
     return x,y,z
 
 # folder path
-folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint_manual/"
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 # folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_thesis/"
 
 # %%
@@ -420,7 +421,7 @@ filePath_q = max(list_of_files_q, key=os.path.getctime)
 np_q = np.loadtxt(filePath_q, delimiter=",")
 dq = (np_q[:-1:100,:] - np_q[1::100,:])*1000
 
-plot7([np_tau, np_tau_filter], labels=[r"$\tau_c$", r"$\tau_{sensor}$"]) #, labels=[r"$\tau_c$", r"$\tau_r$"]
+# plot7([np_tau, np_tau_filter], labels=[r"$\tau_c$", r"$\tau_{sensor}$"]) #, labels=[r"$\tau_c$", r"$\tau_r$"]
 
 #%%
 # Plot torques
