@@ -206,7 +206,7 @@ while True:
             # get tau and F
             F_sensor = wrench_sensor[:3]
             tau_sensor = wrench_sensor[3:]
-            tau_sensor = tau_sensor + F_sensor[[1,0,2]] * [dist_EE_Sensor, -dist_EE_Sensor, 0]
+            tau_sensor = -tau_sensor + F_sensor[[1,0,2]] * [dist_EE_Sensor, -dist_EE_Sensor, 0]
             # Calculate colors
             tau_norm, tau_color, tau_length = calculateColor(tau_sensor, F_lim=[0,3], l_max=l_quiver*3)
             F_norm, F_color = calculateColor(F_sensor, F_lim=[0,10], l_max=[])

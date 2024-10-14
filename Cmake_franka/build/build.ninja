@@ -433,6 +433,72 @@ build HandMoveRobot: CXX_EXECUTABLE_LINKER__HandMoveRobot_Debug CMakeFiles/HandM
   TARGET_FILE = HandMoveRobot
   TARGET_PDB = HandMoveRobot.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target First_ImpedanceVel
+
+
+#############################################
+# Order-only phony target for First_ImpedanceVel
+
+build cmake_object_order_depends_target_First_ImpedanceVel: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+
+build CMakeFiles/First_ImpedanceVel.dir/First_ImpedanceVel.cpp.o: CXX_COMPILER__First_ImpedanceVel_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/First_ImpedanceVel.cpp || cmake_object_order_depends_target_First_ImpedanceVel
+  DEP_FILE = CMakeFiles/First_ImpedanceVel.dir/First_ImpedanceVel.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/First_ImpedanceVel.dir
+  OBJECT_FILE_DIR = CMakeFiles/First_ImpedanceVel.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target First_ImpedanceVel
+
+
+#############################################
+# Link the executable First_ImpedanceVel
+
+build First_ImpedanceVel: CXX_EXECUTABLE_LINKER__First_ImpedanceVel_Debug CMakeFiles/First_ImpedanceVel.dir/First_ImpedanceVel.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/First_ImpedanceVel.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = First_ImpedanceVel
+  TARGET_PDB = First_ImpedanceVel.dbg
+
+# =============================================================================
+# Object build statements for EXECUTABLE target ImpedanceControl
+
+
+#############################################
+# Order-only phony target for ImpedanceControl
+
+build cmake_object_order_depends_target_ImpedanceControl: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+
+build CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o: CXX_COMPILER__ImpedanceControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceControl.cpp || cmake_object_order_depends_target_ImpedanceControl
+  DEP_FILE = CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/ImpedanceControl.dir
+  OBJECT_FILE_DIR = CMakeFiles/ImpedanceControl.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target ImpedanceControl
+
+
+#############################################
+# Link the executable ImpedanceControl
+
+build ImpedanceControl: CXX_EXECUTABLE_LINKER__ImpedanceControl_Debug CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/ImpedanceControl.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = ImpedanceControl
+  TARGET_PDB = ImpedanceControl.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -513,7 +579,7 @@ build sensor_botasys: phony libsensor_botasys.a
 #############################################
 # Folder: /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
-build all: phony libexamples_common.a libsensor_botasys.a JointPositions2 Waypoints JointImpedanceControl_example CartesianImpedance_example GetPosition ReadForce ImpedanceCartesianControl VertForce force_control_example HandMoveRobot
+build all: phony libexamples_common.a libsensor_botasys.a JointPositions2 Waypoints JointImpedanceControl_example CartesianImpedance_example GetPosition ReadForce ImpedanceCartesianControl VertForce force_control_example HandMoveRobot First_ImpedanceVel ImpedanceControl
 
 # =============================================================================
 # Built-in targets

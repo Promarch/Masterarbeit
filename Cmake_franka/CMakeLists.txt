@@ -36,6 +36,8 @@ SET(PROGRAM_files
   VertForce
   force_control_example
   HandMoveRobot
+  First_ImpedanceVel
+  ImpedanceControl
 )
 
 foreach(singleFile ${PROGRAM_files})

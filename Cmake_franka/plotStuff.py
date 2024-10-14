@@ -4,6 +4,18 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import pandas as pd
 
+#%%
+
+quat_5_0 = np.array([ -0.0399001, -0.0002, 0.002, 0.9992017 ])
+quat_3_3 = np.array([ 0.026168, 0.026168, 0.0006852, 0.9993148 ])
+quat_10_10 = np.array([ 0.0868241, 0.0868241, 0.0075961, 0.9924039 ])
+quat_30_30 = np.array([ 0.25, 0.25, 0.0669873, 0.9330127 ])
+quat_50_50 = np.array([ 0.3830222, 0.3830222, 0.1786062, 0.8213938 ])
+quat_90_90 = np.array([ 0.5, 0.5, 0.5, 0.5 ])
+quat = quat_5_0
+norm_xyz = np.linalg.norm(quat[:-1])
+scaled_xyz = quat[:-1]/np.linalg.norm(quat[:-1])
+print(f"Norm of xyz: {np.round(norm_xyz,3)}, scales xyz:{np.round(scaled_xyz,3)}")
 
 #%%
     # Plot sphere

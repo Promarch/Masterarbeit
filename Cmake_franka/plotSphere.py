@@ -53,6 +53,9 @@ def createPointDf(O_T_EE, F_T_EE, F_sensor, df_surf_index, sample=1):
     pos_matrix = O_T_F_flat#[:-1:100,:] # position of the flange
     dic_points = {"x": pos_matrix[:,3], "y": pos_matrix[:,7], "z": pos_matrix[:,11]}
     df_points = pd.DataFrame(dic_points)
+    # Calculate rotation around x-axis (flexion). Also rotate x-axis by 180° to ensure values don't jump from 180 to -180
+    # O_T_EE_xAngle = O_T_EE_mat@np.reshape
+    df_points["x_angle"] = np.round(np.arctan(O_T_EE[:,6], O_T_EE[:,10])*180/np.pi)
     # Calculate rotation around z-axis (internal-external rotation)
     df_points["z_angle"] = np.round(np.arctan2(O_T_EE[:,1], O_T_EE[:,0])*180/np.pi)
     # Calculate theta and phi angle of the data points
@@ -154,7 +157,7 @@ t_start = time.time()
 
     # Get Data
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint_manual/"
-folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
+# folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 
 # Determine if a valid temp variable is present
 list_filePath_temp = glob.glob(folder_path + 'print_data.F_sensor*')

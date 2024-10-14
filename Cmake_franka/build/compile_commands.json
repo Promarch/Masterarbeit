@@ -58,5 +58,15 @@
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/HandMoveRobot.dir/HandMoveRobot.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/HandMoveRobot.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/HandMoveRobot.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/First_ImpedanceVel.dir/First_ImpedanceVel.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/First_ImpedanceVel.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/First_ImpedanceVel.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceControl.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceControl.cpp"
 }
 ]

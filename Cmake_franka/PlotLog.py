@@ -390,7 +390,7 @@ def SphereCartesian(r, theta, phi, center):
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint_manual/"
-folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
+# folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 # folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_thesis/"
 
 # %%
@@ -457,7 +457,7 @@ df_F_sensor = df_orig_F_sensor.copy()
 df_F_lowpass = lowpassFilter(df_F_sensor)
 
     # Plot Force
-plot_force_F_T(df_F_sensor)
+plot_force_F_T(df_F_lowpass)
 # plot_force_tau_F(df_F_ext, df_F_lowpass, labels = [r"$F_{robot}$", r"$F_{sensor}$"])
 
 # %%
