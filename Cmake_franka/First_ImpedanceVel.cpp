@@ -13,6 +13,11 @@
 #include <franka/model.h>
 #include <franka/robot.h>
 
+// Headers for parallelization
+#include <thread>
+#include <mutex>
+#include <atomic>
+
 // Linux headers
 #include <fcntl.h>      // Contains file controls like O_RDWR
 #include <errno.h>      // Error integer and strerror() function
@@ -22,6 +27,7 @@
 #include <linux/serial.h>
 #include "cmake/BotaForceTorqueSensorComm.h"
 
+// Sets default collision parameters, from https://frankaemika.github.io/libfranka/generate_joint_position_motion_8cpp-example.html
 void setDefaultBehavior(franka::Robot& robot) {
   // Set collision behavior.
   robot.setCollisionBehavior({{100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
@@ -32,9 +38,10 @@ void setDefaultBehavior(franka::Robot& robot) {
   robot.setCartesianImpedance({{3000, 3000, 3000, 300, 300, 300}});
 }
 
-  // Function to write a vector to a text file
+  // Functions to write a vector to a text file
 // Macro to convert variable name to string for the function
 #define writeDataToFile(data) writeDataToFileImpl(data, #data)
+// Get current time, used to add the date to the filename
 std::string getCurrentDateTime() {
   std::time_t now = std::time(nullptr);
   char buf[80];
@@ -42,6 +49,7 @@ std::string getCurrentDateTime() {
   return std::string(buf);
 }
 template <typename T, std::size_t N>
+// Write all elements of a vector to a text file
 void writeDataToFileImpl(const std::vector<std::array<T, N>>& data, const std::string& var_name) {
   std::string filename = "data_output_knee/" + var_name + "_" + getCurrentDateTime() + ".txt";
   std::ofstream data_file(filename);
@@ -60,6 +68,40 @@ void writeDataToFileImpl(const std::vector<std::array<T, N>>& data, const std::s
   } else {
     std::cerr << "Unable to open file for writing" << std::endl;
   }
+}
+
+// Append the elements of a vector to a file that gets updated in real-time
+#define writeTempData(data) writeTempDataImpl(data, #data)
+template <typename T, std::size_t N>
+void writeTempDataImpl(const std::vector<std::array<T, N>>& data, const std::string& var_name) {
+  std::string filename = "data_output_knee/" + var_name + ".txt";
+  std::ofstream data_file(filename, std::ios_base::out | std::ios_base::app);
+  if (data_file.is_open()) {
+    data_file << std::fixed << std::setprecision(4);
+    for (const auto& sample : data) {
+      for (size_t i = 0; i < sample.size(); ++i) {
+        data_file << sample[i];
+        if (i < sample.size() - 1) {
+          data_file << ", ";
+        }
+      }
+      data_file << "\n";
+    }
+    data_file.close();
+  } else {
+    std::cerr << "Unable to open file for writing" << std::endl;
+  }
+}
+
+// Wipes the content of a textfile, needed for the files containing temporary variables
+void wipeFile(const std::string& fileName){
+  std::string filePath = "data_output_knee/" + fileName + ".txt";
+  std::ofstream fileStream(filePath, std::ofstream::out | std::ofstream::trunc); 
+  if (!fileStream) {
+    std::cerr << "Error opening file: " << filePath << std::endl;
+    return;
+  }
+  fileStream.close();
 }
 
 // Function and classes needed for the Botasys sensor, from: https://gitlab.com/botasys/bota_serial_driver
@@ -191,12 +233,67 @@ void check_sensor(){
 
 int main(int argc, char** argv) {
 
+  double time = 0;
+    // Set up separate thread to write files during the control loop
+  // Variables for the thread
+  int print_rate = 8; // How many times per second is the data written
+  std::atomic_bool running{true}; // Thread is active
+  std::atomic_bool thread_running{true}; // Terminates the thread if false
+  struct {
+    std::mutex mutex;
+    bool has_data;
+    std::vector<std::array<double, 16>> O_T_EE_temp_data; 
+    std::vector<std::array<double, 16>> F_T_EE_temp_data; 
+    std::vector<std::array<float, 6>>   F_sensor_temp_data; 
+    std::vector<std::array<double, 6>>   F_robot_temp_data; 
+  } print_data{};
+  // Printing thread
+  std::thread write_thread([print_rate, &print_data, &running, &thread_running, &time]() {
+    while (thread_running) {
+      if (running) {
+        // Sleep to achieve the desired print rate.
+        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>((1.0/print_rate * 1000))));
+        // Try to lock data to avoid read write collisions
+        if (print_data.mutex.try_lock()) {
+          // printf("\nData Mutex locked\n");
+          if (print_data.has_data) {
+            // Append existing temporary file
+            writeTempData(print_data.O_T_EE_temp_data);
+            writeTempData(print_data.F_T_EE_temp_data);
+            writeTempData(print_data.F_sensor_temp_data);
+            writeTempData(print_data.F_robot_temp_data);
+            // Clear vector
+            print_data.O_T_EE_temp_data.clear();
+            print_data.F_T_EE_temp_data.clear();            
+            print_data.F_sensor_temp_data.clear();
+            // Set bool to false
+            print_data.has_data = false; 
+            // printf("Data was written\n");
+          }
+          print_data.mutex.unlock();
+          // std::cout << "Data Mutex unlocked, t: " << time << "\n\n"; 
+        }
+        else { // Avoid tight looping when paused (zitat gpt)
+          std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+      }
+    }
+    printf("Thread was exited\n");
+  });
+  
+  // Clear the temp variables since the tempWrite function only appends
+  std::string name_tempVar[4] = {"print_data.O_T_EE_temp_data", "print_data.F_T_EE_temp_data", "print_data.F_sensor_temp_data", "print_data.F_robot_temp_data"};
+  for (std::string fileName:name_tempVar){
+    wipeFile(fileName);
+  }
+
   // Variables to store the torque or position of the robot during the movement
   std::vector<std::array<double, 7>> tau_data, tau_filter_data, tau_desired_data, joint_position_data; // Stores joint torque 
   std::vector<std::array<double, 6>> F_robot_data, force_tau_d_data; // Stores wrench acting on EE
-  std::vector<std::array<float , 6>> F_sensor_data, F_sensor_total_data; 
+  std::vector<std::array<float , 6>> F_sensor_data, F_sensor_total_data, F_knee_data; 
   std::vector<std::array<double, 5>> rotation_time_data; // stores the desired rotation with the current time
   std::vector<std::array<double, 16>> O_T_EE_data, F_T_EE_data; 
+  std::vector<std::array<double, 4>> quat_stop_data;  // stores the position where F<F_max
 
     // Sensor set up
   // Serial port set up
@@ -215,6 +312,7 @@ int main(int argc, char** argv) {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector
+    double distance_sensEE = 0.235;
     robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.220, 1.0});
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
@@ -227,7 +325,7 @@ int main(int argc, char** argv) {
 
       // Time variables
     double time_global = 0.0; // Time the robot has been running for
-    double time_max = 30;      // Maximum runtime
+    double time_max = 5;      // Maximum runtime
     double dt = 0;            // Initialization of time variable of the loop
     double period_acc = 2;    // Time between old and new commanded position
     double period_dec = 0.5;  // time for decceleration, to stop abrubt braking
@@ -237,7 +335,7 @@ int main(int argc, char** argv) {
     double next_sampling_time = 0;      // Interval at which the debug loop is called
 
       // Set limitations to max speed
-    double vel_max = 0.10; // [rad/s]
+    double vel_max = 0.13; // [rad/s]
     double factor_vel = 0;
     double factor_tau = 0;
 
@@ -245,16 +343,17 @@ int main(int argc, char** argv) {
     Eigen::Map<const Eigen::Matrix<double, 7,1>> q_init(initial_state.q.data());
     Eigen::Affine3d transform_init(Eigen::Matrix4d::Map(initial_state.O_T_EE.data()));
     Eigen::Vector3d position_init(transform_init.translation());
-    Eigen::Quaterniond rotation_init(transform_init.linear());
+    // Eigen::Quaterniond rotation_init(transform_init.linear());
+    Eigen::Quaterniond rotation_init(0.0, 0.7071068, 0.7071068, 0.0);
 
       // Desired Rotation, created with quaternions
     // Flexion (Rotation around y in local CoSy) 
-    double angle_flexion = -M_PI/12;
+    double angle_flexion = -2*M_PI/12;
     Eigen::Vector3d axis_flexion(1,0,0);
     Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
     Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
     // Varus-Valgus (Rotation around z in local CoSy) 
-    double angle_varus = -M_PI/12*0;
+    double angle_varus = 2*M_PI/9;
     Eigen::Vector3d axis_varus(0,1,0);
     Eigen::AngleAxisd angle_axis_varus(angle_varus, axis_varus);
     Eigen::Quaterniond quaternion_varus(angle_axis_varus);
@@ -283,7 +382,7 @@ int main(int argc, char** argv) {
     bool pos_reached = false; // state variable, set true when the desired position has been reached
     std::srand(std::time(nullptr)); // initialize random seed
     double max_flexion = -M_PI/5;    // Max possible flexion
-    double max_varus = M_PI/12;   // Max possible internal-external rotation
+    double max_varus = M_PI/6;   // Max possible internal-external rotation
     double range_varus = 2*max_varus; // Possible values (max_varus-min_varus)
 
     // Random debug variables
@@ -292,12 +391,13 @@ int main(int argc, char** argv) {
     // Pre-allocate stuff
     std::array<double, 6> cart_vel_array{}; 
     std::array<double, 7> tau_d_array{}; 
+    std::array<double, 4> quat_stop_array{};
     Eigen::Matrix<double, 6, 1> cart_vel; cart_vel.setZero();
     Eigen::Matrix<double, 6, 1> error; 
     Eigen::Matrix<double, 7,1> tau_d;
-    std::array<float, 6> F_sensor_array;
+    std::array<float, 6> F_sensor_array, F_knee_array;
     std::array<float, 6> F_sensor_temp_array;
-    Eigen::Quaterniond error_quaternion;
+    Eigen::Quaterniond error_quaternion, rotation; // Declared here since it is needed in both loops
 
     std::cout << "Robot will start moving now \n"
               << "Press Enter to continue... \n";
@@ -338,7 +438,7 @@ int main(int argc, char** argv) {
         Eigen::AngleAxisd angle_axis_varus(angle_varus, axis_varus);
         Eigen::Quaterniond quaternion_varus(angle_axis_varus);
         // Combine the rotations
-        quaternion_combined = quaternion_varus * quaternion_flexion;
+        quaternion_combined = quaternion_flexion * quaternion_varus;
         rot_quaternion_rel = rotation_init * quaternion_combined * rotation_init.inverse();
         // Calculate new rotation
         rot_d = rot_quaternion_rel * rotation_init; 
@@ -410,6 +510,7 @@ int main(int argc, char** argv) {
         std::cout << std::fixed << std::setprecision(3);
         std::cout << "Time: " << time_global << ", Acc factor:" << factor_vel << ", Velocity_d: \n" << cart_vel; 
         std::cout << "\n\nFinished motion, shutting down example" << std::endl;
+        running = false; // Pause thread
         return franka::MotionFinished(cart_vel_array);
       }
       // Send desired pose.
@@ -437,7 +538,12 @@ int main(int argc, char** argv) {
         std::copy(aligned_forces, aligned_forces + 6, F_sensor_temp_array.begin());
         for (size_t i=0; i<6; i++) {
           F_sensor_array[i] = F_sensor_temp_array[i] - F_sensor_start_array[i];
+          F_knee_array[i] = F_sensor_array[i];
         }
+        // Translate the measured forces to the center of the knee
+        F_knee_array[3] = -F_sensor_array[3] - F_sensor_array[1] * distance_sensEE;
+        F_knee_array[4] = -F_sensor_array[4] + F_sensor_array[0] * distance_sensEE;
+        F_knee_array[5] = -F_sensor_array[5];
         Eigen::Map<Eigen::Matrix<float, 6, 1>> F_sensor(F_sensor_array.data());
         F_sensor_data.push_back(F_sensor_array);
       }
@@ -449,6 +555,8 @@ int main(int argc, char** argv) {
         // Deccelerate if forces to high, or set new pos if desired position reached or no joint movement present
       if (decceleration==false) { // only call when the robot is not already decelerating
         if (F_ext.tail(3).norm()>5) {   // Torque too high
+          Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation * rotation_init.inverse()).coeffs(); 
+          quat_stop_data.push_back(quat_stop_array);
           decceleration = true;
           t_dec = time_cycle;
           std::cout << "Torques too high; Time: " << time_global << ", wrench: \n" << F_ext << "\n";
@@ -509,9 +617,20 @@ int main(int argc, char** argv) {
       tau_filter_data.push_back(robot_state.tau_ext_hat_filtered);
       F_robot_data.push_back(robot_state.K_F_ext_hat_K);
       F_sensor_total_data.push_back(F_sensor_array);
+      F_knee_data.push_back(F_knee_array);
       joint_position_data.push_back(robot_state.q);
       O_T_EE_data.push_back(robot_state.O_T_EE);
       F_T_EE_data.push_back(robot_state.F_T_EE);
+
+        // Update temp data to write if the thread is not locked for writing
+      if (print_data.mutex.try_lock()) {
+        print_data.has_data = true;
+        print_data.O_T_EE_temp_data.push_back(robot_state.O_T_EE);
+        print_data.F_T_EE_temp_data.push_back(robot_state.F_T_EE);
+        print_data.F_sensor_temp_data.push_back(F_sensor_array);
+        print_data.F_robot_temp_data.push_back(robot_state.K_F_ext_hat_K);
+        print_data.mutex.unlock();
+      }
 
       // Send desired tau to the robot
       return tau_d_array;
@@ -525,6 +644,8 @@ int main(int argc, char** argv) {
     // start control loop
     robot.control(force_control_callback, cartesian_velocity_callback);
 
+    // Close thread 
+    thread_running = false; 
     // Write Data to .txt file
     writeDataToFile(tau_data);
     writeDataToFile(tau_filter_data);
@@ -533,8 +654,9 @@ int main(int argc, char** argv) {
     writeDataToFile(O_T_EE_data);
     writeDataToFile(F_T_EE_data);
     writeDataToFile(rotation_time_data);
-    writeDataToFile(F_sensor_data);
+    writeDataToFile(quat_stop_data);
     writeDataToFile(F_sensor_total_data);
+    writeDataToFile(F_knee_data);
 
   }
   // Catches Exceptions caused within the execution of a program (I think)
@@ -547,15 +669,20 @@ int main(int argc, char** argv) {
     writeDataToFile(O_T_EE_data);
     writeDataToFile(F_T_EE_data);
     writeDataToFile(rotation_time_data);
-    writeDataToFile(F_sensor_data);
     writeDataToFile(F_sensor_total_data);
     return -1;
   }
-  // General exceptions
+  // Catch general exceptions
   catch (const franka::Exception& e) {
     std::cout << "Other Exception: \n" << e.what() << std::endl;
     writeDataToFile(tau_data);
     return -1;
+  }
+  // Join threads 
+  if (write_thread.joinable()) {
+    printf("Trying to join threads\n");
+    write_thread.join();
+    printf("Threads joined\n");
   }
   return 0;
 }
