@@ -390,7 +390,7 @@ def SphereCartesian(r, theta, phi, center):
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint_manual/"
-# folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 # folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_thesis/"
 
 # %%
@@ -421,7 +421,7 @@ filePath_q = max(list_of_files_q, key=os.path.getctime)
 np_q = np.loadtxt(filePath_q, delimiter=",")
 dq = (np_q[:-1:100,:] - np_q[1::100,:])*1000
 
-# plot7([np_tau, np_tau_filter], labels=[r"$\tau_c$", r"$\tau_{sensor}$"]) #, labels=[r"$\tau_c$", r"$\tau_r$"]
+plot7([np_tau, np_tau_filter], labels=[r"$\tau_c$", r"$\tau_{sensor}$"]) #, labels=[r"$\tau_c$", r"$\tau_r$"]
 
 #%%
 # Plot torques
@@ -441,7 +441,7 @@ df_orig_q = pd.read_csv(filePath_q, header=None)
 df_q = df_orig_q.copy()
 
 # plot7([df_tau, df_tau_filter], labels=[r"$\tau_{command}$", r"$\tau_{robotsensor}$"])
-# plot_torque(df_tau, df_tau_filter, df_q)
+plot_torque(df_tau, df_tau_filter, df_q)
 # %%
     # Get external force data
 list_of_files_F_ext = glob.glob(folder_path + 'F_robot_*')

@@ -1,11 +1,23 @@
 #%%
 import numpy as np
+import quaternion
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import pandas as pd
+import glob
+import os
 
 #%%
-
+quat_15_0 = np.quaternion(0.9914449, 0.1305262, 0, 0)
+quat_0_15 = np.quaternion(0.9914449, 0, 0.1305262, 0)
+quat_robot = np.quaternion(0.9914449, 0, 0.1305262, 0)
+quat_init = np.quaternion(0.0, 0.7071068, 0.7071068, 0.0)
+quat_combined = quat_0_15 * quat_15_0
+quat_rel = quat_init * quat_combined * quat_init**-1
+quat_d = quat_rel * quat_init
+quat_test = quat_init * quat_0_15 * quat_15_0
+print(f"quat_comb: {quat_combined}, \nquat_rel: {quat_rel}, \nquat_d: {quat_d}, \nquat_test: {quat_test}")
+#%%
 quat_5_0 = np.array([ -0.0399001, -0.0002, 0.002, 0.9992017 ])
 quat_3_3 = np.array([ 0.026168, 0.026168, 0.0006852, 0.9993148 ])
 quat_10_10 = np.array([ 0.0868241, 0.0868241, 0.0075961, 0.9924039 ])

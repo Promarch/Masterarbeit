@@ -157,7 +157,7 @@ t_start = time.time()
 
     # Get Data
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint_manual/"
-# folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 
 # Determine if a valid temp variable is present
 list_filePath_temp = glob.glob(folder_path + 'print_data.F_sensor*')
@@ -255,7 +255,7 @@ ax.set_zlabel('Z')
 
 run_loop:bool = True
 i:int = 0
-while True:
+while run_loop:
     # Draw plot
     fig.canvas.draw()
     fig.canvas.flush_events()
@@ -275,6 +275,7 @@ while True:
             O_T_EE = readFile(folder_path + fileName_temp + 'O_T_EE*')
             F_T_EE = readFile(folder_path + fileName_temp + 'F_T_EE*')
             F_sensor = readFile(folder_path + fileName_temp + 'F_sensor*')
+            t_modification_temp = t_modification_temp_new
         except:
             print("Error occured during file reading")
         if len(O_T_EE) == len(F_T_EE) == len(F_sensor):
@@ -288,7 +289,7 @@ while True:
             cbar.update_normal(m_new)
         else:
             print("Temporary data is not of same size")
-    elif t_modification_full_new>t_modification_temp and run_loop:  # Full file has "appeared", stop updating
+    elif t_modification_full_new>=t_modification_temp:  # Full file has "appeared", stop updating
         print("Full File now available")
         fileName_temp = ''
         # Read new data
@@ -303,7 +304,7 @@ while True:
         m_new = mpl.cm.ScalarMappable(cmap=plt.cm.jet, norm=norm_new)
         m_new.set_array([])
         cbar.update_normal(m_new)
-        run_loop=False
+        # run_loop=False
 
 plt.show()
 
@@ -326,30 +327,30 @@ plt.show()
 
 #%%
 
-n_pts = 3
-x = np.arange(n_pts)
-X,Y = np.meshgrid(x,x)
-Y[1,:]= 1
-Z = np.cos(X)
+# n_pts = 3
+# x = np.arange(n_pts)
+# X,Y = np.meshgrid(x,x)
+# Y[1,:]= 1
+# Z = np.cos(X)
 
-    # Create color array
-V = np.arange((n_pts-1)**2).reshape((n_pts-1), (n_pts-1))
+#     # Create color array
+# V = np.arange((n_pts-1)**2).reshape((n_pts-1), (n_pts-1))
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
 
-norm = mpl.colors.Normalize(vmin=V.min(), vmax=V.max())
-colors = plt.cm.jet(norm(V))
-colors[0,-1] = 0
-# print(f"Z: \n{Z} \nV: {V}\nColor: {colors}")
-ax.plot_surface(X, Y, Z, facecolors=colors, shade=False) #
+# norm = mpl.colors.Normalize(vmin=V.min(), vmax=V.max())
+# colors = plt.cm.jet(norm(V))
+# colors[0,-1] = 0
+# # print(f"Z: \n{Z} \nV: {V}\nColor: {colors}")
+# ax.plot_surface(X, Y, Z, facecolors=colors, shade=False) #
 
-m = mpl.cm.ScalarMappable(cmap=plt.cm.jet, norm=norm)
-m.set_array([])
-plt.colorbar(m)
+# m = mpl.cm.ScalarMappable(cmap=plt.cm.jet, norm=norm)
+# m.set_array([])
+# plt.colorbar(m)
 
-ax.set_xlabel('x')
-ax.set_ylabel('y')
+# ax.set_xlabel('x')
+# ax.set_ylabel('y')
 
 # plt.show()
 

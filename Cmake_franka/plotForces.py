@@ -75,7 +75,7 @@ def readLastLine(path):
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint_manual/"
-# folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 # folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_thesis/"
 
 #%%
@@ -93,7 +93,7 @@ if t_modification_temp>t_modification_full:
     print("Temp is newer than full one")
 O_T_EE_orig = readFile(folder_path + fileName_temp + 'O_T_EE*')
 F_T_EE_orig = readFile(folder_path + fileName_temp + 'F_T_EE*')
-wrench_sensor_orig = readFile(folder_path + fileName_temp + 'F_sensor*')
+wrench_sensor_orig = readFile(folder_path + fileName_temp + 'F_robot*')    # !!!!!!!!!!!!!!!!!!!!!!!!! Temporary change, F_robot instead of F_Sensor
 
 # O_T_EE_orig = readFile(folder_path + 'O_T_EE*')
 # F_T_EE_orig = readFile(folder_path + 'F_T_EE*')
@@ -163,7 +163,7 @@ quiv_tauz = ax.quiver(*calculateQuiver(O_T_F[t], O_T_EE[t], axe=2), color = tau_
 
 ax.plot_surface(x_full, y_full, z_full, color = [0.9, 0.9, 0.9, 0.1], linewidth=0, antialiased=False)
 ax.plot(O_T_F[:,12], O_T_F[:,13], O_T_F[:,14], "k--")
-ax.plot(O_T_EE[:,12], O_T_EE[:,13], O_T_EE[:,14], "r-")
+# ax.plot(O_T_EE[:,12], O_T_EE[:,13], O_T_EE[:,14], "r-")
 
 ax.view_init(elev=22, azim=22)
 ax.set_xlim(mid_x - max_range, mid_x + max_range)
@@ -177,7 +177,7 @@ fig.show()
 #%%
 run_loop:bool = True
 i:int = 0
-while True:
+while run_loop:
     # Draw plot
     fig.canvas.draw()
     fig.canvas.flush_events()
@@ -187,7 +187,12 @@ while True:
     t_modification_full_new = os.path.getmtime(max(list_filePath_full))
     t_modification_temp_new = os.path.getmtime(max(list_filePath_temp))
     if t_modification_full>t_modification_temp: # Full file is newer than update file, so nothing to update
+        print("here")
         plt.show()
+    elif t_modification_full_new>=t_modification_temp_new: # Robot has finished, final data available
+        print("Robot finished movement, final data is available.")
+        plt.show()
+        run_loop = False
     elif t_modification_temp_new>t_modification_temp:   # Temp file was updated
         print("New update for temp file, i=",i)
         i=i+1
@@ -196,7 +201,7 @@ while True:
         try:
             O_T_EE = readLastLine(folder_path + 'print_data.O_T_EE_temp_data.txt')
             F_T_EE = readLastLine(folder_path + 'print_data.F_T_EE_temp_data.txt')
-            wrench_sensor = readLastLine(folder_path + 'print_data.F_sensor_temp_data.txt')
+            wrench_sensor = readLastLine(folder_path + 'print_data.F_robot_temp_data.txt') # !!!!!!!!!!!!!!!!!!!!!!!!! Temporary change, F_robot instead of F_Sensor
         except:
             print("Error occured during file reading")
         if len(O_T_EE)==16 and len(F_T_EE)==16 and len(wrench_sensor)==6:
@@ -224,33 +229,31 @@ while True:
             quiv_tauz = ax.quiver(*calculateQuiver(O_T_F, O_T_EE, axe=2), color = tau_color[2,:], length=l_quiver)
 
 
-
-
 #%% MPL Animation
 # Variables for mpl animation
-fps = 10
-t_interval = 1000/fps
-n_frames = round(len(O_T_EE)*0.001*fps)
-frames = np.linspace(0,len(O_T_EE)-1, n_frames).astype(int)
+# fps = 10
+# t_interval = 1000/fps
+# n_frames = round(len(O_T_EE)*0.001*fps)
+# frames = np.linspace(0,len(O_T_EE)-1, n_frames).astype(int)
 
-def update(t):
-    # Set quiver variables global
-    global quiv_x, quiv_y, quiv_taux, quiv_tauy, quiv_tauz
-    # Remove old quiver
-    quiv_x.remove()
-    quiv_y.remove()
-    quiv_taux.remove()
-    quiv_tauy.remove()
-    quiv_tauz.remove()
-    # Plot new quiver
-    quiv_x = ax.quiver(*calculateQuiver(O_T_EE[t], O_T_EE[t], axe=0), color = F_color[t,0,:], length=l_quiver)
-    quiv_y = ax.quiver(*calculateQuiver(O_T_EE[t], O_T_EE[t], axe=1), color = F_color[t,0,:], length=l_quiver)
-    quiv_taux = ax.quiver(*calculateQuiver(O_T_F[t], O_T_EE[t], axe=0), color = tau_color[t,0,:], length=l_quiver)
-    quiv_tauy = ax.quiver(*calculateQuiver(O_T_F[t], O_T_EE[t], axe=1), color = tau_color[t,1,:], length=tau_length[t,1])
-    quiv_tauz = ax.quiver(*calculateQuiver(O_T_F[t], O_T_EE[t], axe=2), color = tau_color[t,2,:], length=l_quiver)
-    # quiv_tauy.update_from(ax.quiver(*calculateQuiver(O_T_F[t], O_T_EE[t], axe=1), color = tau_color[t,1,:], length=tau_length[t,1]))
+# def update(t):
+#     # Set quiver variables global
+#     global quiv_x, quiv_y, quiv_taux, quiv_tauy, quiv_tauz
+#     # Remove old quiver
+#     quiv_x.remove()
+#     quiv_y.remove()
+#     quiv_taux.remove()
+#     quiv_tauy.remove()
+#     quiv_tauz.remove()
+#     # Plot new quiver
+#     quiv_x = ax.quiver(*calculateQuiver(O_T_EE[t], O_T_EE[t], axe=0), color = F_color[t,0,:], length=l_quiver)
+#     quiv_y = ax.quiver(*calculateQuiver(O_T_EE[t], O_T_EE[t], axe=1), color = F_color[t,0,:], length=l_quiver)
+#     quiv_taux = ax.quiver(*calculateQuiver(O_T_F[t], O_T_EE[t], axe=0), color = tau_color[t,0,:], length=l_quiver)
+#     quiv_tauy = ax.quiver(*calculateQuiver(O_T_F[t], O_T_EE[t], axe=1), color = tau_color[t,1,:], length=tau_length[t,1])
+#     quiv_tauz = ax.quiver(*calculateQuiver(O_T_F[t], O_T_EE[t], axe=2), color = tau_color[t,2,:], length=l_quiver)
+#     # quiv_tauy.update_from(ax.quiver(*calculateQuiver(O_T_F[t], O_T_EE[t], axe=1), color = tau_color[t,1,:], length=tau_length[t,1]))
 
-    print("Time: ", t)
+#     print("Time: ", t)
 
-ani = FuncAnimation(fig, update, frames=frames, interval=t_interval)
-plt.show()
+# ani = FuncAnimation(fig, update, frames=frames, interval=t_interval)
+# plt.show()

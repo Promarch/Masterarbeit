@@ -237,7 +237,7 @@ int main() {
   // Variables for the thread
   int print_rate = 4; // How many times per second is the data written
   std::atomic_bool running{true}; // Thread is active
-  std::atomic_bool thread_running{true}; // Terminates the thread if true
+  std::atomic_bool thread_running{true}; // Terminates the thread if false
   struct {
     std::mutex mutex;
     bool has_data;

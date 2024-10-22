@@ -34,7 +34,7 @@ void setDefaultBehavior(franka::Robot& robot) {
                               {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
                               {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
                               {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0}});
-  robot.setJointImpedance({{3000, 3000, 3000, 1000, 3000, 3000, 3000}});
+  robot.setJointImpedance({{3000, 3000, 3000, 2500, 2500, 2000, 2000}});
   robot.setCartesianImpedance({{3000, 3000, 3000, 300, 300, 300}});
 }
 
@@ -610,7 +610,7 @@ int main(int argc, char** argv) {
 
         // Calculate torque with aid of cartesian velocity
       tau_d = Kp.cwiseProduct(q_d-q) - Kd.cwiseProduct(dq);
-      Eigen::VectorXd::Map(&tau_d_array[0], 7) = tau_d;
+      Eigen::VectorXd::Map(&tau_d_array[0], 7) = factor_tau * tau_d;
 
       // Add the current data to the array
       tau_data.push_back(tau_d_array);

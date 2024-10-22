@@ -26,18 +26,18 @@ add_library(sensor_botasys STATIC
 target_link_libraries(examples_common PUBLIC Franka::Franka Eigen3::Eigen3)
 
 SET(PROGRAM_files
-  JointPositions2
-  Waypoints
   JointImpedanceControl_example
   CartesianImpedance_example
-  GetPosition
-  ReadForce
-  ImpedanceCartesianControl
-  VertForce
   force_control_example
+  GetPosition
+  Waypoints
+  ReadForce
   HandMoveRobot
+  ImpedanceCartesianControl
   First_ImpedanceVel
-  ImpedanceControl
+  ImpedanceVel_test
+  InverseKin_test
+  TrueImpedance_test
 )
 
 foreach(singleFile ${PROGRAM_files})

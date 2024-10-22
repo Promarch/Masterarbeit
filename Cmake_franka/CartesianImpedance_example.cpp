@@ -4,6 +4,7 @@
 #include <cmath>
 #include <functional>
 #include <iostream>
+#include <iomanip>
 #include <Eigen/Dense>
 #include <franka/duration.h>
 #include <franka/exception.h>
@@ -42,14 +43,21 @@ int main(int argc, char** argv) {
                                {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
                                {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0}},
                                {{100.0, 100.0, 100.0, 100.0, 100.0, 100.0}});
+
+    double time = 0;
+    double sampling_interval = 0.1;     // Time for first sampling interval
+    double next_sampling_time = 0;      // Interval at which the debug loop is called
+
+
+
     // define callback for the torque control loop
     std::function<franka::Torques(const franka::RobotState&, franka::Duration)>
-        impedance_control_callback = [&](const franka::RobotState& robot_state,
-                                         franka::Duration /*duration*/) -> franka::Torques {
+        impedance_control_callback = [&](const franka::RobotState& robot_state, franka::Duration period) -> franka::Torques {
+      
+      time += period.toSec();
       // get state variables
       std::array<double, 7> coriolis_array = model.coriolis(robot_state);
-      std::array<double, 42> jacobian_array =
-          model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
+      std::array<double, 42> jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
       // convert to Eigen
       Eigen::Map<const Eigen::Matrix<double, 7, 1>> coriolis(coriolis_array.data());
       Eigen::Map<const Eigen::Matrix<double, 6, 7>> jacobian(jacobian_array.data());
@@ -75,10 +83,22 @@ int main(int argc, char** argv) {
       // compute control
       Eigen::VectorXd tau_task(7), tau_d(7);
       // Spring damper system with damping ratio=1
+      Eigen::Matrix<double, 7,6> jac_pseudoInv = jacobian.transpose() * (jacobian * jacobian.transpose()).partialPivLu().inverse(); 
+      Eigen::Matrix<double, 6,1> h_c = (-stiffness * error - damping * (jacobian * dq));
       tau_task << jacobian.transpose() * (-stiffness * error - damping * (jacobian * dq));
       tau_d << tau_task + coriolis;
       std::array<double, 7> tau_d_array{};
       Eigen::VectorXd::Map(&tau_d_array[0], 7) = tau_d;
+
+      // For debug: Print current values every "sampling_interval"
+      if (time >= next_sampling_time) {
+        std::cout << std::fixed << std::setprecision(3);
+        std::cout << "Time: " << time  << "\ntau_d: " << tau_task.transpose();
+        std::cout << "\ntau_i: " << (jac_pseudoInv*h_c).transpose() << "\nWrench: \n" << h_c.transpose() << "\n\n"; // ", Error: \n" << error <<  
+        next_sampling_time += sampling_interval;
+      }
+
+
       return tau_d_array;
     };
     // start real-time control loop

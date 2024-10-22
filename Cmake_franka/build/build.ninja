@@ -104,72 +104,6 @@ build libsensor_botasys.a: CXX_STATIC_LIBRARY_LINKER__sensor_botasys_Debug CMake
   TARGET_PDB = sensor_botasys.a.dbg
 
 # =============================================================================
-# Object build statements for EXECUTABLE target JointPositions2
-
-
-#############################################
-# Order-only phony target for JointPositions2
-
-build cmake_object_order_depends_target_JointPositions2: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
-
-build CMakeFiles/JointPositions2.dir/JointPositions2.cpp.o: CXX_COMPILER__JointPositions2_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/JointPositions2.cpp || cmake_object_order_depends_target_JointPositions2
-  DEP_FILE = CMakeFiles/JointPositions2.dir/JointPositions2.cpp.o.d
-  FLAGS = -g -std=gnu++14
-  INCLUDES = -isystem /usr/include/eigen3
-  OBJECT_DIR = CMakeFiles/JointPositions2.dir
-  OBJECT_FILE_DIR = CMakeFiles/JointPositions2.dir
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target JointPositions2
-
-
-#############################################
-# Link the executable JointPositions2
-
-build JointPositions2: CXX_EXECUTABLE_LINKER__JointPositions2_Debug CMakeFiles/JointPositions2.dir/JointPositions2.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
-  FLAGS = -g
-  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
-  OBJECT_DIR = CMakeFiles/JointPositions2.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = JointPositions2
-  TARGET_PDB = JointPositions2.dbg
-
-# =============================================================================
-# Object build statements for EXECUTABLE target Waypoints
-
-
-#############################################
-# Order-only phony target for Waypoints
-
-build cmake_object_order_depends_target_Waypoints: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
-
-build CMakeFiles/Waypoints.dir/Waypoints.cpp.o: CXX_COMPILER__Waypoints_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/Waypoints.cpp || cmake_object_order_depends_target_Waypoints
-  DEP_FILE = CMakeFiles/Waypoints.dir/Waypoints.cpp.o.d
-  FLAGS = -g -std=gnu++14
-  INCLUDES = -isystem /usr/include/eigen3
-  OBJECT_DIR = CMakeFiles/Waypoints.dir
-  OBJECT_FILE_DIR = CMakeFiles/Waypoints.dir
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target Waypoints
-
-
-#############################################
-# Link the executable Waypoints
-
-build Waypoints: CXX_EXECUTABLE_LINKER__Waypoints_Debug CMakeFiles/Waypoints.dir/Waypoints.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
-  FLAGS = -g
-  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
-  OBJECT_DIR = CMakeFiles/Waypoints.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = Waypoints
-  TARGET_PDB = Waypoints.dbg
-
-# =============================================================================
 # Object build statements for EXECUTABLE target JointImpedanceControl_example
 
 
@@ -236,6 +170,39 @@ build CartesianImpedance_example: CXX_EXECUTABLE_LINKER__CartesianImpedance_exam
   TARGET_PDB = CartesianImpedance_example.dbg
 
 # =============================================================================
+# Object build statements for EXECUTABLE target force_control_example
+
+
+#############################################
+# Order-only phony target for force_control_example
+
+build cmake_object_order_depends_target_force_control_example: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+
+build CMakeFiles/force_control_example.dir/force_control_example.cpp.o: CXX_COMPILER__force_control_example_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/force_control_example.cpp || cmake_object_order_depends_target_force_control_example
+  DEP_FILE = CMakeFiles/force_control_example.dir/force_control_example.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/force_control_example.dir
+  OBJECT_FILE_DIR = CMakeFiles/force_control_example.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target force_control_example
+
+
+#############################################
+# Link the executable force_control_example
+
+build force_control_example: CXX_EXECUTABLE_LINKER__force_control_example_Debug CMakeFiles/force_control_example.dir/force_control_example.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/force_control_example.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = force_control_example
+  TARGET_PDB = force_control_example.dbg
+
+# =============================================================================
 # Object build statements for EXECUTABLE target GetPosition
 
 
@@ -267,6 +234,39 @@ build GetPosition: CXX_EXECUTABLE_LINKER__GetPosition_Debug CMakeFiles/GetPositi
   PRE_LINK = :
   TARGET_FILE = GetPosition
   TARGET_PDB = GetPosition.dbg
+
+# =============================================================================
+# Object build statements for EXECUTABLE target Waypoints
+
+
+#############################################
+# Order-only phony target for Waypoints
+
+build cmake_object_order_depends_target_Waypoints: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+
+build CMakeFiles/Waypoints.dir/Waypoints.cpp.o: CXX_COMPILER__Waypoints_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/Waypoints.cpp || cmake_object_order_depends_target_Waypoints
+  DEP_FILE = CMakeFiles/Waypoints.dir/Waypoints.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/Waypoints.dir
+  OBJECT_FILE_DIR = CMakeFiles/Waypoints.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target Waypoints
+
+
+#############################################
+# Link the executable Waypoints
+
+build Waypoints: CXX_EXECUTABLE_LINKER__Waypoints_Debug CMakeFiles/Waypoints.dir/Waypoints.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/Waypoints.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = Waypoints
+  TARGET_PDB = Waypoints.dbg
 
 # =============================================================================
 # Object build statements for EXECUTABLE target ReadForce
@@ -302,105 +302,6 @@ build ReadForce: CXX_EXECUTABLE_LINKER__ReadForce_Debug CMakeFiles/ReadForce.dir
   TARGET_PDB = ReadForce.dbg
 
 # =============================================================================
-# Object build statements for EXECUTABLE target ImpedanceCartesianControl
-
-
-#############################################
-# Order-only phony target for ImpedanceCartesianControl
-
-build cmake_object_order_depends_target_ImpedanceCartesianControl: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
-
-build CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o: CXX_COMPILER__ImpedanceCartesianControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceCartesianControl.cpp || cmake_object_order_depends_target_ImpedanceCartesianControl
-  DEP_FILE = CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o.d
-  FLAGS = -g -std=gnu++14
-  INCLUDES = -isystem /usr/include/eigen3
-  OBJECT_DIR = CMakeFiles/ImpedanceCartesianControl.dir
-  OBJECT_FILE_DIR = CMakeFiles/ImpedanceCartesianControl.dir
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target ImpedanceCartesianControl
-
-
-#############################################
-# Link the executable ImpedanceCartesianControl
-
-build ImpedanceCartesianControl: CXX_EXECUTABLE_LINKER__ImpedanceCartesianControl_Debug CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
-  FLAGS = -g
-  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
-  OBJECT_DIR = CMakeFiles/ImpedanceCartesianControl.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = ImpedanceCartesianControl
-  TARGET_PDB = ImpedanceCartesianControl.dbg
-
-# =============================================================================
-# Object build statements for EXECUTABLE target VertForce
-
-
-#############################################
-# Order-only phony target for VertForce
-
-build cmake_object_order_depends_target_VertForce: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
-
-build CMakeFiles/VertForce.dir/VertForce.cpp.o: CXX_COMPILER__VertForce_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/VertForce.cpp || cmake_object_order_depends_target_VertForce
-  DEP_FILE = CMakeFiles/VertForce.dir/VertForce.cpp.o.d
-  FLAGS = -g -std=gnu++14
-  INCLUDES = -isystem /usr/include/eigen3
-  OBJECT_DIR = CMakeFiles/VertForce.dir
-  OBJECT_FILE_DIR = CMakeFiles/VertForce.dir
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target VertForce
-
-
-#############################################
-# Link the executable VertForce
-
-build VertForce: CXX_EXECUTABLE_LINKER__VertForce_Debug CMakeFiles/VertForce.dir/VertForce.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
-  FLAGS = -g
-  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
-  OBJECT_DIR = CMakeFiles/VertForce.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = VertForce
-  TARGET_PDB = VertForce.dbg
-
-# =============================================================================
-# Object build statements for EXECUTABLE target force_control_example
-
-
-#############################################
-# Order-only phony target for force_control_example
-
-build cmake_object_order_depends_target_force_control_example: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
-
-build CMakeFiles/force_control_example.dir/force_control_example.cpp.o: CXX_COMPILER__force_control_example_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/force_control_example.cpp || cmake_object_order_depends_target_force_control_example
-  DEP_FILE = CMakeFiles/force_control_example.dir/force_control_example.cpp.o.d
-  FLAGS = -g -std=gnu++14
-  INCLUDES = -isystem /usr/include/eigen3
-  OBJECT_DIR = CMakeFiles/force_control_example.dir
-  OBJECT_FILE_DIR = CMakeFiles/force_control_example.dir
-
-
-# =============================================================================
-# Link build statements for EXECUTABLE target force_control_example
-
-
-#############################################
-# Link the executable force_control_example
-
-build force_control_example: CXX_EXECUTABLE_LINKER__force_control_example_Debug CMakeFiles/force_control_example.dir/force_control_example.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
-  FLAGS = -g
-  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
-  OBJECT_DIR = CMakeFiles/force_control_example.dir
-  POST_BUILD = :
-  PRE_LINK = :
-  TARGET_FILE = force_control_example
-  TARGET_PDB = force_control_example.dbg
-
-# =============================================================================
 # Object build statements for EXECUTABLE target HandMoveRobot
 
 
@@ -432,6 +333,39 @@ build HandMoveRobot: CXX_EXECUTABLE_LINKER__HandMoveRobot_Debug CMakeFiles/HandM
   PRE_LINK = :
   TARGET_FILE = HandMoveRobot
   TARGET_PDB = HandMoveRobot.dbg
+
+# =============================================================================
+# Object build statements for EXECUTABLE target ImpedanceCartesianControl
+
+
+#############################################
+# Order-only phony target for ImpedanceCartesianControl
+
+build cmake_object_order_depends_target_ImpedanceCartesianControl: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+
+build CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o: CXX_COMPILER__ImpedanceCartesianControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceCartesianControl.cpp || cmake_object_order_depends_target_ImpedanceCartesianControl
+  DEP_FILE = CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/ImpedanceCartesianControl.dir
+  OBJECT_FILE_DIR = CMakeFiles/ImpedanceCartesianControl.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target ImpedanceCartesianControl
+
+
+#############################################
+# Link the executable ImpedanceCartesianControl
+
+build ImpedanceCartesianControl: CXX_EXECUTABLE_LINKER__ImpedanceCartesianControl_Debug CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/ImpedanceCartesianControl.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = ImpedanceCartesianControl
+  TARGET_PDB = ImpedanceCartesianControl.dbg
 
 # =============================================================================
 # Object build statements for EXECUTABLE target First_ImpedanceVel
@@ -467,37 +401,103 @@ build First_ImpedanceVel: CXX_EXECUTABLE_LINKER__First_ImpedanceVel_Debug CMakeF
   TARGET_PDB = First_ImpedanceVel.dbg
 
 # =============================================================================
-# Object build statements for EXECUTABLE target ImpedanceControl
+# Object build statements for EXECUTABLE target ImpedanceVel_test
 
 
 #############################################
-# Order-only phony target for ImpedanceControl
+# Order-only phony target for ImpedanceVel_test
 
-build cmake_object_order_depends_target_ImpedanceControl: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+build cmake_object_order_depends_target_ImpedanceVel_test: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
 
-build CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o: CXX_COMPILER__ImpedanceControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceControl.cpp || cmake_object_order_depends_target_ImpedanceControl
-  DEP_FILE = CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o.d
+build CMakeFiles/ImpedanceVel_test.dir/ImpedanceVel_test.cpp.o: CXX_COMPILER__ImpedanceVel_test_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceVel_test.cpp || cmake_object_order_depends_target_ImpedanceVel_test
+  DEP_FILE = CMakeFiles/ImpedanceVel_test.dir/ImpedanceVel_test.cpp.o.d
   FLAGS = -g -std=gnu++14
   INCLUDES = -isystem /usr/include/eigen3
-  OBJECT_DIR = CMakeFiles/ImpedanceControl.dir
-  OBJECT_FILE_DIR = CMakeFiles/ImpedanceControl.dir
+  OBJECT_DIR = CMakeFiles/ImpedanceVel_test.dir
+  OBJECT_FILE_DIR = CMakeFiles/ImpedanceVel_test.dir
 
 
 # =============================================================================
-# Link build statements for EXECUTABLE target ImpedanceControl
+# Link build statements for EXECUTABLE target ImpedanceVel_test
 
 
 #############################################
-# Link the executable ImpedanceControl
+# Link the executable ImpedanceVel_test
 
-build ImpedanceControl: CXX_EXECUTABLE_LINKER__ImpedanceControl_Debug CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+build ImpedanceVel_test: CXX_EXECUTABLE_LINKER__ImpedanceVel_test_Debug CMakeFiles/ImpedanceVel_test.dir/ImpedanceVel_test.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
   FLAGS = -g
   LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
-  OBJECT_DIR = CMakeFiles/ImpedanceControl.dir
+  OBJECT_DIR = CMakeFiles/ImpedanceVel_test.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_FILE = ImpedanceControl
-  TARGET_PDB = ImpedanceControl.dbg
+  TARGET_FILE = ImpedanceVel_test
+  TARGET_PDB = ImpedanceVel_test.dbg
+
+# =============================================================================
+# Object build statements for EXECUTABLE target InverseKin_test
+
+
+#############################################
+# Order-only phony target for InverseKin_test
+
+build cmake_object_order_depends_target_InverseKin_test: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+
+build CMakeFiles/InverseKin_test.dir/InverseKin_test.cpp.o: CXX_COMPILER__InverseKin_test_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/InverseKin_test.cpp || cmake_object_order_depends_target_InverseKin_test
+  DEP_FILE = CMakeFiles/InverseKin_test.dir/InverseKin_test.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/InverseKin_test.dir
+  OBJECT_FILE_DIR = CMakeFiles/InverseKin_test.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target InverseKin_test
+
+
+#############################################
+# Link the executable InverseKin_test
+
+build InverseKin_test: CXX_EXECUTABLE_LINKER__InverseKin_test_Debug CMakeFiles/InverseKin_test.dir/InverseKin_test.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/InverseKin_test.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = InverseKin_test
+  TARGET_PDB = InverseKin_test.dbg
+
+# =============================================================================
+# Object build statements for EXECUTABLE target TrueImpedance_test
+
+
+#############################################
+# Order-only phony target for TrueImpedance_test
+
+build cmake_object_order_depends_target_TrueImpedance_test: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+
+build CMakeFiles/TrueImpedance_test.dir/TrueImpedance_test.cpp.o: CXX_COMPILER__TrueImpedance_test_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/TrueImpedance_test.cpp || cmake_object_order_depends_target_TrueImpedance_test
+  DEP_FILE = CMakeFiles/TrueImpedance_test.dir/TrueImpedance_test.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/TrueImpedance_test.dir
+  OBJECT_FILE_DIR = CMakeFiles/TrueImpedance_test.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target TrueImpedance_test
+
+
+#############################################
+# Link the executable TrueImpedance_test
+
+build TrueImpedance_test: CXX_EXECUTABLE_LINKER__TrueImpedance_test_Debug CMakeFiles/TrueImpedance_test.dir/TrueImpedance_test.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/TrueImpedance_test.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = TrueImpedance_test
+  TARGET_PDB = TrueImpedance_test.dbg
 
 
 #############################################
@@ -579,7 +579,7 @@ build sensor_botasys: phony libsensor_botasys.a
 #############################################
 # Folder: /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
-build all: phony libexamples_common.a libsensor_botasys.a JointPositions2 Waypoints JointImpedanceControl_example CartesianImpedance_example GetPosition ReadForce ImpedanceCartesianControl VertForce force_control_example HandMoveRobot First_ImpedanceVel ImpedanceControl
+build all: phony libexamples_common.a libsensor_botasys.a JointImpedanceControl_example CartesianImpedance_example force_control_example GetPosition Waypoints ReadForce HandMoveRobot ImpedanceCartesianControl First_ImpedanceVel ImpedanceVel_test InverseKin_test TrueImpedance_test
 
 # =============================================================================
 # Built-in targets
