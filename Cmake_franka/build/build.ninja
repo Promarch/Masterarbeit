@@ -499,6 +499,39 @@ build TrueImpedance_test: CXX_EXECUTABLE_LINKER__TrueImpedance_test_Debug CMakeF
   TARGET_FILE = TrueImpedance_test
   TARGET_PDB = TrueImpedance_test.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target OpSpace
+
+
+#############################################
+# Order-only phony target for OpSpace
+
+build cmake_object_order_depends_target_OpSpace: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+
+build CMakeFiles/OpSpace.dir/OpSpace.cpp.o: CXX_COMPILER__OpSpace_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/OpSpace.cpp || cmake_object_order_depends_target_OpSpace
+  DEP_FILE = CMakeFiles/OpSpace.dir/OpSpace.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/OpSpace.dir
+  OBJECT_FILE_DIR = CMakeFiles/OpSpace.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target OpSpace
+
+
+#############################################
+# Link the executable OpSpace
+
+build OpSpace: CXX_EXECUTABLE_LINKER__OpSpace_Debug CMakeFiles/OpSpace.dir/OpSpace.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/OpSpace.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = OpSpace
+  TARGET_PDB = OpSpace.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -579,7 +612,7 @@ build sensor_botasys: phony libsensor_botasys.a
 #############################################
 # Folder: /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
-build all: phony libexamples_common.a libsensor_botasys.a JointImpedanceControl_example CartesianImpedance_example force_control_example GetPosition Waypoints ReadForce HandMoveRobot ImpedanceCartesianControl First_ImpedanceVel ImpedanceVel_test InverseKin_test TrueImpedance_test
+build all: phony libexamples_common.a libsensor_botasys.a JointImpedanceControl_example CartesianImpedance_example force_control_example GetPosition Waypoints ReadForce HandMoveRobot ImpedanceCartesianControl First_ImpedanceVel ImpedanceVel_test InverseKin_test TrueImpedance_test OpSpace
 
 # =============================================================================
 # Built-in targets

@@ -38,6 +38,7 @@ SET(PROGRAM_files
   ImpedanceVel_test
   InverseKin_test
   TrueImpedance_test
+  OpSpace
 )
 
 foreach(singleFile ${PROGRAM_files})

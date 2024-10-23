@@ -214,7 +214,7 @@ int main() {
     // Set Up basic robot function
     franka::Robot robot("192.168.1.11");
     // Set new end-effector position
-    // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.245, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.220, 1.0});
     // robot.setK({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -0.0105, 1.0});
     // robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
     // robot.setK({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0});
@@ -230,7 +230,7 @@ int main() {
     // Variables to control loop time
     double time{0};
     double time_max{5};
-    double sampling_interval = 0.25; // Interval at which the console outputs the current error
+    double sampling_interval = 0.5; // Interval at which the console outputs the current error
     double next_sampling_time = 0;  // Needed for the sampling interval
 
     // Joa mal schauen
@@ -245,18 +245,13 @@ int main() {
       // Jacobian
       std::array<double, 42> jacobian_array = model.bodyJacobian(franka::Frame::kEndEffector, robot_state);
       Eigen::Map<const Eigen::Matrix<double, 6, 7>> jacobian(jacobian_array.data());
-      // Tau with gravity
-      std::array<double, 7> tau_j_array = robot_state.tau_J; 
-      Eigen::Map<Eigen::Matrix<double, 7, 1>> tau_J(tau_j_array.data()); 
-      // Gravity on each joint
-      std::array<double, 7> gravity_array = model.gravity(robot_state);
-      Eigen::Map<Eigen::Matrix<double, 7, 1>> gravity(gravity_array.data());
-      // Tau filtered
-      std::array<double, 7> tau_filter_array = robot_state.tau_ext_hat_filtered;
-      Eigen::Map<Eigen::Matrix<double, 7, 1>> tau_filter(tau_filter_array.data());
-      // Forces by robot sensor
-      std::array<double, 6> F_ext_array = robot_state.K_F_ext_hat_K;
-      Eigen::Map<Eigen::Matrix<double, 1, 6>> F_ext(F_ext_array.data());
+      Eigen::Map<const Eigen::Matrix<double, 7, 1>> tau_J(robot_state.tau_J.data()); 
+      Eigen::Map<const Eigen::Matrix<double, 7, 1>> gravity(model.gravity(robot_state).data());
+      Eigen::Map<const Eigen::Matrix<double, 7, 1>> tau_filter(robot_state.tau_ext_hat_filtered.data());
+      Eigen::Map<const Eigen::Matrix<double, 1, 6>> F_ext(robot_state.K_F_ext_hat_K.data());
+      // Mass Matrix
+      Eigen::Map<const Eigen::Matrix<double, 7,7>> mass(model.mass(robot_state).data());
+
       // External Sensor (using BotaSys header)
       alignas(alignof(float[6])) float aligned_forces[6]; // necessary cause otherwise i get the warning: taking address of packed member of ‘BotaForceTorqueSensorComm::AppOutput::<unnamed struct>’ may result in an unaligned pointer value
       if (sensor.readFrame() == BotaForceTorqueSensorComm::VALID_FRAME){
@@ -278,20 +273,15 @@ int main() {
 
         // Add current measurements to the vector  
       tau_grav_data.push_back(tau_grav_array);
-      tau_filter_data.push_back(tau_filter_array);
+      tau_filter_data.push_back(robot_state.tau_ext_hat_filtered);
       F_ext_data.push_back(robot_state.K_F_ext_hat_K);
       // F_tau_filter_data.push_back(F_tau_filter_array);
 
       // Print current wrench, time, and absolute positional error
       if (time >= next_sampling_time) {
         std::cout << std::fixed << std::setprecision(3);
-        // for (uint8_t i=0; i<6; i++)
-        // {
-        //   printf("%f",F_sensor_array[i]);
-        //   printf("\t");
-        // }
-        // printf("\n");
-        std::cout << "Time: " << time << "\nForce sensor: " << F_sensor-F_sensor_start << "\nForce robot:  " << F_ext-F_ext_start << "\n \n"; 
+        std::cout << "Time: " << time ; //<< "\nForce sensor: " << (F_sensor-F_sensor_start).transpose() << "\nForce robot:  " << (F_ext-F_ext_start).transpose() << "\n \n"; 
+        std::cout << "\nMass Matrix: \n" << mass << "\n\n"; 
         next_sampling_time += sampling_interval;
       }
 

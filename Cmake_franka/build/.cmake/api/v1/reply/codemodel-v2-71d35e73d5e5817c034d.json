@@ -1,0 +1,186 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "FrankaCmake",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "CartesianImpedance_example::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-CartesianImpedance_example-Debug-9ec6f91e037feceae04d.json",
+					"name" : "CartesianImpedance_example",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "First_ImpedanceVel::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-First_ImpedanceVel-Debug-da5084ff51e117936da3.json",
+					"name" : "First_ImpedanceVel",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "GetPosition::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-GetPosition-Debug-9e9be6e2e9107c1efdec.json",
+					"name" : "GetPosition",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "HandMoveRobot::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-HandMoveRobot-Debug-9317216cec7515e4e5f0.json",
+					"name" : "HandMoveRobot",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ImpedanceCartesianControl::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ImpedanceCartesianControl-Debug-6b9e4b0379c3509b8946.json",
+					"name" : "ImpedanceCartesianControl",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ImpedanceVel_test::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ImpedanceVel_test-Debug-37911c718f5fb7c68609.json",
+					"name" : "ImpedanceVel_test",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "InverseKin_test::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-InverseKin_test-Debug-300573ce591c0e9a8f34.json",
+					"name" : "InverseKin_test",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "JointImpedanceControl_example::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-JointImpedanceControl_example-Debug-5e2db048abdd282848f5.json",
+					"name" : "JointImpedanceControl_example",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "OpSpace::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-OpSpace-Debug-5cc5ff74b36f91382bac.json",
+					"name" : "OpSpace",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ReadForce::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ReadForce-Debug-7e9e309cdd46ed0f89cd.json",
+					"name" : "ReadForce",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "TrueImpedance_test::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-TrueImpedance_test-Debug-aef30d7dd4ad6efa7f8d.json",
+					"name" : "TrueImpedance_test",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "Waypoints::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-Waypoints-Debug-f148844002984c80161a.json",
+					"name" : "Waypoints",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "examples_common::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-examples_common-Debug-157ba51fabd5d8ffd113.json",
+					"name" : "examples_common",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "force_control_example::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-force_control_example-Debug-387a9e0ffff64fffe8be.json",
+					"name" : "force_control_example",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "sensor_botasys::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-sensor_botasys-Debug-7373ef3e04f0dbc0efd8.json",
+					"name" : "sensor_botasys",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+		"source" : "/home/alexandergerard/Masterarbeit/Cmake_franka"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

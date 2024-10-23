@@ -68,5 +68,10 @@
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/TrueImpedance_test.dir/TrueImpedance_test.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/TrueImpedance_test.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/TrueImpedance_test.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/OpSpace.dir/OpSpace.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/OpSpace.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/OpSpace.cpp"
 }
 ]
