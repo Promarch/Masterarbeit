@@ -36,9 +36,24 @@ def main() -> None:
     assert mujoco.__version__ >= "3.1.0", "Please upgrade to mujoco 3.1.0 or later."
 
     # Load the model and data.
-    model = mujoco.MjModel.from_xml_path("kuka_iiwa_14/scene.xml")
+    robot = "kuka"
+    robot = "FR3"
+    if robot == "FR3":
+        filePath = "franka_fr3/scene_copy_robot.xml"
+        # Desired position
+        pos_init = np.array([0.52, 0.0, 0.2]) # FR3
+        quat_d = np.array([0.1227878, 0.6963642, 0.6963642, 0.1227878]) # FR3
+    elif robot == "kuka":
+        filePath = "kuka_iiwa_14/scene.xml"
+        # Desired position
+        pos_init = np.array([0.5, 0.00, 0.355]) # Kuka
+        quat_d = np.array([-0.1227878, 0.6963642, 0.6963642, -0.1227878]) # Kuka
+        # quat_d = np.array([0.1227878, 0.6963642, 0.6963642, 0.1227878]) # FR3
+
+    model = mujoco.MjModel.from_xml_path(filePath)
     data = mujoco.MjData(model)
 
+    model.body_gravcomp[:] = float(gravity_compensation)
     model.opt.timestep = dt
 
     # Compute damping and stiffness matrices.
@@ -76,6 +91,8 @@ def main() -> None:
     mocap_name = "target"
     mocap_id = model.body(mocap_name).mocapid[0]
 
+    quat_init = [0, 0.7071068, 0.7071068, 0] 
+
     # Pre-allocate numpy arrays.
     jac = np.zeros((6, model.nv))
     twist = np.zeros(6)
@@ -84,6 +101,16 @@ def main() -> None:
     error_quat = np.zeros(4)
     M_inv = np.zeros((model.nv, model.nv))
     Mx = np.zeros((6, 6))
+
+    # Debugging
+    debug:bool = True
+    set_mocap_pos:bool = True
+    t_debug = 0.05
+    t_sample = t_debug
+    time_acc = 5
+
+    # Trying out velocity based impedance control
+    cart_vel = np.zeros(6)
 
     with mujoco.viewer.launch_passive(
         model=model,
@@ -99,8 +126,23 @@ def main() -> None:
 
         # Enable site frame visualization.
         viewer.opt.frame = mujoco.mjtFrame.mjFRAME_SITE
+
+        # Time debugging
+        t_init = time.time()
+        time_current = 0
         while viewer.is_running():
+            time_current = np.round(time.time()-t_init,3)
+            time_ms = round(time_current*1000)
             step_start = time.time()
+
+            if time_current>0.01 and set_mocap_pos==True:
+                set_mocap_pos=False
+                pos_pointer = data.site(site_id).xpos.copy()
+                pos_init = np.array(pos_pointer)
+                model.body("target").pos = pos_init
+                model.body("target").quat = quat_d
+                data.mocap_pos[mocap_id] = pos_init
+                data.mocap_quat[mocap_id] = quat_d
 
             # Spatial velocity (aka twist).
             dx = data.mocap_pos[mocap_id] - data.site(site_id).xpos
@@ -110,6 +152,7 @@ def main() -> None:
             mujoco.mju_mulQuat(error_quat, data.mocap_quat[mocap_id], site_quat_conj)
             mujoco.mju_quat2Vel(twist[3:], error_quat, 1.0)
             twist[3:] *= Kori / integration_dt
+            # twist[:3] = 0
 
             # Jacobian.
             mujoco.mj_jacSite(model, data, jac[:3], jac[3:], site_id)
@@ -125,14 +168,34 @@ def main() -> None:
             # Compute generalized forces.
             tau = jac.T @ Mx @ (Kp * twist - Kd * (jac @ data.qvel[dof_ids]))
 
-            # Add joint task in nullspace.
-            Jbar = M_inv @ jac.T @ Mx
-            ddq = Kp_null * (q0 - data.qpos[dof_ids]) - Kd_null * data.qvel[dof_ids]
-            tau += (np.eye(model.nv) - jac.T @ Jbar.T) @ ddq
+                # Experiment with velocity based impedance control
+            # Calculate the direction of the angular velocity
+            factor_speed = 60
+            cart_vel[:3] = twist[:3]
+            cart_vel[3:] = dt * factor_speed * twist[3:]/np.linalg.norm(twist[3:])
+            # Ensure smooth acceleration
+            if (time.time()-t_init)<time_acc:
+                factor_acc = (1 - np.cos(np.pi * (time.time()-t_init)/time_acc))/2
+            else:
+                factor_acc = 1
+            tau = jac.T @ Mx @ (Kp * cart_vel - Kd * (jac @ data.qvel[dof_ids]))
 
-            # Add gravity compensation.
-            if gravity_compensation:
-                tau += data.qfrc_bias[dof_ids]
+
+            # # Add joint task in nullspace.
+            # Jbar = M_inv @ jac.T @ Mx
+            # ddq = Kp_null * (q0 - data.qpos[dof_ids]) - Kd_null * data.qvel[dof_ids]
+            # tau += (np.eye(model.nv) - jac.T @ Jbar.T) @ ddq
+
+            # # Add gravity compensation.
+            # if gravity_compensation:
+            #     tau += data.qfrc_bias[dof_ids]
+
+                # Debug loop
+            if (time_current>t_debug) and (debug==True):
+                np.set_printoptions(suppress=True)
+                print(f"Time: {np.round(time_current,1)}, \ntau = {np.round(tau.T,3)} \nq = {np.round(data.qpos.copy(),3)}\n")
+                t_debug += t_sample
+            mujoco.mj_step(model, data)
 
             # Set the control signal and step the simulation.
             np.clip(tau, *model.actuator_ctrlrange.T, out=tau)

@@ -9,7 +9,7 @@
         <!-- Kugelgelenk -->
         <body name="Verbindung_Kniemodell" pos="0.0 0.0 0.052">
             <geom class="visual" mesh="Verbindung_Kniemodell" pos="0.0 0.0 0.016" quat="0.7071068 0.7071068 0.0 0.0" type="mesh" rgba="0.2 0.2 0.2 0.5"/>
-            <site name="attachment_site"  pos="0.0 0.0 0.220" size="0.005" rgba="0 1 1 1" group="1"/>
+            <site name="attachment_site"  pos="0.0 0.0 0.220" size="0.015" rgba="0 1 1 1" group="1"/>
             <body name="femur" pos="0.0 0.0 0.0">
                 <geom class="visual" mesh="femur_block_mesh" pos="0.043 -0.055 0.016" quat="0.7071068 0 0 0.7071068" type="mesh" material="black"/>
             </body>

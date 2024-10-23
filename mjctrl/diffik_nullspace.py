@@ -33,7 +33,9 @@ def main() -> None:
     assert mujoco.__version__ >= "3.1.0", "Please upgrade to mujoco 3.1.0 or later."
 
     # Load the model and data.
-    model = mujoco.MjModel.from_xml_path("franka_emika_panda/scene.xml")
+    filePath = "franka_emika_panda/scene.xml"
+    # filePath = "franka_fr3/scene_copy_robot.xml"
+    model = mujoco.MjModel.from_xml_path(filePath)
     data = mujoco.MjData(model)
 
     # Enable gravity compensation. Set to 0.0 to disable.
@@ -77,6 +79,11 @@ def main() -> None:
     site_quat_conj = np.zeros(4)
     error_quat = np.zeros(4)
 
+    # Debugging
+    debug:bool = True
+    t_debug = 0.05
+    t_sample = t_debug
+
     with mujoco.viewer.launch_passive(
         model=model,
         data=data,
@@ -92,7 +99,12 @@ def main() -> None:
         # Enable site frame visualization.
         viewer.opt.frame = mujoco.mjtFrame.mjFRAME_SITE
 
+        # Time debugging
+        t_init = time.time()
+        time_current = 0
         while viewer.is_running():
+            time_current = np.round(time.time()-t_init,3)
+            time_ms = round(time_current*1000)
             step_start = time.time()
 
             # Spatial velocity (aka twist).
@@ -103,6 +115,7 @@ def main() -> None:
             mujoco.mju_mulQuat(error_quat, data.mocap_quat[mocap_id], site_quat_conj)
             mujoco.mju_quat2Vel(twist[3:], error_quat, 1.0)
             twist[3:] *= Kori / integration_dt
+            twist[3:] = 0
 
             # Jacobian.
             mujoco.mj_jacSite(model, data, jac[:3], jac[3:], site_id)
@@ -111,7 +124,7 @@ def main() -> None:
             dq = jac.T @ np.linalg.solve(jac @ jac.T + diag, twist)
 
             # Nullspace control biasing joint velocities towards the home configuration.
-            dq += (eye - np.linalg.pinv(jac) @ jac) @ (Kn * (q0 - data.qpos[dof_ids]))
+            # dq += (eye - np.linalg.pinv(jac) @ jac) @ (Kn * (q0 - data.qpos[dof_ids]))
 
             # Clamp maximum joint velocity.
             dq_abs_max = np.abs(dq).max()
@@ -125,6 +138,13 @@ def main() -> None:
 
             # Set the control signal and step the simulation.
             data.ctrl[actuator_ids] = q[dof_ids]
+            mujoco.mj_step(model, data)
+
+                # Debug loop
+            if (time_current>t_debug) and (debug==True):
+
+                print(f"Time: {np.round(time_current,1)}")
+                t_debug += t_sample
             mujoco.mj_step(model, data)
 
             viewer.sync()

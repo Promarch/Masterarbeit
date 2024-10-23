@@ -132,7 +132,7 @@
                     <geom class="visual" mesh="link_7"/>
                     <geom class="collision" size="0.06" pos="0 0 0.001"/>
                     <body name="attachment" pos="0 0 0.045" quat="0 0 0 1">
-                      <site name="attachment_site" rgba="1 0 0 1" size="0.01" group="1"/>
+                      <site name="attachment_site" rgba="1 0 0 1" pos="0.0 0.0 0.1" size="0.01" group="1"/>
                     </body>
                   </body>
                 </body>
@@ -163,8 +163,9 @@
     <motor name="joint6" joint="joint6" ctrlrange="-40 40"/>
     <motor name="joint7" joint="joint7" ctrlrange="-40 40"/>
   </actuator>
-
+<!-- -1.556 -->
   <keyframe>
-    <key name="home" qpos="0 0 0 -1.5708 0 1.5708 0"/>
+    <!-- <key name="home" qpos="0.0 0.12 0.0 -2.09 0.0 1.00 -1.55"/> -->
+    <key name="home" qpos="0.0 -0.464 0.0 -1.947  0.0  1.687 -1.753"/>
   </keyframe>
 </mujoco>

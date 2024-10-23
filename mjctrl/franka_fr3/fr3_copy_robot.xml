@@ -162,7 +162,11 @@
                       <geom mesh="link7_2" material="white" class="visual"/>
                       <geom mesh="link7_3" material="black" class="visual"/>
                       <geom name="fr3_link7_collision" class="collision" mesh="link7_coll"/>
-                      <body name="hand" pos="0 0 0.107" quat="0.9238795 0 0 -0.3826834">
+                      <include file="sensor_EE.xml"/>
+                      <!-- <body name="attachment" pos="0 0 0.107" quat="0.8314696 0 0 -0.5555702">
+                        <site name="attachment_site" rgba="1 0 0 1" pos="0.0 0.0 0.220" size="0.01" group="1" quat="1 0 0 0"/>
+                      </body> -->
+                      <!-- <body name="hand" pos="0 0 0.107" quat="0.9238795 0 0 -0.3826834">
                         <inertial mass="0.73" pos="-0.01 0 0.03" diaginertia="0.001 0.0025 0.0017"/>
                         <geom mesh="hand_0" material="off_white" class="visual"/>
                         <geom mesh="hand_1" material="black" class="visual"/>
@@ -198,7 +202,7 @@
                           <geom class="fingertip_pad_collision_4"/>
                           <geom class="fingertip_pad_collision_5"/>
                         </body>
-                      </body>
+                      </body>  -->
                     </body>
                   </body>
                 </body>
@@ -211,16 +215,16 @@
   </worldbody>
 
   <actuator>
-    <motor class="fr3" name="joint1" joint="joint1"/>
-    <motor class="fr3" name="joint2" joint="joint2"/>
-    <motor class="fr3" name="joint3" joint="joint3"/>
-    <motor class="fr3" name="joint4" joint="joint4"/>
-    <motor class="fr3" name="joint5" joint="joint5"/>
-    <motor class="fr3" name="joint6" joint="joint6"/>
-    <motor class="fr3" name="joint7" joint="joint7"/>
+    <motor class="fr3" name="joint1" joint="joint1" ctrlrange="-87 87"/>
+    <motor class="fr3" name="joint2" joint="joint2" ctrlrange="-87 87"/>
+    <motor class="fr3" name="joint3" joint="joint3" ctrlrange="-87 87"/>
+    <motor class="fr3" name="joint4" joint="joint4" ctrlrange="-87 87"/>
+    <motor class="fr3" name="joint5" joint="joint5" ctrlrange="-12 12"/>
+    <motor class="fr3" name="joint6" joint="joint6" ctrlrange="-12 12"/>
+    <motor class="fr3" name="joint7" joint="joint7" ctrlrange="-12 12"/>
   </actuator>
   
   <keyframe>
-    <key name="home" qpos="2.62 -0.22  0.24 -2.23 -0.01  2.05  0.46" ctrl="2.62 -0.22  0.24 -2.23 -0.01  2.05  0.46"/>
+    <key name="home" qpos="0.0 -0.12 0.0 -2.09 0.0 1.98 -0.3827" ctrl="0 0 0 0 0 0 0"/>
   </keyframe>
 </mujoco>

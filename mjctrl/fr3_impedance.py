@@ -29,7 +29,10 @@ def main() -> None:
     assert mujoco.__version__ >= "3.1.0", "Please upgrade to mujoco 3.1.0 or later."
 
     # Load the model and data.
-    model = mujoco.MjModel.from_xml_path("franka_fr3/scene.xml")
+    filePath = "franka_fr3/scene.xml"
+    filePath = "franka_fr3/scene_copy_robot.xml"
+    # filePath = "kuka_iiwa_14/scene.xml"
+    model = mujoco.MjModel.from_xml_path(filePath)
     data = mujoco.MjData(model)
 
     # Enable gravity compensation. Set to 0.0 to disable.
@@ -70,6 +73,7 @@ def main() -> None:
     K_p_values = np.array([translation_stiffness, translation_stiffness, translation_stiffness, rotation_stiffness, rotation_stiffness, rotation_stiffness])
     K_p = np.diag(K_p_values)
     K_d = np.diag(np.sqrt(K_p_values))
+    factor_speed = 100
 
     # Pre-allocate numpy arrays.
     jac = np.zeros((6, model.nv))
@@ -77,6 +81,10 @@ def main() -> None:
     error = np.zeros(6)
     error_pos = error[:3]
     error_ori = error[3:]
+    cart_vel = np.zeros(6)
+    cart_vel_pos = cart_vel[:3]
+    cart_vel_ori = cart_vel[3:]
+
     site_quat = np.zeros(4)
     site_quat_conj = np.zeros(4)
     error_quat = np.zeros(4)
@@ -84,17 +92,21 @@ def main() -> None:
     Mx = np.zeros((6, 6))
 
     # Desired position
-    pos_init = [-0.000124617, 0.55703, 0.06149]
+    pos_init = np.array([0.52, 0.0, 0.2]) # FR3
+    pos_init = np.array([0.389, 0.00, 0.355]) # Kuka
     quat_init = [0, 0.7071068, 0.7071068, 0] #[ 0.6830127, -0.6830127, -0.1830127, -0.1830127 ]
+    quat_d = np.array([0.1227878, 0.6963642, 0.6963642, 0.1227878]) # FR3
+    # quat_d = np.array([-0.1227878, 0.6963642, 0.6963642, -0.1227878])
 
     # Time variables
-    time_acc = 5
+    time_acc = 2
     step_start = 0
 
-    # Lists to collect force and torque data
-    force_data_list = []
-    torque_data_list = []
-    time_list = []
+    # Debugging
+    debug:bool = True
+    set_mocap_pos:bool = True
+    t_debug = 0.5
+    t_sample = t_debug
 
     with mujoco.viewer.launch_passive(
         model=model,
@@ -111,11 +123,22 @@ def main() -> None:
         # Enable site frame visualization.
         viewer.opt.frame = mujoco.mjtFrame.mjFRAME_SITE
 
+        # Time debugging
+        t_init = time.time()
+        time_current = 0
         while viewer.is_running():
-            if step_start==0:
-                t_init = time.time()
-
+            time_current = np.round(time.time()-t_init,3)
+            time_ms = round(time_current*1000)
             step_start = time.time()
+
+            if time_current>0.01 and set_mocap_pos==True:
+                set_mocap_pos=False
+                pos_pointer = data.site(site_id).xpos.copy()
+                pos_init = np.array(pos_pointer)
+                model.body("target").pos = pos_init
+                model.body("target").quat = quat_d
+                data.mocap_pos[mocap_id] = pos_init
+                data.mocap_quat[mocap_id] = quat_d
 
             # Position error.
             error_pos[:] = data.mocap_pos[mocap_id] - data.site(site_id).xpos
@@ -141,63 +164,40 @@ def main() -> None:
             factor_filter[3:] = factor_rot
 
                 # Impedance control
-            F = K_p @ error -  K_d @ vel
-            tau = jac.T @ (F*factor_filter)
+            F = K_p @ error - K_d @ vel
+            tau = jac.T @ (F * factor_rot) # *factor_filter
+            
+                # Experiment with velocity based impedance control
+            # Calculate the direction of the angular velocity
+            factor_speed = 5
+            cart_vel[:3] = error[:3]
+            cart_vel[3:] = dt * factor_speed * error_ori/np.linalg.norm(error_ori)
+            # Ensure smooth acceleration
+            if (time.time()-t_init)<time_acc:
+                factor_acc = (1 - np.cos(np.pi * (time.time()-t_init)/time_acc))/2
+            else:
+                factor_acc = 1
+            h_c = K_p @ cart_vel - K_d @ (jac @ data.qvel[dof_ids])
+            tau = jac.T @ h_c
 
                 # Damped least squares control
             # tau = jac.T @ (np.linalg.solve(jac @ jac.T + diag, error))
-
-                # Operational space
-            # Compute the task-space inertia matrix.
-            mujoco.mj_solveM(model, data, M_inv, np.eye(model.nv))
-            Mx_inv = jac @ M_inv @ jac.T
-            if abs(np.linalg.det(Mx_inv)) >= 1e-2:
-                Mx = np.linalg.inv(Mx_inv)
-            else:
-                Mx = np.linalg.pinv(Mx_inv, rcond=1e-2)
-            # Compute generalized forces.
-            # tau = jac.T @ Mx @ ((K_p @ error - K_d @ (jac[:,dof_ids] @ data.qvel[dof_ids]))*factor_filter)
 
             # Set the control signal and step the simulation.
             data.ctrl[actuator_ids] = tau[dof_ids]
             mujoco.mj_step(model, data)
 
-            # Get sensor data
-            torque_data_list.append(data.sensor("TorqueSensor").data.copy())
-            force_data_list.append(data.sensor("ForceSensor").data.copy())
-            time_list.append(data.time)
+                # Debug loop
+            if (time_current>t_debug) and (debug==True):
+                np.set_printoptions(suppress=True)
+                print(f"Time: {np.round(time_current,1)} \ntau = {np.round(tau.T,3)} \nh_c: {np.transpose(np.round(h_c,3))} \n")
+                t_debug += t_sample
+            mujoco.mj_step(model, data)
 
             viewer.sync()
             time_until_next_step = dt - (time.time() - step_start)
             if time_until_next_step > 0:
                 time.sleep(time_until_next_step)
-        force_data = np.vstack(force_data_list)
-        torque_data = np.vstack(torque_data_list)
-        time_data = np.array(time_list)
-
-        # Plot force and torque data
-        plt.figure(figsize=(12, 6))
-
-        plt.subplot(2, 1, 1)
-        plt.plot(time_data, force_data)
-        plt.title("Force at Attachment Site")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Force (N)")
-        plt.grid(0.25)
-        plt.legend(['Fx', 'Fy', 'Fz'])
-
-        plt.subplot(2, 1, 2)
-        plt.plot(time_data, torque_data)
-        plt.title("Torque at Attachment Site")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Torque (Nm)")
-        plt.grid(0.25)
-        plt.legend(['Tx', 'Ty', 'Tz'])
-
-        plt.tight_layout()
-        plt.show()
-        
-        print("Last line")
 
 
 if __name__ == "__main__":
