@@ -330,7 +330,7 @@ int main(int argc, char** argv) {
 
       // Time variables
     double time_global = 0.0; // Time the robot has been running for
-    double time_max = 3;      // Maximum runtime
+    double time_max = 4;      // Maximum runtime
     double dt = 0;            // Initialization of time variable of the loop
     double period_acc = 1.5;    // Time between old and new commanded position
     double period_dec = 0.5;  // time for decceleration, to stop abrubt braking
@@ -340,7 +340,7 @@ int main(int argc, char** argv) {
     double next_sampling_time = 0;      // Interval at which the debug loop is called
 
       // Set limitations to max speed
-    double vel_max = 0.05; // [rad/s]
+    double vel_max = 0.06; // [rad/s]
     double vel_cart_max = 0.03; // [m/s]
     double factor_vel = 0;
     double factor_tau = 0;
@@ -397,11 +397,11 @@ int main(int argc, char** argv) {
 
     // Pre-allocate stuff
     std::array<double, 6> cart_vel_array{}; 
-    std::array<double, 7> tau_d_array{}, dq_d_array{}; 
+    std::array<double, 7> tau_d_array{}, dq_jac_array{}; 
     std::array<double, 4> quat_stop_array{};
     Eigen::Matrix<double, 6, 1> cart_vel; cart_vel.setZero();
     Eigen::Matrix<double, 6, 1> error; 
-    Eigen::Matrix<double, 7,1> tau_d, dq_d;
+    Eigen::Matrix<double, 7,1> tau_d, dq_jac;
     std::array<float, 6> F_sensor_array, F_knee_array;
     std::array<float, 6> F_sensor_temp_array;
     Eigen::Quaterniond error_quaternion, rotation; // Declared here since it is needed in both loops
@@ -412,11 +412,11 @@ int main(int argc, char** argv) {
 
 // --------------------------------------------------------------------------------------------
 // ----                                                                                    ----
-// ----                           Control callback                                         ----
+// ----                           Velocity callback                                        ----
 // ----                                                                                    ----
 // --------------------------------------------------------------------------------------------
 
-    auto force_control_callback = [&] (const franka::RobotState& robot_state, franka::Duration period) -> franka::JointVelocities {
+    auto velocity_callback = [&] (const franka::RobotState& robot_state, franka::Duration period) -> franka::JointVelocities {
       dt = period.toSec();
       time_global += dt;
       time_cycle += dt;
@@ -430,11 +430,12 @@ int main(int argc, char** argv) {
       std::array<double, 42> jacobian_array = model.bodyJacobian(franka::Frame::kEndEffector, robot_state);
       Eigen::Map<const Eigen::Matrix<double, 6,7>> jacobian(jacobian_array.data());
       Eigen::Map<const Eigen::Matrix<double, 7,1>> dq(robot_state.dq.data()); 
+      Eigen::Map<const Eigen::Matrix<double, 7,1>> dq_d(robot_state.dq_d.data()); 
       Eigen::Map<const Eigen::Matrix<double, 7,1>> q(robot_state.q.data());
       Eigen::Map<const Eigen::Matrix<double, 7,1>> tau_J(robot_state.tau_J.data()); 
       Eigen::Map<const Eigen::Matrix<double, 7,1>> tau_gravity(model.gravity(robot_state).data());
       Eigen::Map<const Eigen::Matrix<double, 6,1>> F_ext(robot_state.K_F_ext_hat_K.data());
-      Eigen::Map<const Eigen::Matrix<double, 7,1>> ddq_d(robot_state.ddq_d.data()); 
+      Eigen::Map<const Eigen::Matrix<double, 7,1>> q_d(robot_state.q_d.data()); 
       Eigen::Map<const Eigen::Matrix<double, 7,1>> tau_ext(robot_state.tau_ext_hat_filtered.data()); 
 
       // Get sensor values
@@ -494,7 +495,7 @@ int main(int argc, char** argv) {
       cart_vel.head(3) << error.head(3)/error.head(3).norm() * vel_cart_max; // transform.rotation() * 
       cart_vel.tail(3) << error.tail(3)/error.tail(3).norm() * vel_max; // transform.rotation() * 
       // Map from Eigen to array for output
-      cart_vel.tail(3).setZero(); // Set rotation to zero for tests
+      cart_vel.head(3).setZero(); // Set rotation to zero for tests
 
 /*
       // -------------------------------------------------------------------
@@ -561,12 +562,8 @@ int main(int argc, char** argv) {
         // Calculate pseudoinverse of jacobian
       Eigen::Matrix<double, 7,6> jac_pseudoInv = jacobian.transpose() * (jacobian * jacobian.transpose()).partialPivLu().inverse(); 
         // Calculate joint velocity with aid of cartesian velocity
-      dq_d = jac_pseudoInv * factor_vel * cart_vel; // jacobian.transpose() 
-      Eigen::VectorXd::Map(&dq_d_array[0], 7) = dq_d;
-        // Calculate torque with aid of cartesian velocity
-      // tau_d = Kp.cwiseProduct(q_d-q) - Kd.cwiseProduct(dq);
-      // Eigen::VectorXd::Map(&tau_d_array[0], 7) = tau_d;
-
+      dq_jac = jac_pseudoInv * factor_vel * cart_vel; // jacobian.transpose() 
+      Eigen::VectorXd::Map(&dq_jac_array[0], 7) = dq_jac;
 
       // For debug: Print current values every "sampling_interval"
       if (time_global >= next_sampling_time) {
@@ -574,8 +571,10 @@ int main(int argc, char** argv) {
         Eigen::Map<Eigen::Matrix<float, 6, 1>> F_sensor(F_sensor_array.data());
         std::cout << "Time: " << time_global  << ", Acc: " << factor_vel; // << ", Force: " << F_sensor.head(1);
         std::cout << "\ncart_vel: " << cart_vel.transpose();
-        std::cout << "\nddq_d: " << ddq_d.transpose(); // ", Error: \n" << error <<  
-        std::cout << "\ndq_d:    " << dq_d.transpose() << "\n\n"; // ", Error: \n" << error <<  
+        std::cout << "\nq  :  " << q.transpose();
+        std::cout << "\nq_d:  " << q_d.transpose();
+        std::cout << "\ndiff: " << (q_d*100-q*100).transpose();
+        std::cout << "\ndq_d: " << (dq_d*10).transpose() << "\n\n"; // ", Error: \n" << error <<  
         next_sampling_time += sampling_interval;
       }
 
@@ -585,7 +584,7 @@ int main(int argc, char** argv) {
         std::cout << "Time: " << time_global << ", Acc factor:" << factor_vel << ", Velocity_d: \n" << cart_vel; 
         std::cout << "\n\nFinished motion, shutting down example" << std::endl;
         running = false; // Pause thread
-        franka::JointVelocities output = dq_d_array;
+        franka::JointVelocities output = dq_jac_array;
         return franka::MotionFinished(output);
       }
 
@@ -614,7 +613,7 @@ int main(int argc, char** argv) {
       }
 
       // Send desired joint velocity to the robot
-      return dq_d_array;
+      return dq_jac_array;
 
       // // Return 0 for debugging
       // std::array<double, 7> return_0 = {0, 0, 0, 0, 0, 0, 0}; 
@@ -623,7 +622,7 @@ int main(int argc, char** argv) {
     };
 
     // start control loop
-    robot.control(force_control_callback);
+    robot.control(velocity_callback);
 
     // Close thread 
     thread_running = false; 

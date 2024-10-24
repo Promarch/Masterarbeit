@@ -325,7 +325,7 @@ int main(int argc, char** argv) {
 
       // Damping/Stifness
     const double translation_stiffness{100.0};
-    const double rotation_stiffness{2*translation_stiffness/10};
+    const double rotation_stiffness{translation_stiffness/10};
     Eigen::MatrixXd K_p = Eigen::MatrixXd::Identity(6, 6);
     Eigen::MatrixXd K_d = Eigen::MatrixXd::Identity(6, 6);
     K_p.topLeftCorner(3,3) *= translation_stiffness; 
@@ -334,18 +334,21 @@ int main(int argc, char** argv) {
     K_d.bottomRightCorner(3,3) *= 1 * sqrt(rotation_stiffness);
 
       // Time variables
-    double time_global = 0.0; // Time the robot has been running for
-    double time_max = 3;      // Maximum runtime
-    double dt = 0;            // Initialization of time variable of the loop
-    double period_acc = 1.5;    // Time between old and new commanded position
-    double period_dec = 0.5;  // time for decceleration, to stop abrubt braking
-    double time_cycle = 0.0;  // Time since new position
-    double period_reacceleration = 0.5; // Time to reaccelerate the joints if starting config is not the initial position
-    double sampling_interval = 0.1;     // Time for first sampling interval
-    double next_sampling_time = 0;      // Interval at which the debug loop is called
+    struct TimeVariables {
+      double tGlobal = 0.0; // Time the robot has been running for
+      double tMax = 5;      // Maximum runtime
+      double tCycle = 0.0;  // Time since new position
+      double dt = 0;            // Initialization of time variable of the loop
+      double pAcc = 1.5;    // Time between old and new commanded position
+      double pDec = 0.5;  // time for decceleration, to stop abrubt braking
+      double pReacc = 0.5; // Time to reaccelerate the joints if starting config is not the initial position
+      double tDebugInterval = 0.1;     // Time for first sampling interval
+      double tDebug = 0;      // Interval at which the debug loop is called
+    };
+    TimeVariables timeVar; 
 
-      // Set limitations to max speed
-    double vel_rot_max = 50; // [rad/s]
+      // Set factors for rotation and translation
+    double vel_rot_max = 100; // [rad/s]
     double vel_cart_max = 50; // [m/s]
     double factor_vel = 0;
     double factor_tau = 0;
@@ -374,13 +377,13 @@ int main(int argc, char** argv) {
     // Combine the rotations
     Eigen::Quaterniond quaternion_combined = quaternion_varus * quaternion_flexion;
     // Translate the desired rotation into local coordinate system (rotation in EE-CoSy instead of base CoSy)
-    Eigen::Quaterniond rot_quaternion_rel = rotation_init * quaternion_combined * rotation_init.inverse();
+    Eigen::Quaterniond rot_quat_base = rotation_init * quaternion_combined * rotation_init.inverse();
     // Add rotation to initial orientation
-    Eigen::Quaterniond rot_d = rot_quaternion_rel * rotation_init; 
+    Eigen::Quaterniond rot_d = rot_quat_base * rotation_init; 
 
     // Remember which desired position where commanded when
     Eigen::Matrix<double, 5, 1> rotation_time; 
-    rotation_time << rot_d.coeffs(), time_global;
+    rotation_time << rot_d.coeffs(), timeVar.tGlobal;
     std::array<double, 5> rotation_time_array{}; 
     Eigen::VectorXd::Map(&rotation_time_array[0], 5) = rotation_time;
     rotation_time_data.push_back(rotation_time_array);
@@ -424,9 +427,9 @@ int main(int argc, char** argv) {
 // --------------------------------------------------------------------------------------------
 
     auto force_control_callback = [&] (const franka::RobotState& robot_state, franka::Duration period) -> franka::Torques {
-      dt = period.toSec();
-      time_global += dt;
-      time_cycle += dt;
+      timeVar.dt = period.toSec();
+      timeVar.tGlobal += timeVar.dt;
+      timeVar.tCycle += timeVar.dt;
 
         // Get current position
       Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
@@ -435,10 +438,11 @@ int main(int argc, char** argv) {
       Eigen::Affine3d O_T_EE_d(Eigen::Matrix4d::Map(robot_state.O_T_EE_d.data()));
 
         // Get state variables
-      std::array<double, 42> jacobian_array = model.bodyJacobian(franka::Frame::kEndEffector, robot_state);
+      std::array<double, 42> jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
       Eigen::Map<const Eigen::Matrix<double, 6,7>> jacobian(jacobian_array.data());
       Eigen::Map<const Eigen::Matrix<double, 7,1>> dq(robot_state.dq.data()); 
       Eigen::Map<const Eigen::Matrix<double, 7,1>> q(robot_state.q.data());
+      Eigen::Map<const Eigen::Matrix<double, 7,1>> q_d(robot_state.q_d.data());
       Eigen::Map<const Eigen::Matrix<double, 6,1>> F_ext(robot_state.K_F_ext_hat_K.data());
       // Eigen::Map<const Eigen::Matrix<double, 6,1>> O_dP_EE_d(robot_state.O_dP_EE_d.data());
 
@@ -462,21 +466,21 @@ int main(int argc, char** argv) {
       // -------------------------------------------------------------------
       // ----      Acceleration and decceleration factor                ----
       // -------------------------------------------------------------------
-      if ((time_global+period_dec)>time_max){ // Deccelerate if close to end time
-        factor_vel = (1 + std::cos(M_PI * (time_global-(time_max-period_dec))/period_dec))/2 * factor_vel;
+      if ((timeVar.tGlobal+timeVar.pDec)>timeVar.tMax){ // Deccelerate if close to end time
+        factor_vel = (1 + std::cos(M_PI * (timeVar.tGlobal-(timeVar.tMax-timeVar.pDec))/timeVar.pDec))/2 * factor_vel;
       }
       else if (pos_reached==true or decceleration==true){  // Desired position (or limits) reached, slow down to 0 and then get new position
-        factor_vel = (1 + std::cos(M_PI * (time_cycle-t_dec)/period_dec))/2 * factor_vel;
+        factor_vel = (1 + std::cos(M_PI * (timeVar.tCycle-t_dec)/timeVar.pDec))/2 * factor_vel;
         if (factor_vel<0.001 and pos_reached==true) {
           factor_vel = 0.0;
           new_pos = true;
-          std::cout << "New position called, time: " << time_global << "\n";
+          std::cout << "New position called, time: " << timeVar.tGlobal << "\n";
         }
       }
-      else if (time_cycle<period_acc) {  // Normal start up
-        factor_vel = (1 - std::cos(M_PI * time_cycle/period_acc))/2;
+      else if (timeVar.tCycle<timeVar.pAcc) {  // Normal start up
+        factor_vel = (1 - std::cos(M_PI * timeVar.tCycle/timeVar.pAcc))/2;
       }
-      else {
+      else { // No other conditions true, constant velocity
         factor_vel = 1;
       }
 
@@ -484,10 +488,10 @@ int main(int argc, char** argv) {
       // ----                 Calculate trajectory                      ----
       // -------------------------------------------------------------------
 
-      // Positional error (nor used in calculations,only for debugging)
+        // Calculate error
+      // Positional error
       error.setZero();
-      error.head(3) << pos_d-position;
-      error.head(3) << vel_d; 
+      error.head(3) << position_init-position;
       // Rotational error
       if (rot_d.coeffs().dot(rotation.coeffs()) < 0.0) {
         rotation.coeffs() << -rotation.coeffs();
@@ -496,11 +500,11 @@ int main(int argc, char** argv) {
       error_quaternion = rotation.inverse() * rot_d;
       error.tail(3) << error_quaternion.x(), error_quaternion.y(), error_quaternion.z();
 
-      // Normalize error and scale with max_speed
-      cart_vel.head(3) << error.head(3)/error.head(3).norm() * vel_cart_max; // transform.rotation() * 
-      cart_vel.tail(3) << error.tail(3)/error.tail(3).norm() * vel_rot_max; // transform.rotation() * 
-      // Map from Eigen to array for output
-      cart_vel.head(3).setZero(); // Set rotation to zero for tests
+        // Calculate cartesian vel for the rotation
+      cart_vel.setZero();
+      // Normalize rotational error and scale with max_speed
+      // cart_vel.head(3) << error.head(3)*3; 
+      cart_vel.tail(3) << transform.rotation() * error.tail(3)/error.tail(3).norm() * vel_rot_max * timeVar.dt; // transform.rotation() * 
 
 /*
       // -------------------------------------------------------------------
@@ -513,23 +517,23 @@ int main(int argc, char** argv) {
           Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation * rotation_init.inverse()).coeffs(); 
           quat_stop_data.push_back(quat_stop_array);
           decceleration = true;
-          t_dec = time_cycle;
-          std::cout << "Torques too high; Time: " << time_global << ", wrench: \n" << F_ext << "\n";
+          t_dec = timeVar.tCycle;
+          std::cout << "Torques too high; Time: " << timeVar.tGlobal << ", wrench: \n" << F_ext << "\n";
         }
         else if (F_ext.head(3).norm()>15) {   // Force too high
           decceleration = true;
-          t_dec = time_cycle;
-          std::cout << "Forces too high; Time: " << time_global << ", wrench: \n" << F_ext << "\n";
+          t_dec = timeVar.tCycle;
+          std::cout << "Forces too high; Time: " << timeVar.tGlobal << ", wrench: \n" << F_ext << "\n";
         }
         else if (error.tail(3).norm()<0.035 and pos_reached==false) { // Position reached & position not reached yet
           pos_reached = true;
-          t_dec = time_cycle; 
-          std::cout << "Desired rotation reached; Time: " << time_global << ", error: \n" << error << std::endl;
+          t_dec = timeVar.tCycle; 
+          std::cout << "Desired rotation reached; Time: " << timeVar.tGlobal << ", error: \n" << error << std::endl;
         }
-        else if (dq.norm()<0.005 and time_cycle>period_acc and pos_reached==false) { // Standstill reached, robot should be moving & position not reached yet
+        else if (dq.norm()<0.005 and timeVar.tCycle>timeVar.pAcc and pos_reached==false) { // Standstill reached, robot should be moving & position not reached yet
           pos_reached = true;
-          t_dec = time_cycle; 
-          std::cout << "No joint movement present; Time: " << time_global << ", error: \n" << error << std::endl;
+          t_dec = timeVar.tCycle; 
+          std::cout << "No joint movement present; Time: " << timeVar.tGlobal << ", error: \n" << error << std::endl;
         }
       }
 
@@ -538,21 +542,21 @@ int main(int argc, char** argv) {
       // -------------------------------------------------------------------
 
       if (decceleration==true){  // Decceleration called due to exceeded wrench
-        factor_tau = (1 + std::cos(M_PI * (time_cycle-t_dec)/period_dec))/2 * factor_tau;
-        if (factor_tau<0.001 and (time_cycle-t_dec)>period_dec) { // Restart if no force on joints and deceleration dt is over
+        factor_tau = (1 + std::cos(M_PI * (timeVar.tCycle-t_dec)/timeVar.pDec))/2 * factor_tau;
+        if (factor_tau<0.001 and (timeVar.tCycle-t_dec)>timeVar.pDec) { // Restart if no force on joints and deceleration dt is over
           factor_tau = 0.0;
           decceleration = false;
           acceleration = true;
-          t_acc = time_global;
+          t_acc = timeVar.tGlobal;
           pos_reached = true;
-          std::cout << "New position to set, time: " << time_global << std::endl;
+          std::cout << "New position to set, time: " << timeVar.tGlobal << std::endl;
         }
       }
       else if (acceleration == true){ // if decceleration was called because high wrench -> smoothly reaccelerate the joint torque
-        factor_tau = (1 - std::cos(M_PI * (time_global-t_acc)/period_reacceleration))/2;
+        factor_tau = (1 - std::cos(M_PI * (timeVar.tGlobal-t_acc)/timeVar.pReacc))/2;
         if (factor_tau>0.995){
           acceleration = false;
-          std::cout << "\nFinished joint acceleration, time: " << time_global << "\n";
+          std::cout << "\nFinished joint acceleration, time: " << timeVar.tGlobal << "\n";
         }
       }
       else {
@@ -564,31 +568,29 @@ int main(int argc, char** argv) {
       // ----           Calculate tau and print stuff                   ----
       // -------------------------------------------------------------------
 
-        // Calculate pseudoinverse of jacobian
-      // Eigen::Matrix<double, 7,6> jac_pseudoInv = jacobian.transpose() * (jacobian * jacobian.transpose()).partialPivLu().inverse(); 
-      //   // Calculate joint velocity with aid of cartesian velocity
-      // dq_d = jac_pseudoInv * factor_vel * cart_vel; // jacobian.transpose() 
-      // Eigen::VectorXd::Map(&dq_d_array[0], 7) = dq_d;
         // Calculate torque with aid of cartesian velocity
-      tau_d = jacobian.transpose() * (K_p * (cart_vel * dt)); //(cart_vel * dt)
+      Eigen::Matrix<double,6,1> h_c; 
+      h_c = K_p * cart_vel - K_d * (jacobian * dq);
+      tau_d = jacobian.transpose() * h_c; 
       Eigen::VectorXd::Map(&tau_d_array[0], 7) = factor_vel * tau_d;
 
-
-      // For debug: Print current values every "sampling_interval"
-      if (time_global >= next_sampling_time) {
+      // For debug: Print current values every "timeVar.tDebugInterval"
+      if (timeVar.tGlobal >= timeVar.tDebug) {
         std::cout << std::fixed << std::setprecision(3);
         Eigen::Map<Eigen::Matrix<float, 6, 1>> F_sensor(F_sensor_array.data());
-        std::cout << "Time: " << time_global  << ", Acc: " << factor_vel; // << ", Force: " << F_sensor.head(1)
+        std::cout << "Time: " << timeVar.tGlobal  << ", Acc: " << factor_vel; // << ", Force: " << F_sensor.head(1)
+        std::cout << "\nq_d: " << (q_d).transpose();
+        std::cout << "\ndiff q: " << (q_d-q).transpose();
         std::cout << "\nCart_vel: " << cart_vel.transpose() << ", Norm: " << cart_vel.norm();
-        std::cout << "\nh_c:   " << (K_p * (cart_vel * dt)).transpose() << ", Norm: " << (K_p * (cart_vel * dt)).norm(); //(cart_vel * dt)
+        std::cout << "\nh_c:   " << h_c.transpose() << ", Norm: " << h_c.norm(); //(cart_vel * timeVar.dt)
         std::cout << "\nTau_d: " << (factor_vel*tau_d).transpose() << ", Norm: " << (factor_vel*tau_d).norm() << "\n\n"; // ", Error: \n" << error <<  
-        next_sampling_time += sampling_interval;
+        timeVar.tDebug += timeVar.tDebugInterval;
       }
 
       // Stop motion when time is reached
-      if (time_global >= time_max) {
+      if (timeVar.tGlobal >= timeVar.tMax) {
         std::cout << std::fixed << std::setprecision(3);
-        std::cout << "Time: " << time_global << ", Acc factor:" << factor_vel << ", Velocity_d: \n" << cart_vel; 
+        std::cout << "Time: " << timeVar.tGlobal << ", Acc factor:" << factor_vel << ", Velocity_d: \n" << cart_vel; 
         std::cout << "\n\nFinished motion, shutting down example" << std::endl;
         running = false; // Pause thread
         franka::Torques output = tau_d_array; 
@@ -619,7 +621,7 @@ int main(int argc, char** argv) {
         print_data.mutex.unlock();
       }
 
-      // Send desired tau to the robot
+      // // Send desired tau to the robot
       // return tau_d_array;
 
       // Return 0 for debugging

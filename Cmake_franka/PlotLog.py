@@ -31,19 +31,23 @@ def plot_torque(df_tau, df_filter, df_q, columns = None):
     # Get min and max of torque
     min_tau = np.min([df_tau, df_filter]) # , df_mass
     max_tau = np.max([df_tau, df_filter]) # , df_mass
+    range_tau = np.max([max_tau, np.abs(min_tau)])
 
+    # Set the beginning value to 0
+    df_q = (df_q-df_q.iloc[0])*180/np.pi
     # Get max difference between min and max in q
     max_range = np.max(np.max(df_q,0)-np.min(df_q,0)) * 1.1
     
 
     fig, axs = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
-    
+    x = x/1000
     for i, col in enumerate(columns):
         axs[i].plot(x, df_tau[col].to_numpy(), label = r"$\tau_d$")
         axs[i].plot(x, df_filter[col].to_numpy(), label = r"$\tau_{filter}$")
         # axs[i].plot(x, df_mass[col].to_numpy(), label = r"$\tau_{mass}$")
-        axs[i].set_ylabel(col+1)
+        axs[i].set_ylabel(rf"$\tau_{col+1}$ [Nm]")
         axs[i].set_ylim(min_tau, max_tau)
+        axs[i].set_ylim(-range_tau, range_tau)
         axs[i].grid(True)
         
         axs[i].legend(loc = "upper right")
@@ -53,9 +57,12 @@ def plot_torque(df_tau, df_filter, df_q, columns = None):
         # Set y_lim so that you always have the same tick range
         y_lim_min = (np.max(df_q[col])+np.min(df_q[col]))/2 - max_range/2
         y_lim_max = (np.max(df_q[col])+np.min(df_q[col]))/2 + max_range/2
+        y_lim_min = 0 - max_range
+        y_lim_max = 0 + max_range
         ax_twin.set_ylim(y_lim_min, y_lim_max)
+        ax_twin.set_ylabel(rf"$\Delta q_{col+1}$ [°]")
     
-    axs[-1].set_xlabel('Time')
+    axs[-1].set_xlabel('Time[s]')
     # Adjust layout
     plt.tight_layout()
     # Show the plot
@@ -211,7 +218,7 @@ def plot7(df_array, labels=[r"$\tau_{robotsensor}$", r"$\tau_{command}$"]):
     if num_df > 10:
         df_array = [df_array]
 
-    x = np.arange(0,len(df_array[0]))
+    x = np.arange(0,len(df_array[0]))/1000
     # Get min and max of torque
     min_tau = np.min(df_array)
     max_tau = np.max(df_array)
@@ -224,7 +231,7 @@ def plot7(df_array, labels=[r"$\tau_{robotsensor}$", r"$\tau_{command}$"]):
         axs[i].set_ylim(min_tau-.2, max_tau+.2)
         axs[i].grid(True)
         axs[i].legend(loc = "upper right")
-    axs[i].set_xlabel("time [ms]")
+    axs[i].set_xlabel("time [s]")
     fig.suptitle("Torque of each joint")
     # plt.tight_layout()
     plt.show()
@@ -386,14 +393,33 @@ def SphereCartesian(r, theta, phi, center):
     z = r * np.cos(u)+ center[2]
     return x,y,z
 
+def readFile(path):
+    list_of_files = glob.glob(path)
+    filePath = max(list_of_files, key=os.path.getctime)
+    array = np.loadtxt(filePath, delimiter=",")
+    return array
+
 # folder path
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_grav/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint_manual/"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
+# folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_impedance_test/"
 # folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_thesis/"
 
 # %%
+q = readFile(folder_path + "joint_posi*")
+q_d = readFile(folder_path + "q_d_dat*")
+dq_d = readFile(folder_path + "dq_d_dat*")
+dq_c = readFile(folder_path + "dq_c_dat*")[:-1,:]
+tau_d = readFile(folder_path + "tau_data*")
+q_diff = q_d-q
+sample = 100
+help1 = dq_c[::sample][:-1]*10
+help2 = np.diff(q[::sample],axis=0)*100
+plot7([10*dq_c, q_diff*100], [r"$\dot{q}_c$", r"$\Delta q$"])
+plot7([np.diff(q[::sample],axis=0)*1000, sample*dq_d[::sample][:-1], sample*dq_c[::sample][:-1]], [r"$\Delta q$", r"$\dot{q}_d$", r"$\dot{q}_c$"])
+#%%
 # Plot position and orientation
 list_of_files_O_T_EE = glob.glob(folder_path + 'O_T_EE*')
 filePath_O_T_EE = max(list_of_files_O_T_EE, key=os.path.getctime)
@@ -421,7 +447,7 @@ filePath_q = max(list_of_files_q, key=os.path.getctime)
 np_q = np.loadtxt(filePath_q, delimiter=",")
 dq = (np_q[:-1:100,:] - np_q[1::100,:])*1000
 
-plot7([np_tau, np_tau_filter], labels=[r"$\tau_c$", r"$\tau_{sensor}$"]) #, labels=[r"$\tau_c$", r"$\tau_r$"]
+# plot7([np_tau, np_tau_filter], labels=[r"$\tau_c$", r"$\tau_{sensor}$"]) #, labels=[r"$\tau_c$", r"$\tau_r$"]
 
 #%%
 # Plot torques
@@ -441,7 +467,7 @@ df_orig_q = pd.read_csv(filePath_q, header=None)
 df_q = df_orig_q.copy()
 
 # plot7([df_tau, df_tau_filter], labels=[r"$\tau_{command}$", r"$\tau_{robotsensor}$"])
-plot_torque(df_tau, df_tau_filter, df_q)
+# plot_torque(df_tau, df_tau_filter, df_q)
 # %%
     # Get external force data
 list_of_files_F_ext = glob.glob(folder_path + 'F_robot_*')
@@ -457,7 +483,7 @@ df_F_sensor = df_orig_F_sensor.copy()
 df_F_lowpass = lowpassFilter(df_F_sensor)
 
     # Plot Force
-plot_force_F_T(df_F_lowpass)
+# plot_force_F_T(df_F_lowpass)
 # plot_force_tau_F(df_F_ext, df_F_lowpass, labels = [r"$F_{robot}$", r"$F_{sensor}$"])
 
 # %%

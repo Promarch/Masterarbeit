@@ -11,21 +11,6 @@
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl_example.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/JointImpedanceControl_example.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/CartesianImpedance_example.dir/CartesianImpedance_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/CartesianImpedance_example.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/CartesianImpedance_example.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/force_control_example.dir/force_control_example.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/force_control_example.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/force_control_example.cpp"
-},
-{
-  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/GetPosition.dir/GetPosition.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/GetPosition.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/GetPosition.cpp"
 },
@@ -56,8 +41,8 @@
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
-  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ImpedanceVel_test.dir/ImpedanceVel_test.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceVel_test.cpp",
-  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceVel_test.cpp"
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ImpedanceJointVel_test.dir/ImpedanceJointVel_test.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceJointVel_test.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceJointVel_test.cpp"
 },
 {
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
@@ -73,5 +58,10 @@
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/OpSpace.dir/OpSpace.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/OpSpace.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/OpSpace.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/g++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/VelImpedance_test.dir/VelImpedance_test.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/VelImpedance_test.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/VelImpedance_test.cpp"
 }
 ]

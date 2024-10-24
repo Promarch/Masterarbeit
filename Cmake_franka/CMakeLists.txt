@@ -26,19 +26,17 @@ add_library(sensor_botasys STATIC
 target_link_libraries(examples_common PUBLIC Franka::Franka Eigen3::Eigen3)
 
 SET(PROGRAM_files
-  JointImpedanceControl_example
-  CartesianImpedance_example
-  force_control_example
   GetPosition
   Waypoints
   ReadForce
   HandMoveRobot
   ImpedanceCartesianControl
   First_ImpedanceVel
-  ImpedanceVel_test
+  ImpedanceJointVel_test
   InverseKin_test
   TrueImpedance_test
   OpSpace
+  VelImpedance_test
 )
 
 foreach(singleFile ${PROGRAM_files})
@@ -52,5 +50,5 @@ install(TARGETS ${singleFile}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-target_link_libraries(JointImpedanceControl_example Threads::Threads)
+# target_link_libraries(JointImpedanceControl_example Threads::Threads)
 target_link_libraries(HandMoveRobot Threads::Threads)

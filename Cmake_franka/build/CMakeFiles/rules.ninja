@@ -52,63 +52,6 @@ rule CXX_STATIC_LIBRARY_LINKER__sensor_botasys_Debug
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__JointImpedanceControl_example_Debug
-  depfile = $DEP_FILE
-  deps = gcc
-  command = /usr/bin/g++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building CXX object $out
-
-
-#############################################
-# Rule for linking CXX executable.
-
-rule CXX_EXECUTABLE_LINKER__JointImpedanceControl_example_Debug
-  command = $PRE_LINK && /usr/bin/g++ $FLAGS $LINK_FLAGS $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
-  description = Linking CXX executable $TARGET_FILE
-  restat = $RESTAT
-
-
-#############################################
-# Rule for compiling CXX files.
-
-rule CXX_COMPILER__CartesianImpedance_example_Debug
-  depfile = $DEP_FILE
-  deps = gcc
-  command = /usr/bin/g++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building CXX object $out
-
-
-#############################################
-# Rule for linking CXX executable.
-
-rule CXX_EXECUTABLE_LINKER__CartesianImpedance_example_Debug
-  command = $PRE_LINK && /usr/bin/g++ $FLAGS $LINK_FLAGS $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
-  description = Linking CXX executable $TARGET_FILE
-  restat = $RESTAT
-
-
-#############################################
-# Rule for compiling CXX files.
-
-rule CXX_COMPILER__force_control_example_Debug
-  depfile = $DEP_FILE
-  deps = gcc
-  command = /usr/bin/g++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
-  description = Building CXX object $out
-
-
-#############################################
-# Rule for linking CXX executable.
-
-rule CXX_EXECUTABLE_LINKER__force_control_example_Debug
-  command = $PRE_LINK && /usr/bin/g++ $FLAGS $LINK_FLAGS $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
-  description = Linking CXX executable $TARGET_FILE
-  restat = $RESTAT
-
-
-#############################################
-# Rule for compiling CXX files.
-
 rule CXX_COMPILER__GetPosition_Debug
   depfile = $DEP_FILE
   deps = gcc
@@ -223,7 +166,7 @@ rule CXX_EXECUTABLE_LINKER__First_ImpedanceVel_Debug
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__ImpedanceVel_test_Debug
+rule CXX_COMPILER__ImpedanceJointVel_test_Debug
   depfile = $DEP_FILE
   deps = gcc
   command = /usr/bin/g++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -233,7 +176,7 @@ rule CXX_COMPILER__ImpedanceVel_test_Debug
 #############################################
 # Rule for linking CXX executable.
 
-rule CXX_EXECUTABLE_LINKER__ImpedanceVel_test_Debug
+rule CXX_EXECUTABLE_LINKER__ImpedanceJointVel_test_Debug
   command = $PRE_LINK && /usr/bin/g++ $FLAGS $LINK_FLAGS $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT
@@ -291,6 +234,25 @@ rule CXX_COMPILER__OpSpace_Debug
 # Rule for linking CXX executable.
 
 rule CXX_EXECUTABLE_LINKER__OpSpace_Debug
+  command = $PRE_LINK && /usr/bin/g++ $FLAGS $LINK_FLAGS $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
+  description = Linking CXX executable $TARGET_FILE
+  restat = $RESTAT
+
+
+#############################################
+# Rule for compiling CXX files.
+
+rule CXX_COMPILER__VelImpedance_test_Debug
+  depfile = $DEP_FILE
+  deps = gcc
+  command = /usr/bin/g++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
+  description = Building CXX object $out
+
+
+#############################################
+# Rule for linking CXX executable.
+
+rule CXX_EXECUTABLE_LINKER__VelImpedance_test_Debug
   command = $PRE_LINK && /usr/bin/g++ $FLAGS $LINK_FLAGS $in -o $TARGET_FILE $LINK_PATH $LINK_LIBRARIES && $POST_BUILD
   description = Linking CXX executable $TARGET_FILE
   restat = $RESTAT

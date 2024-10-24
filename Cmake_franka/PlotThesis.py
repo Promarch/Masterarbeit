@@ -20,6 +20,13 @@ F_robot = readFile(folder_path+"F_robot*")
 F_sensor = readFile(folder_path+"F_sensor_total*")
 x = np.arange(len(F_robot))/1000
 labels_axis = [r"$F_x$", r"$F_y$", r"$F_z$", r"$\tau_x$", r"$\tau_y$", r"$\tau_z$"]
+
+min_F = np.min([F_robot[:,:3], F_sensor[:,:3]])
+max_F = np.max([F_robot[:,:3], F_sensor[:,:3]])
+
+min_tau = np.min([F_robot[:,3:], F_sensor[:,3:]])
+max_tau = np.max([F_robot[:,3:], F_sensor[:,3:]])
+
 fig,ax = plt.subplots(3,2, sharex=True)
 for i in range(6):
     ax[i%3, round(np.floor(i/3))].plot(x, F_robot[:,i], label=r"$F_{robot}$")
@@ -27,10 +34,17 @@ for i in range(6):
     ax[i%3, round(np.floor(i/3))].set_ylabel(labels_axis[i])
     ax[i%3, round(np.floor(i/3))].grid(True)
     ax[i%3, round(np.floor(i/3))].legend(loc = "upper right")
+for i in range(3):
+    ax[i,0].set_ylim(min_F,max_F)
+    ax[i,1].set_ylim(min_tau,max_tau)
+    # ax[i,1].yaxis.tick_right()
+    # ax[i,1].yaxis.set_label_position("right")
+
 
 ax[2, 0].set_xlabel("Time [s]")
 ax[2, 1].set_xlabel("Time [s]")
 fig.suptitle("Comparison between external and internal Sensor")
+plt.tight_layout()
 plt.show()
 
 #%% F_robot during movement
@@ -39,7 +53,7 @@ plt.show()
 # --------------------------------------------------------
 
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_thesis/"
-folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint_manual/"
+# folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint_manual/"
 
 O_T_EE = readFile(folder_path + 'O_T_EE*')
 F_T_EE = readFile(folder_path + 'F_T_EE*')
@@ -87,29 +101,32 @@ ax_3d.set_ylim(mid_y - max_range, mid_y + max_range)
 ax_3d.set_zlim(mid_z - max_range, mid_z + max_range)
 # ax_3d.set_aspect("equal")
 # ax_3d.grid(True)
-ax_3d.set_xlabel('X')
-ax_3d.set_ylabel('Y')
+ax_3d.set_xlabel('X [mm]')
+ax_3d.set_ylabel('Y [mm]')
 ax_3d.set_title("Position of the Robot")
-ax_3d.set_zlabel('Z')
+ax_3d.set_zlabel('Z [mm]')
 
     # Plot Forces
+x = np.arange(len(F_robot))/1000
 ax_force = fig.add_subplot(222)
-ax_force.plot(F_robot[:,0], 'r', label="$F_x$")
-ax_force.plot(F_robot[:,1], 'g', label="$F_y$")
-ax_force.plot(F_robot[:,2], 'b', label="$F_z$")
+ax_force.plot(x, F_robot[:,0], 'r', label="$F_x$")
+ax_force.plot(x, F_robot[:,1], 'g', label="$F_y$")
+ax_force.plot(x, F_robot[:,2], 'b', label="$F_z$")
+ax_force.get_xaxis().set_ticklabels([])
 ax_force.grid(True)
 ax_force.legend(loc = "upper right")
-ax_force.set_title("Forces [N]")
+ax_force.set_ylabel("Forces [N]")
     # Plot torque
 ax_torque = fig.add_subplot(224)
-ax_torque.plot(F_robot[:,3], 'r', label=r"$\tau _x$")
-ax_torque.plot(F_robot[:,4], 'g', label=r"$\tau _y$")
-ax_torque.plot(F_robot[:,5], 'b', label=r"$\tau _z$")
+ax_torque.plot(x, F_robot[:,3], 'r', label=r"$\tau _x$")
+ax_torque.plot(x, F_robot[:,4], 'g', label=r"$\tau _y$")
+ax_torque.plot(x, F_robot[:,5], 'b', label=r"$\tau _z$")
 ax_torque.grid(True)
 ax_torque.legend(loc = "upper right")
-ax_torque.set_title("Torques [Nm]")
+ax_torque.set_xlabel("Time [s]")
+ax_torque.set_ylabel("Torques [Nm]")
 
-fig.suptitle("Forces during motion")
+# fig.suptitle("Forces during motion")
 plt.show()
 
 #%% Comparison ext torque vs commanded torque
@@ -122,22 +139,24 @@ tau_ext = readFile(folder_path+"tau_filter_data*")
 tau_array = [tau_c, tau_ext]
 labels = [r"$\tau_{c}$", r"$\tau_{ext}$"]
 
-x = np.arange(0,len(tau_array[0]))
+x = np.arange(len(tau_array[0]))/1000
 # Get min and max of torque
 min_tau = np.min(tau_array)
 max_tau = np.max(tau_array)
 
-fig, axs = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
+fig, axs = plt.subplots(7, 1, figsize=(8, 12), sharex=True)
 for i in range(7):
     for j, df in enumerate(tau_array):
         axs[i].plot(x, df[:,i], label = labels[j])
     axs[i].set_ylabel(f"Joint {i+1}")
     axs[i].set_ylim(min_tau-.2, max_tau+.2)
     axs[i].grid(True)
-    axs[i].legend(loc = "upper right")
-axs[i].set_xlabel("time [ms]")
+    axs[i].legend(loc = "lower right")
+axs[i].set_xlabel("time [s]")
+# Set the y-axis label for the whole figure
+fig.text(0.03, 0.5, 'Torque [Nm]', va='center', rotation='vertical')
 fig.suptitle("Torque of each joint")
-# plt.show()
+plt.show()
 
 
 #%% Difference Nullspace
@@ -167,14 +186,14 @@ distance_null_1000 = np.linalg.norm(pos_null_1000-pos_null_1000[0,:], axis=1)
 distance_null_300 = np.linalg.norm(pos_null_300-pos_null_300[0,:], axis=1)
 x = np.arange(0,len(distance_norm))/1000
 
-fig = plt.figure(figsize=(12,8))
+fig = plt.figure(figsize=(8,6))
 factor_mm = 1000
 plt.plot(x, distance_norm*factor_mm, label = "normal")
 plt.plot(x, distance_null_100*factor_mm, label = r"$K_n = 100$")
 plt.plot(x, distance_null_400*factor_mm, label = r"$K_n = 400$")
 plt.plot(np.arange(0,len(distance_null_1000))/1000, distance_null_1000*factor_mm, label = r"$K_n = 1000$")
 # plt.plot(distance_null_300, label = r"Ausrichtung")
-
+plt.grid(True)
 plt.legend()
 plt.title("Absolute positional error")
 plt.xlabel("Time [s]")
