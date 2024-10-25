@@ -12,6 +12,81 @@ def readFile(path):
     array = np.loadtxt(filePath, delimiter=",")
     return array
 
+#%% Comparison ext torque vs commanded torque
+# --------------------------------------------------------
+# -----              tau_ext vs tau_c                -----
+# --------------------------------------------------------
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_thesis/"
+tau_c = readFile(folder_path+"tau_data*")
+tau_ext = readFile(folder_path+"tau_filter_data*")
+tau_array = [tau_c, tau_ext]
+labels = [r"$\tau_{c}$", r"$\tau_{ext}$"]
+
+x = np.arange(len(tau_array[0]))/1000
+# Get min and max of torque
+min_tau = np.min(tau_array)
+max_tau = np.max(tau_array)
+max_tau_abs = np.max([np.abs(min_tau), max_tau])
+
+fig, axs = plt.subplots(7, 1, figsize=(8, 10), sharex=True)
+
+for i in range(7):
+    for j, df in enumerate(tau_array):
+        axs[i].plot(x, df[:,i], label = labels[j])
+    axs[i].set_ylabel(f"Joint {i+1}")
+    axs[i].set_ylim(min_tau-.2, max_tau+.2)
+    axs[i].set_ylim(-max_tau_abs-.2, max_tau_abs+.2)
+    axs[i].grid(True)
+    axs[i].legend(loc = "upper right")
+axs[i].set_xlabel("time [s]")
+# Set the y-axis label for the whole figure
+fig.text(0.03, 0.5, 'Torque [Nm]', va='center', rotation='vertical')
+plt.tight_layout(rect=[0.05,0,1,0.97])
+fig.suptitle("Torque of each joint")
+plt.show()
+#%% Difference Nullspace
+# --------------------------------------------------------
+# -----                Nullspace Plot                -----
+# --------------------------------------------------------
+
+    # Get data
+folder_path = '/home/alexandergerard/Masterarbeit/Cmake_franka/build/nullspace_test/'
+# Position without nullspace
+pos_norm = readFile(folder_path+'position_data_20240809_170329.txt')
+# Position with nullspace 
+pos_null_100 = readFile(folder_path+'position_data_20240809_170454.txt')
+# Position with nullspace 
+pos_null_400 = readFile(folder_path+'position_data_20240809_173340.txt')
+# Position with nullspace 
+pos_null_1000 = readFile(folder_path+'position_data_20240809_173915.txt')
+# Position with nullspace 
+pos_null_300 = readFile(folder_path+'position_data_20240809_180014.txt')
+
+
+    # Calculate absolute position error
+factor_mm = 1000
+distance_norm = np.linalg.norm(pos_norm-pos_norm[0,:], axis=1)*factor_mm
+distance_null_100 = np.linalg.norm(pos_null_100-pos_null_100[0,:], axis=1)*factor_mm
+distance_null_400 = np.linalg.norm(pos_null_400-pos_null_400[0,:], axis=1)*factor_mm
+distance_null_1000 = np.linalg.norm(pos_null_1000-pos_null_1000[0,:], axis=1)*factor_mm
+distance_null_300 = np.linalg.norm(pos_null_300-pos_null_300[0,:], axis=1)*factor_mm
+
+fig = plt.figure(figsize=(5,3))
+
+lim5 = 5000
+x = np.arange(0,len(distance_norm))[:lim5]/1000
+plt.plot(x, distance_norm[:lim5], label = "normal")
+plt.plot(x, distance_null_100[:lim5], label = r"$K_n = 100$")
+plt.plot(x, distance_null_400[:lim5], label = r"$K_n = 400$")
+plt.plot(np.arange(0,len(distance_null_1000))/1000, distance_null_1000, label = r"$K_n = 1000$")
+# plt.plot(distance_null_300, label = r"Ausrichtung")
+plt.grid(True)
+plt.legend()
+plt.title("Absolute positional error")
+plt.xlabel("Time [s]")
+plt.ylabel("Error [mm]")
+# plt.show()
+
 #%% Comparison F_ext vs F_sensor
 
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_thesis/"
@@ -23,11 +98,14 @@ labels_axis = [r"$F_x$", r"$F_y$", r"$F_z$", r"$\tau_x$", r"$\tau_y$", r"$\tau_z
 
 min_F = np.min([F_robot[:,:3], F_sensor[:,:3]])
 max_F = np.max([F_robot[:,:3], F_sensor[:,:3]])
+max_F_abs = np.max([np.abs(min_F),max_F])
 
 min_tau = np.min([F_robot[:,3:], F_sensor[:,3:]])
 max_tau = np.max([F_robot[:,3:], F_sensor[:,3:]])
+max_tau_abs = np.max([np.abs(min_tau),max_tau])
 
-fig,ax = plt.subplots(3,2, sharex=True)
+fig = plt.figure(figsize=(6,6))
+ax = fig.subplots(3,2, sharex=True)
 for i in range(6):
     ax[i%3, round(np.floor(i/3))].plot(x, F_robot[:,i], label=r"$F_{robot}$")
     ax[i%3, round(np.floor(i/3))].plot(x, F_sensor[:,i], label=r"$F_{sensor}$")
@@ -35,17 +113,25 @@ for i in range(6):
     ax[i%3, round(np.floor(i/3))].grid(True)
     ax[i%3, round(np.floor(i/3))].legend(loc = "upper right")
 for i in range(3):
-    ax[i,0].set_ylim(min_F,max_F)
-    ax[i,1].set_ylim(min_tau,max_tau)
-    # ax[i,1].yaxis.tick_right()
-    # ax[i,1].yaxis.set_label_position("right")
+    ax[i,0].set_ylim(-max_F_abs, max_F_abs)
+    ax[i,1].set_ylim(-max_tau_abs, max_tau_abs)
+    ax[i,0].yaxis.label.set_verticalalignment("center")
+    ax[i,0].set_ylabel(labels_axis[i], labelpad=0)
+    # ax[i,0].set_ylim(min_F,max_F)
+    # ax[i,1].set_ylim(min_tau,max_tau)
+    ax[i,1].yaxis.tick_right()
+    ax[i,1].yaxis.set_label_position("right")
+    ax[i,1].yaxis.label.set_rotation(-90)
 
-
+ax[0,0].set_title("Force [N]")
+ax[0,1].set_title("Torque [Nm]")
 ax[2, 0].set_xlabel("Time [s]")
 ax[2, 1].set_xlabel("Time [s]")
+# fig.text(0.03, 0.5, "Forces [N]", va='center', ha='center', rotation='vertical')
+# fig.text(0.97, 0.5, "Torque [Nm]", va='center', ha='center', rotation=-90)
 fig.suptitle("Comparison between external and internal Sensor")
-plt.tight_layout()
-plt.show()
+plt.tight_layout(rect=[0.00, 0, 1, 1]) #rect=[0.03, 0, 0.97, 1]
+# plt.show()
 
 #%% F_robot during movement
 # --------------------------------------------------------
@@ -129,90 +215,21 @@ ax_torque.set_ylabel("Torques [Nm]")
 # fig.suptitle("Forces during motion")
 plt.show()
 
-#%% Comparison ext torque vs commanded torque
-# --------------------------------------------------------
-# -----              tau_ext vs tau_c                -----
-# --------------------------------------------------------
-folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_thesis/"
-tau_c = readFile(folder_path+"tau_data*")
-tau_ext = readFile(folder_path+"tau_filter_data*")
-tau_array = [tau_c, tau_ext]
-labels = [r"$\tau_{c}$", r"$\tau_{ext}$"]
-
-x = np.arange(len(tau_array[0]))/1000
-# Get min and max of torque
-min_tau = np.min(tau_array)
-max_tau = np.max(tau_array)
-
-fig, axs = plt.subplots(7, 1, figsize=(8, 12), sharex=True)
-for i in range(7):
-    for j, df in enumerate(tau_array):
-        axs[i].plot(x, df[:,i], label = labels[j])
-    axs[i].set_ylabel(f"Joint {i+1}")
-    axs[i].set_ylim(min_tau-.2, max_tau+.2)
-    axs[i].grid(True)
-    axs[i].legend(loc = "lower right")
-axs[i].set_xlabel("time [s]")
-# Set the y-axis label for the whole figure
-fig.text(0.03, 0.5, 'Torque [Nm]', va='center', rotation='vertical')
-fig.suptitle("Torque of each joint")
-plt.show()
-
-
-#%% Difference Nullspace
-# --------------------------------------------------------
-# -----                Nullspace Plot                -----
-# --------------------------------------------------------
-
-    # Get data
-folder_path = '/home/alexandergerard/Masterarbeit/Cmake_franka/build/nullspace_test/'
-# Position without nullspace
-pos_norm = readFile(folder_path+'position_data_20240809_170329.txt')
-# Position with nullspace 
-pos_null_100 = readFile(folder_path+'position_data_20240809_170454.txt')
-# Position with nullspace 
-pos_null_400 = readFile(folder_path+'position_data_20240809_173340.txt')
-# Position with nullspace 
-pos_null_1000 = readFile(folder_path+'position_data_20240809_173915.txt')
-# Position with nullspace 
-pos_null_300 = readFile(folder_path+'position_data_20240809_180014.txt')
-
-
-    # Calculate absolute position error
-distance_norm = np.linalg.norm(pos_norm-pos_norm[0,:], axis=1)
-distance_null_100 = np.linalg.norm(pos_null_100-pos_null_100[0,:], axis=1)
-distance_null_400 = np.linalg.norm(pos_null_400-pos_null_400[0,:], axis=1)
-distance_null_1000 = np.linalg.norm(pos_null_1000-pos_null_1000[0,:], axis=1)
-distance_null_300 = np.linalg.norm(pos_null_300-pos_null_300[0,:], axis=1)
-x = np.arange(0,len(distance_norm))/1000
-
-fig = plt.figure(figsize=(8,6))
-factor_mm = 1000
-plt.plot(x, distance_norm*factor_mm, label = "normal")
-plt.plot(x, distance_null_100*factor_mm, label = r"$K_n = 100$")
-plt.plot(x, distance_null_400*factor_mm, label = r"$K_n = 400$")
-plt.plot(np.arange(0,len(distance_null_1000))/1000, distance_null_1000*factor_mm, label = r"$K_n = 1000$")
-# plt.plot(distance_null_300, label = r"Ausrichtung")
-plt.grid(True)
-plt.legend()
-plt.title("Absolute positional error")
-plt.xlabel("Time [s]")
-plt.ylabel("Error [mm]")
-# plt.show()
 #%% Acceleration factor
 # --------------------------------------------------------
 # -----            Beschleunigungsfaktor             -----
 # --------------------------------------------------------
 
-period_acc = 4
+period_acc = 1
 t = np.linspace(0,period_acc,100)
 y_acc = (1 - np.cos(np.pi * t/period_acc))/2
 y_dec = (1 + np.cos(np.pi * t/period_acc))/2
 
+fig = plt.figure(figsize=(5,3))
 plt.plot(t,y_acc, label=r"$\alpha_{acc}$")
 plt.plot(t,y_dec, label=r"$\alpha_{dec}$")
-plt.grid(False)
-plt.title("Acceleration factors")
+plt.grid(True)
+# plt.title("Acceleration factors")
 plt.xlabel("Time [s]")
 plt.legend(loc="center right")
 # plt.show()
