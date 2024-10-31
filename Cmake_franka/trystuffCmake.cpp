@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdlib>  // for rand() and srand()
 #include <ctime>    // for time()
+#include <utility>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
@@ -55,38 +56,60 @@ Eigen::VectorXd convertQuaternionsToXAngles(const Eigen::MatrixXd& quat_matrix) 
     return 2 * (quat_matrix.col(0).array() / quat_matrix.col(3).array()).atan() *180/M_PI;
 }
 
+// Function to convert quaternions to angle around x-axis using Eigen
+Eigen::VectorXd convertQuaternionsToYAngles(const Eigen::MatrixXd& quat_matrix) {
+    // Calculate the angle around the x-axis in one call
+    return 2 * (quat_matrix.col(1).array() / quat_matrix.col(3).array()).atan() *180/M_PI;
+}
+
 // Function to generate a random angle
-int generateRandomAngle(const std::vector<int>& completedAngles, int tolerance, int angleRangeStart, int angleRangeEnd) {
-    std::vector<int> allAngles;
-    std::vector<int> uncompletedAngles;
+std::pair<std::vector<int>,std::vector<int>> generateValidAngles(const Eigen::MatrixXd &quat_stop, int angleRangeStart, int angleRangeEnd, int tolerance) {
+    // Create evenly spaces possible angles
+    Eigen::VectorXi allAngles = Eigen::VectorXi::LinSpaced(angleRangeEnd - angleRangeStart + 1, angleRangeStart, angleRangeEnd);
+ 
+    // Create meshgrid of flexion angles and allAngles
+    Eigen::VectorXd angleFlex = convertQuaternionsToXAngles(quat_stop);
+    Eigen::VectorXd angleIntern = convertQuaternionsToYAngles(quat_stop);
+    Eigen::MatrixXd result = angleFlex.array().replicate(1, allAngles.size());
+    // Check which angles have been reached
+    Eigen::MatrixXd zwischen = (result.rowwise() - allAngles.cast<double>().transpose());
+    Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> completedMask = (result.rowwise() - allAngles.cast<double>().transpose()).cwiseAbs().array() < 1;
+    // Multiply by the sign of the internal-external to know where the flexion was reached
+    Eigen::MatrixXi boolMatrixFiltered = completedMask.cast<int>().array().colwise() * angleIntern.array().sign().cast<int>();
+    // Get the index of the valid angles
+    Eigen::Vector<bool, Eigen::Dynamic> boolValidAnglesIntern = !(boolMatrixFiltered.array()<0).colwise().any();
+    Eigen::Vector<bool, Eigen::Dynamic> boolValidAnglesExtern = !(boolMatrixFiltered.array()>0).colwise().any();
 
-    // Create a list of all angles within the specified range
-    for (int angle = angleRangeStart; angle <= angleRangeEnd; ++angle) {
-        allAngles.push_back(angle);
-    }
+    int rows = result.rows();
+    int cols = result.cols();
 
-    // Check for uncompleted angles
-    for (int angle : allAngles) {
-        bool isCompleted = false;
-        for (int completed : completedAngles) {
-            if (std::abs(angle - completed) <= tolerance) {
-                isCompleted = true;
-                break;
-            }
+    std::cout << "Bool Matrix: \n" << boolMatrixFiltered << "\n"; 
+    std::cout << "Valid int: " << boolValidAnglesIntern.transpose() << "\n"; 
+    std::cout << "Valid ext: " << boolValidAnglesExtern.transpose() << "\n"; 
+    // std::cout << "multiplication tests: \n" << completedMask.cast<double>().array().colwise() * angleIntern.array().sign() << "\n";
+    std::cout << "angleFlex: " << angleFlex.transpose() << "\n"; 
+    std::cout << "Shape: " << rows << " x " << cols << std::endl; 
+
+    // Add the valid angles to a vector
+    std::vector<int> validAnglesIntern, validAnglesExtern;
+    for (int i=0; i<completedMask.cols(); i++){
+        if (boolValidAnglesIntern(i)==true) {
+            validAnglesIntern.push_back(allAngles(i));
         }
-        if (!isCompleted) {
-            uncompletedAngles.push_back(angle);
+        if (boolValidAnglesExtern(i)==true) {
+            validAnglesExtern.push_back(allAngles(i));
         }
     }
 
-    // Check if there are uncompleted angles left
-    if (!uncompletedAngles.empty()) {
-        // Select a random angle from the uncompleted angles
-        int randomIndex = rand() % uncompletedAngles.size();
-        return uncompletedAngles[randomIndex];
-    } else {
-        return -1;  // No uncompleted angles available
+    return {validAnglesIntern, validAnglesExtern};
+}
+
+template <typename T>
+void printVector(const std::vector<T>& vector) {
+    for (int i=0; i<vector.size(); i++){
+        std::cout << vector[i] << "\t";
     }
+    printf("\n");
 }
 
 int main() {
@@ -98,18 +121,31 @@ int main() {
     // std::string filename = "build/data_output_knee/quat_stop_data_20241028_220631.txt";
     Eigen::MatrixXd quat_stop = readFileToMatrix(filename);
 
+    std::pair<std::vector<int>, std::vector<int>> result = generateValidAngles(quat_stop, -30, -15, 2);
+    std::vector<int> validAnglesExtern = result.first;
+    std::vector<int> validAnglesIntern = result.second;
+    printf("ValidExtern: ");
+    printVector(validAnglesExtern);
+    printf("ValidIntern: ");
+    printVector(validAnglesIntern);
+    std::array<double, 4> test = {1,2,3,4};
+    int testangle = round(2*atan(test[0]/test[3])*180/M_PI)<0;
+    std::cout << "testangle" << testangle << "\n";
     // Convert quaternions to angles around the x-axis
     Eigen::VectorXd angleFlex = convertQuaternionsToXAngles(quat_stop);
+    Eigen::VectorXd angleIntern = convertQuaternionsToYAngles(quat_stop);
 
+
+/*
     // Print out the calculated angles
     // for (int i = 0; i < angleFlex.size(); ++i) {
     //     std::cout << "Quaternion " << quat_stop.row(i) << " -> x_angle: " << angleFlex[i] << "°" << std::endl;
     // }
     // printf("\n");
     // Generate new angles
-    int angleRangeStart = -36;
-    int angleRangeEnd  = -0;
-    int tolerance = 5;
+    int angleRangeStart = -28;
+    int angleRangeEnd  = -22;
+    int tolerance = 1;
     Eigen::VectorXd allAngles = Eigen::VectorXd::LinSpaced(angleRangeEnd - angleRangeStart + 1, angleRangeStart, angleRangeEnd);
     // std::cout << "All angles: \n" << allAngles << "\n";
     // Create a boolean mask for completed angles
@@ -117,34 +153,46 @@ int main() {
     Eigen::MatrixXd result = angleFlex.array().replicate(1, allAngles.size());
     Eigen::MatrixXd zwischen = (result.rowwise() - allAngles.transpose());
     Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> completedMask = (result.rowwise() - allAngles.transpose()).cwiseAbs().array() < 1;
+    Eigen::MatrixXd boolMatrixFiltered = completedMask.cast<double>().array().colwise() * angleIntern.array().sign();
+    Eigen::Vector<bool, Eigen::Dynamic> boolValidAnglesIntern = !(boolMatrixFiltered.array()<0).colwise().any();
+    Eigen::Vector<bool, Eigen::Dynamic> boolValidAnglesExtern = !(boolMatrixFiltered.array()>0).colwise().any();
     Eigen::Vector<bool, Eigen::Dynamic> boolValidAngles = completedMask.colwise().any();
+
     int rows = result.rows();
     int cols = result.cols();
 
-    // std::cout << "All Angles: " << allAngles.transpose() << "\n"; 
+    std::cout << "Bool Matrix: \n" << boolMatrixFiltered << "\n"; 
+    std::cout << "Valid int: " << boolValidAnglesIntern.transpose() << "\n"; 
+    std::cout << "Valid ext: " << boolValidAnglesExtern.transpose() << "\n"; 
+    // std::cout << "multiplication tests: \n" << completedMask.cast<double>().array().colwise() * angleIntern.array().sign() << "\n";
     std::cout << "angleFlex: " << angleFlex.transpose() << "\n"; 
     std::cout << "Shape: " << rows << " x " << cols << std::endl; 
 
     // Find uncompleted angles
-    std::vector<double> uncompletedAngles;
-    printf("Uncomp angles: \n");
+    std::vector<double> validAnglesExtern, validAnglesIntern;
     for (int i=0; i<completedMask.cols(); i++){
-        if (boolValidAngles(i)==false) {
-            uncompletedAngles.push_back(allAngles(i));
-            std::cout << allAngles(i) << "\t"; 
+        if (boolValidAnglesExtern(i)==true) {
+            validAnglesExtern.push_back(allAngles(i));
+        }
+        if (boolValidAnglesIntern(i)==true) {
+            validAnglesIntern.push_back(allAngles(i));
         }
     }
-    printf("\n");
+    printf("ValidExtern: ");
+    printVector(validAnglesExtern);
+    printf("ValidIntern: ");
+    printVector(validAnglesIntern);
     // Check if there are uncompleted angles left
     double newAngle; 
-    if (!uncompletedAngles.empty()) {
+    if (!validAnglesExtern.empty()) {
         // Select a random angle from the uncompleted angles
-        int randomIndex = std::rand() % uncompletedAngles.size();
-        newAngle = uncompletedAngles[randomIndex];
+        int randomIndex = std::rand() % validAnglesExtern.size();
+        newAngle = validAnglesExtern[randomIndex];
     } else {
         printf("No uncompleted angles available");
     }
     std::cout << "New angle is: " << newAngle << std::endl; 
+*/
 /*    std::vector<int> completedAngles = {10, 15, 25, 30};  // Example completed angles
     int tolerance = 5;  // Degrees of tolerance
 

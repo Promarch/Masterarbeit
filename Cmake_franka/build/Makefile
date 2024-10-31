@@ -175,95 +175,30 @@ examples_common/fast:
 .PHONY : examples_common/fast
 
 #=============================================================================
-# Target rules for targets named Waypoints
+# Target rules for targets named sensor_botasys
 
 # Build rule for target.
-Waypoints: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Waypoints
-.PHONY : Waypoints
+sensor_botasys: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 sensor_botasys
+.PHONY : sensor_botasys
 
 # fast build rule for target.
-Waypoints/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Waypoints.dir/build.make CMakeFiles/Waypoints.dir/build
-.PHONY : Waypoints/fast
+sensor_botasys/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sensor_botasys.dir/build.make CMakeFiles/sensor_botasys.dir/build
+.PHONY : sensor_botasys/fast
 
 #=============================================================================
-# Target rules for targets named JointImpedanceControl
+# Target rules for targets named trystuffCmake
 
 # Build rule for target.
-JointImpedanceControl: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 JointImpedanceControl
-.PHONY : JointImpedanceControl
+trystuffCmake: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 trystuffCmake
+.PHONY : trystuffCmake
 
 # fast build rule for target.
-JointImpedanceControl/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl.dir/build.make CMakeFiles/JointImpedanceControl.dir/build
-.PHONY : JointImpedanceControl/fast
-
-#=============================================================================
-# Target rules for targets named HalfCircle
-
-# Build rule for target.
-HalfCircle: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 HalfCircle
-.PHONY : HalfCircle
-
-# fast build rule for target.
-HalfCircle/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/HalfCircle.dir/build.make CMakeFiles/HalfCircle.dir/build
-.PHONY : HalfCircle/fast
-
-#=============================================================================
-# Target rules for targets named CircleExplore
-
-# Build rule for target.
-CircleExplore: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CircleExplore
-.PHONY : CircleExplore
-
-# fast build rule for target.
-CircleExplore/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CircleExplore.dir/build.make CMakeFiles/CircleExplore.dir/build
-.PHONY : CircleExplore/fast
-
-#=============================================================================
-# Target rules for targets named ForceControl
-
-# Build rule for target.
-ForceControl: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ForceControl
-.PHONY : ForceControl
-
-# fast build rule for target.
-ForceControl/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ForceControl.dir/build.make CMakeFiles/ForceControl.dir/build
-.PHONY : ForceControl/fast
-
-#=============================================================================
-# Target rules for targets named JointImpedanceControl_example
-
-# Build rule for target.
-JointImpedanceControl_example: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 JointImpedanceControl_example
-.PHONY : JointImpedanceControl_example
-
-# fast build rule for target.
-JointImpedanceControl_example/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl_example.dir/build.make CMakeFiles/JointImpedanceControl_example.dir/build
-.PHONY : JointImpedanceControl_example/fast
-
-#=============================================================================
-# Target rules for targets named CartesianImpedance_example
-
-# Build rule for target.
-CartesianImpedance_example: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CartesianImpedance_example
-.PHONY : CartesianImpedance_example
-
-# fast build rule for target.
-CartesianImpedance_example/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CartesianImpedance_example.dir/build.make CMakeFiles/CartesianImpedance_example.dir/build
-.PHONY : CartesianImpedance_example/fast
+trystuffCmake/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trystuffCmake.dir/build.make CMakeFiles/trystuffCmake.dir/build
+.PHONY : trystuffCmake/fast
 
 #=============================================================================
 # Target rules for targets named GetPosition
@@ -278,77 +213,159 @@ GetPosition/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/GetPosition.dir/build.make CMakeFiles/GetPosition.dir/build
 .PHONY : GetPosition/fast
 
-CartesianImpedance_example.o: CartesianImpedance_example.cpp.o
-.PHONY : CartesianImpedance_example.o
+#=============================================================================
+# Target rules for targets named Waypoints
+
+# Build rule for target.
+Waypoints: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Waypoints
+.PHONY : Waypoints
+
+# fast build rule for target.
+Waypoints/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Waypoints.dir/build.make CMakeFiles/Waypoints.dir/build
+.PHONY : Waypoints/fast
+
+#=============================================================================
+# Target rules for targets named ReadForce
+
+# Build rule for target.
+ReadForce: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ReadForce
+.PHONY : ReadForce
+
+# fast build rule for target.
+ReadForce/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ReadForce.dir/build.make CMakeFiles/ReadForce.dir/build
+.PHONY : ReadForce/fast
+
+#=============================================================================
+# Target rules for targets named HandMoveRobot
+
+# Build rule for target.
+HandMoveRobot: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 HandMoveRobot
+.PHONY : HandMoveRobot
+
+# fast build rule for target.
+HandMoveRobot/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HandMoveRobot.dir/build.make CMakeFiles/HandMoveRobot.dir/build
+.PHONY : HandMoveRobot/fast
+
+#=============================================================================
+# Target rules for targets named ImpedanceCartesianControl
+
+# Build rule for target.
+ImpedanceCartesianControl: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ImpedanceCartesianControl
+.PHONY : ImpedanceCartesianControl
+
+# fast build rule for target.
+ImpedanceCartesianControl/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ImpedanceCartesianControl.dir/build.make CMakeFiles/ImpedanceCartesianControl.dir/build
+.PHONY : ImpedanceCartesianControl/fast
+
+#=============================================================================
+# Target rules for targets named First_ImpedanceVel
+
+# Build rule for target.
+First_ImpedanceVel: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 First_ImpedanceVel
+.PHONY : First_ImpedanceVel
+
+# fast build rule for target.
+First_ImpedanceVel/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/First_ImpedanceVel.dir/build.make CMakeFiles/First_ImpedanceVel.dir/build
+.PHONY : First_ImpedanceVel/fast
+
+#=============================================================================
+# Target rules for targets named ImpedanceJointVel_test
+
+# Build rule for target.
+ImpedanceJointVel_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ImpedanceJointVel_test
+.PHONY : ImpedanceJointVel_test
+
+# fast build rule for target.
+ImpedanceJointVel_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ImpedanceJointVel_test.dir/build.make CMakeFiles/ImpedanceJointVel_test.dir/build
+.PHONY : ImpedanceJointVel_test/fast
+
+#=============================================================================
+# Target rules for targets named InverseKin_test
+
+# Build rule for target.
+InverseKin_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 InverseKin_test
+.PHONY : InverseKin_test
+
+# fast build rule for target.
+InverseKin_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/InverseKin_test.dir/build.make CMakeFiles/InverseKin_test.dir/build
+.PHONY : InverseKin_test/fast
+
+#=============================================================================
+# Target rules for targets named TrueImpedance_test
+
+# Build rule for target.
+TrueImpedance_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 TrueImpedance_test
+.PHONY : TrueImpedance_test
+
+# fast build rule for target.
+TrueImpedance_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TrueImpedance_test.dir/build.make CMakeFiles/TrueImpedance_test.dir/build
+.PHONY : TrueImpedance_test/fast
+
+#=============================================================================
+# Target rules for targets named OpSpace
+
+# Build rule for target.
+OpSpace: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 OpSpace
+.PHONY : OpSpace
+
+# fast build rule for target.
+OpSpace/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OpSpace.dir/build.make CMakeFiles/OpSpace.dir/build
+.PHONY : OpSpace/fast
+
+#=============================================================================
+# Target rules for targets named VelImpedance_test
+
+# Build rule for target.
+VelImpedance_test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 VelImpedance_test
+.PHONY : VelImpedance_test
+
+# fast build rule for target.
+VelImpedance_test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/VelImpedance_test.dir/build.make CMakeFiles/VelImpedance_test.dir/build
+.PHONY : VelImpedance_test/fast
+
+First_ImpedanceVel.o: First_ImpedanceVel.cpp.o
+.PHONY : First_ImpedanceVel.o
 
 # target to build an object file
-CartesianImpedance_example.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CartesianImpedance_example.dir/build.make CMakeFiles/CartesianImpedance_example.dir/CartesianImpedance_example.cpp.o
-.PHONY : CartesianImpedance_example.cpp.o
+First_ImpedanceVel.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/First_ImpedanceVel.dir/build.make CMakeFiles/First_ImpedanceVel.dir/First_ImpedanceVel.cpp.o
+.PHONY : First_ImpedanceVel.cpp.o
 
-CartesianImpedance_example.i: CartesianImpedance_example.cpp.i
-.PHONY : CartesianImpedance_example.i
-
-# target to preprocess a source file
-CartesianImpedance_example.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CartesianImpedance_example.dir/build.make CMakeFiles/CartesianImpedance_example.dir/CartesianImpedance_example.cpp.i
-.PHONY : CartesianImpedance_example.cpp.i
-
-CartesianImpedance_example.s: CartesianImpedance_example.cpp.s
-.PHONY : CartesianImpedance_example.s
-
-# target to generate assembly for a file
-CartesianImpedance_example.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CartesianImpedance_example.dir/build.make CMakeFiles/CartesianImpedance_example.dir/CartesianImpedance_example.cpp.s
-.PHONY : CartesianImpedance_example.cpp.s
-
-CircleExplore.o: CircleExplore.cpp.o
-.PHONY : CircleExplore.o
-
-# target to build an object file
-CircleExplore.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CircleExplore.dir/build.make CMakeFiles/CircleExplore.dir/CircleExplore.cpp.o
-.PHONY : CircleExplore.cpp.o
-
-CircleExplore.i: CircleExplore.cpp.i
-.PHONY : CircleExplore.i
+First_ImpedanceVel.i: First_ImpedanceVel.cpp.i
+.PHONY : First_ImpedanceVel.i
 
 # target to preprocess a source file
-CircleExplore.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CircleExplore.dir/build.make CMakeFiles/CircleExplore.dir/CircleExplore.cpp.i
-.PHONY : CircleExplore.cpp.i
+First_ImpedanceVel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/First_ImpedanceVel.dir/build.make CMakeFiles/First_ImpedanceVel.dir/First_ImpedanceVel.cpp.i
+.PHONY : First_ImpedanceVel.cpp.i
 
-CircleExplore.s: CircleExplore.cpp.s
-.PHONY : CircleExplore.s
-
-# target to generate assembly for a file
-CircleExplore.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CircleExplore.dir/build.make CMakeFiles/CircleExplore.dir/CircleExplore.cpp.s
-.PHONY : CircleExplore.cpp.s
-
-ForceControl.o: ForceControl.cpp.o
-.PHONY : ForceControl.o
-
-# target to build an object file
-ForceControl.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ForceControl.dir/build.make CMakeFiles/ForceControl.dir/ForceControl.cpp.o
-.PHONY : ForceControl.cpp.o
-
-ForceControl.i: ForceControl.cpp.i
-.PHONY : ForceControl.i
-
-# target to preprocess a source file
-ForceControl.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ForceControl.dir/build.make CMakeFiles/ForceControl.dir/ForceControl.cpp.i
-.PHONY : ForceControl.cpp.i
-
-ForceControl.s: ForceControl.cpp.s
-.PHONY : ForceControl.s
+First_ImpedanceVel.s: First_ImpedanceVel.cpp.s
+.PHONY : First_ImpedanceVel.s
 
 # target to generate assembly for a file
-ForceControl.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ForceControl.dir/build.make CMakeFiles/ForceControl.dir/ForceControl.cpp.s
-.PHONY : ForceControl.cpp.s
+First_ImpedanceVel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/First_ImpedanceVel.dir/build.make CMakeFiles/First_ImpedanceVel.dir/First_ImpedanceVel.cpp.s
+.PHONY : First_ImpedanceVel.cpp.s
 
 GetPosition.o: GetPosition.cpp.o
 .PHONY : GetPosition.o
@@ -374,77 +391,197 @@ GetPosition.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/GetPosition.dir/build.make CMakeFiles/GetPosition.dir/GetPosition.cpp.s
 .PHONY : GetPosition.cpp.s
 
-HalfCircle.o: HalfCircle.cpp.o
-.PHONY : HalfCircle.o
+HandMoveRobot.o: HandMoveRobot.cpp.o
+.PHONY : HandMoveRobot.o
 
 # target to build an object file
-HalfCircle.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/HalfCircle.dir/build.make CMakeFiles/HalfCircle.dir/HalfCircle.cpp.o
-.PHONY : HalfCircle.cpp.o
+HandMoveRobot.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HandMoveRobot.dir/build.make CMakeFiles/HandMoveRobot.dir/HandMoveRobot.cpp.o
+.PHONY : HandMoveRobot.cpp.o
 
-HalfCircle.i: HalfCircle.cpp.i
-.PHONY : HalfCircle.i
+HandMoveRobot.i: HandMoveRobot.cpp.i
+.PHONY : HandMoveRobot.i
 
 # target to preprocess a source file
-HalfCircle.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/HalfCircle.dir/build.make CMakeFiles/HalfCircle.dir/HalfCircle.cpp.i
-.PHONY : HalfCircle.cpp.i
+HandMoveRobot.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HandMoveRobot.dir/build.make CMakeFiles/HandMoveRobot.dir/HandMoveRobot.cpp.i
+.PHONY : HandMoveRobot.cpp.i
 
-HalfCircle.s: HalfCircle.cpp.s
-.PHONY : HalfCircle.s
+HandMoveRobot.s: HandMoveRobot.cpp.s
+.PHONY : HandMoveRobot.s
 
 # target to generate assembly for a file
-HalfCircle.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/HalfCircle.dir/build.make CMakeFiles/HalfCircle.dir/HalfCircle.cpp.s
-.PHONY : HalfCircle.cpp.s
+HandMoveRobot.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/HandMoveRobot.dir/build.make CMakeFiles/HandMoveRobot.dir/HandMoveRobot.cpp.s
+.PHONY : HandMoveRobot.cpp.s
 
-JointImpedanceControl.o: JointImpedanceControl.cpp.o
-.PHONY : JointImpedanceControl.o
+ImpedanceCartesianControl.o: ImpedanceCartesianControl.cpp.o
+.PHONY : ImpedanceCartesianControl.o
 
 # target to build an object file
-JointImpedanceControl.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl.dir/build.make CMakeFiles/JointImpedanceControl.dir/JointImpedanceControl.cpp.o
-.PHONY : JointImpedanceControl.cpp.o
+ImpedanceCartesianControl.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ImpedanceCartesianControl.dir/build.make CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.o
+.PHONY : ImpedanceCartesianControl.cpp.o
 
-JointImpedanceControl.i: JointImpedanceControl.cpp.i
-.PHONY : JointImpedanceControl.i
+ImpedanceCartesianControl.i: ImpedanceCartesianControl.cpp.i
+.PHONY : ImpedanceCartesianControl.i
 
 # target to preprocess a source file
-JointImpedanceControl.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl.dir/build.make CMakeFiles/JointImpedanceControl.dir/JointImpedanceControl.cpp.i
-.PHONY : JointImpedanceControl.cpp.i
+ImpedanceCartesianControl.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ImpedanceCartesianControl.dir/build.make CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.i
+.PHONY : ImpedanceCartesianControl.cpp.i
 
-JointImpedanceControl.s: JointImpedanceControl.cpp.s
-.PHONY : JointImpedanceControl.s
+ImpedanceCartesianControl.s: ImpedanceCartesianControl.cpp.s
+.PHONY : ImpedanceCartesianControl.s
 
 # target to generate assembly for a file
-JointImpedanceControl.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl.dir/build.make CMakeFiles/JointImpedanceControl.dir/JointImpedanceControl.cpp.s
-.PHONY : JointImpedanceControl.cpp.s
+ImpedanceCartesianControl.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ImpedanceCartesianControl.dir/build.make CMakeFiles/ImpedanceCartesianControl.dir/ImpedanceCartesianControl.cpp.s
+.PHONY : ImpedanceCartesianControl.cpp.s
 
-JointImpedanceControl_example.o: JointImpedanceControl_example.cpp.o
-.PHONY : JointImpedanceControl_example.o
+ImpedanceJointVel_test.o: ImpedanceJointVel_test.cpp.o
+.PHONY : ImpedanceJointVel_test.o
 
 # target to build an object file
-JointImpedanceControl_example.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl_example.dir/build.make CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.o
-.PHONY : JointImpedanceControl_example.cpp.o
+ImpedanceJointVel_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ImpedanceJointVel_test.dir/build.make CMakeFiles/ImpedanceJointVel_test.dir/ImpedanceJointVel_test.cpp.o
+.PHONY : ImpedanceJointVel_test.cpp.o
 
-JointImpedanceControl_example.i: JointImpedanceControl_example.cpp.i
-.PHONY : JointImpedanceControl_example.i
+ImpedanceJointVel_test.i: ImpedanceJointVel_test.cpp.i
+.PHONY : ImpedanceJointVel_test.i
 
 # target to preprocess a source file
-JointImpedanceControl_example.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl_example.dir/build.make CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.i
-.PHONY : JointImpedanceControl_example.cpp.i
+ImpedanceJointVel_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ImpedanceJointVel_test.dir/build.make CMakeFiles/ImpedanceJointVel_test.dir/ImpedanceJointVel_test.cpp.i
+.PHONY : ImpedanceJointVel_test.cpp.i
 
-JointImpedanceControl_example.s: JointImpedanceControl_example.cpp.s
-.PHONY : JointImpedanceControl_example.s
+ImpedanceJointVel_test.s: ImpedanceJointVel_test.cpp.s
+.PHONY : ImpedanceJointVel_test.s
 
 # target to generate assembly for a file
-JointImpedanceControl_example.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/JointImpedanceControl_example.dir/build.make CMakeFiles/JointImpedanceControl_example.dir/JointImpedanceControl_example.cpp.s
-.PHONY : JointImpedanceControl_example.cpp.s
+ImpedanceJointVel_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ImpedanceJointVel_test.dir/build.make CMakeFiles/ImpedanceJointVel_test.dir/ImpedanceJointVel_test.cpp.s
+.PHONY : ImpedanceJointVel_test.cpp.s
+
+InverseKin_test.o: InverseKin_test.cpp.o
+.PHONY : InverseKin_test.o
+
+# target to build an object file
+InverseKin_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/InverseKin_test.dir/build.make CMakeFiles/InverseKin_test.dir/InverseKin_test.cpp.o
+.PHONY : InverseKin_test.cpp.o
+
+InverseKin_test.i: InverseKin_test.cpp.i
+.PHONY : InverseKin_test.i
+
+# target to preprocess a source file
+InverseKin_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/InverseKin_test.dir/build.make CMakeFiles/InverseKin_test.dir/InverseKin_test.cpp.i
+.PHONY : InverseKin_test.cpp.i
+
+InverseKin_test.s: InverseKin_test.cpp.s
+.PHONY : InverseKin_test.s
+
+# target to generate assembly for a file
+InverseKin_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/InverseKin_test.dir/build.make CMakeFiles/InverseKin_test.dir/InverseKin_test.cpp.s
+.PHONY : InverseKin_test.cpp.s
+
+OpSpace.o: OpSpace.cpp.o
+.PHONY : OpSpace.o
+
+# target to build an object file
+OpSpace.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OpSpace.dir/build.make CMakeFiles/OpSpace.dir/OpSpace.cpp.o
+.PHONY : OpSpace.cpp.o
+
+OpSpace.i: OpSpace.cpp.i
+.PHONY : OpSpace.i
+
+# target to preprocess a source file
+OpSpace.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OpSpace.dir/build.make CMakeFiles/OpSpace.dir/OpSpace.cpp.i
+.PHONY : OpSpace.cpp.i
+
+OpSpace.s: OpSpace.cpp.s
+.PHONY : OpSpace.s
+
+# target to generate assembly for a file
+OpSpace.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/OpSpace.dir/build.make CMakeFiles/OpSpace.dir/OpSpace.cpp.s
+.PHONY : OpSpace.cpp.s
+
+ReadForce.o: ReadForce.cpp.o
+.PHONY : ReadForce.o
+
+# target to build an object file
+ReadForce.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ReadForce.dir/build.make CMakeFiles/ReadForce.dir/ReadForce.cpp.o
+.PHONY : ReadForce.cpp.o
+
+ReadForce.i: ReadForce.cpp.i
+.PHONY : ReadForce.i
+
+# target to preprocess a source file
+ReadForce.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ReadForce.dir/build.make CMakeFiles/ReadForce.dir/ReadForce.cpp.i
+.PHONY : ReadForce.cpp.i
+
+ReadForce.s: ReadForce.cpp.s
+.PHONY : ReadForce.s
+
+# target to generate assembly for a file
+ReadForce.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ReadForce.dir/build.make CMakeFiles/ReadForce.dir/ReadForce.cpp.s
+.PHONY : ReadForce.cpp.s
+
+TrueImpedance_test.o: TrueImpedance_test.cpp.o
+.PHONY : TrueImpedance_test.o
+
+# target to build an object file
+TrueImpedance_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TrueImpedance_test.dir/build.make CMakeFiles/TrueImpedance_test.dir/TrueImpedance_test.cpp.o
+.PHONY : TrueImpedance_test.cpp.o
+
+TrueImpedance_test.i: TrueImpedance_test.cpp.i
+.PHONY : TrueImpedance_test.i
+
+# target to preprocess a source file
+TrueImpedance_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TrueImpedance_test.dir/build.make CMakeFiles/TrueImpedance_test.dir/TrueImpedance_test.cpp.i
+.PHONY : TrueImpedance_test.cpp.i
+
+TrueImpedance_test.s: TrueImpedance_test.cpp.s
+.PHONY : TrueImpedance_test.s
+
+# target to generate assembly for a file
+TrueImpedance_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/TrueImpedance_test.dir/build.make CMakeFiles/TrueImpedance_test.dir/TrueImpedance_test.cpp.s
+.PHONY : TrueImpedance_test.cpp.s
+
+VelImpedance_test.o: VelImpedance_test.cpp.o
+.PHONY : VelImpedance_test.o
+
+# target to build an object file
+VelImpedance_test.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/VelImpedance_test.dir/build.make CMakeFiles/VelImpedance_test.dir/VelImpedance_test.cpp.o
+.PHONY : VelImpedance_test.cpp.o
+
+VelImpedance_test.i: VelImpedance_test.cpp.i
+.PHONY : VelImpedance_test.i
+
+# target to preprocess a source file
+VelImpedance_test.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/VelImpedance_test.dir/build.make CMakeFiles/VelImpedance_test.dir/VelImpedance_test.cpp.i
+.PHONY : VelImpedance_test.cpp.i
+
+VelImpedance_test.s: VelImpedance_test.cpp.s
+.PHONY : VelImpedance_test.s
+
+# target to generate assembly for a file
+VelImpedance_test.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/VelImpedance_test.dir/build.make CMakeFiles/VelImpedance_test.dir/VelImpedance_test.cpp.s
+.PHONY : VelImpedance_test.cpp.s
 
 Waypoints.o: Waypoints.cpp.o
 .PHONY : Waypoints.o
@@ -470,6 +607,30 @@ Waypoints.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Waypoints.dir/build.make CMakeFiles/Waypoints.dir/Waypoints.cpp.s
 .PHONY : Waypoints.cpp.s
 
+cmake/BotaForceTorqueSensorComm.o: cmake/BotaForceTorqueSensorComm.cpp.o
+.PHONY : cmake/BotaForceTorqueSensorComm.o
+
+# target to build an object file
+cmake/BotaForceTorqueSensorComm.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sensor_botasys.dir/build.make CMakeFiles/sensor_botasys.dir/cmake/BotaForceTorqueSensorComm.cpp.o
+.PHONY : cmake/BotaForceTorqueSensorComm.cpp.o
+
+cmake/BotaForceTorqueSensorComm.i: cmake/BotaForceTorqueSensorComm.cpp.i
+.PHONY : cmake/BotaForceTorqueSensorComm.i
+
+# target to preprocess a source file
+cmake/BotaForceTorqueSensorComm.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sensor_botasys.dir/build.make CMakeFiles/sensor_botasys.dir/cmake/BotaForceTorqueSensorComm.cpp.i
+.PHONY : cmake/BotaForceTorqueSensorComm.cpp.i
+
+cmake/BotaForceTorqueSensorComm.s: cmake/BotaForceTorqueSensorComm.cpp.s
+.PHONY : cmake/BotaForceTorqueSensorComm.s
+
+# target to generate assembly for a file
+cmake/BotaForceTorqueSensorComm.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sensor_botasys.dir/build.make CMakeFiles/sensor_botasys.dir/cmake/BotaForceTorqueSensorComm.cpp.s
+.PHONY : cmake/BotaForceTorqueSensorComm.cpp.s
+
 cmake/examples_common.o: cmake/examples_common.cpp.o
 .PHONY : cmake/examples_common.o
 
@@ -494,6 +655,30 @@ cmake/examples_common.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/examples_common.dir/build.make CMakeFiles/examples_common.dir/cmake/examples_common.cpp.s
 .PHONY : cmake/examples_common.cpp.s
 
+trystuffCmake.o: trystuffCmake.cpp.o
+.PHONY : trystuffCmake.o
+
+# target to build an object file
+trystuffCmake.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trystuffCmake.dir/build.make CMakeFiles/trystuffCmake.dir/trystuffCmake.cpp.o
+.PHONY : trystuffCmake.cpp.o
+
+trystuffCmake.i: trystuffCmake.cpp.i
+.PHONY : trystuffCmake.i
+
+# target to preprocess a source file
+trystuffCmake.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trystuffCmake.dir/build.make CMakeFiles/trystuffCmake.dir/trystuffCmake.cpp.i
+.PHONY : trystuffCmake.cpp.i
+
+trystuffCmake.s: trystuffCmake.cpp.s
+.PHONY : trystuffCmake.s
+
+# target to generate assembly for a file
+trystuffCmake.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/trystuffCmake.dir/build.make CMakeFiles/trystuffCmake.dir/trystuffCmake.cpp.s
+.PHONY : trystuffCmake.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -506,42 +691,62 @@ help:
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
-	@echo "... CartesianImpedance_example"
-	@echo "... CircleExplore"
-	@echo "... ForceControl"
+	@echo "... First_ImpedanceVel"
 	@echo "... GetPosition"
-	@echo "... HalfCircle"
-	@echo "... JointImpedanceControl"
-	@echo "... JointImpedanceControl_example"
+	@echo "... HandMoveRobot"
+	@echo "... ImpedanceCartesianControl"
+	@echo "... ImpedanceJointVel_test"
+	@echo "... InverseKin_test"
+	@echo "... OpSpace"
+	@echo "... ReadForce"
+	@echo "... TrueImpedance_test"
+	@echo "... VelImpedance_test"
 	@echo "... Waypoints"
 	@echo "... examples_common"
-	@echo "... CartesianImpedance_example.o"
-	@echo "... CartesianImpedance_example.i"
-	@echo "... CartesianImpedance_example.s"
-	@echo "... CircleExplore.o"
-	@echo "... CircleExplore.i"
-	@echo "... CircleExplore.s"
-	@echo "... ForceControl.o"
-	@echo "... ForceControl.i"
-	@echo "... ForceControl.s"
+	@echo "... sensor_botasys"
+	@echo "... trystuffCmake"
+	@echo "... First_ImpedanceVel.o"
+	@echo "... First_ImpedanceVel.i"
+	@echo "... First_ImpedanceVel.s"
 	@echo "... GetPosition.o"
 	@echo "... GetPosition.i"
 	@echo "... GetPosition.s"
-	@echo "... HalfCircle.o"
-	@echo "... HalfCircle.i"
-	@echo "... HalfCircle.s"
-	@echo "... JointImpedanceControl.o"
-	@echo "... JointImpedanceControl.i"
-	@echo "... JointImpedanceControl.s"
-	@echo "... JointImpedanceControl_example.o"
-	@echo "... JointImpedanceControl_example.i"
-	@echo "... JointImpedanceControl_example.s"
+	@echo "... HandMoveRobot.o"
+	@echo "... HandMoveRobot.i"
+	@echo "... HandMoveRobot.s"
+	@echo "... ImpedanceCartesianControl.o"
+	@echo "... ImpedanceCartesianControl.i"
+	@echo "... ImpedanceCartesianControl.s"
+	@echo "... ImpedanceJointVel_test.o"
+	@echo "... ImpedanceJointVel_test.i"
+	@echo "... ImpedanceJointVel_test.s"
+	@echo "... InverseKin_test.o"
+	@echo "... InverseKin_test.i"
+	@echo "... InverseKin_test.s"
+	@echo "... OpSpace.o"
+	@echo "... OpSpace.i"
+	@echo "... OpSpace.s"
+	@echo "... ReadForce.o"
+	@echo "... ReadForce.i"
+	@echo "... ReadForce.s"
+	@echo "... TrueImpedance_test.o"
+	@echo "... TrueImpedance_test.i"
+	@echo "... TrueImpedance_test.s"
+	@echo "... VelImpedance_test.o"
+	@echo "... VelImpedance_test.i"
+	@echo "... VelImpedance_test.s"
 	@echo "... Waypoints.o"
 	@echo "... Waypoints.i"
 	@echo "... Waypoints.s"
+	@echo "... cmake/BotaForceTorqueSensorComm.o"
+	@echo "... cmake/BotaForceTorqueSensorComm.i"
+	@echo "... cmake/BotaForceTorqueSensorComm.s"
 	@echo "... cmake/examples_common.o"
 	@echo "... cmake/examples_common.i"
 	@echo "... cmake/examples_common.s"
+	@echo "... trystuffCmake.o"
+	@echo "... trystuffCmake.i"
+	@echo "... trystuffCmake.s"
 .PHONY : help
 
 

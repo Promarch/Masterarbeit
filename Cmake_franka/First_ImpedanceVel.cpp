@@ -4,6 +4,7 @@
 #include <ctime>
 #include <array>
 #include <vector>
+#include <utility> // For std::pair
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -102,6 +103,56 @@ void wipeFile(const std::string& fileName){
     return;
   }
   fileStream.close();
+}
+
+// Function to generate a random angle
+std::pair<std::vector<int>,std::vector<int>> generateValidAngles(const Eigen::MatrixXd &quat_stop, int angleRangeStart, int angleRangeEnd, int tolerance) {
+    // Create evenly spaces possible angles
+    Eigen::VectorXi allAngles = Eigen::VectorXi::LinSpaced(angleRangeEnd - angleRangeStart + 1, angleRangeStart, angleRangeEnd);
+ 
+    // Create meshgrid of flexion angles and allAngles
+    Eigen::VectorXd angleFlex = 2 * (quat_stop.col(0).array() / quat_stop.col(3).array()).atan() *180/M_PI;
+    Eigen::VectorXd angleIntern = 2 * (quat_stop.col(1).array() / quat_stop.col(3).array()).atan() *180/M_PI;
+    Eigen::MatrixXd result = angleFlex.array().replicate(1, allAngles.size());
+    // Check which angles have been reached
+    Eigen::MatrixXd zwischen = (result.rowwise() - allAngles.cast<double>().transpose());
+    Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> completedMask = (result.rowwise() - allAngles.cast<double>().transpose()).cwiseAbs().array() < 1;
+    // Multiply by the sign of the internal-external to know where the flexion was reached
+    Eigen::MatrixXi boolMatrixFiltered = completedMask.cast<int>().array().colwise() * angleIntern.array().sign().cast<int>();
+    // Get the index of the valid angles
+    Eigen::Vector<bool, Eigen::Dynamic> boolValidAnglesIntern = !(boolMatrixFiltered.array()<0).colwise().any();
+    Eigen::Vector<bool, Eigen::Dynamic> boolValidAnglesExtern = !(boolMatrixFiltered.array()>0).colwise().any();
+
+    int rows = result.rows();
+    int cols = result.cols();
+
+    std::cout << "Bool Matrix: \n" << boolMatrixFiltered << "\n"; 
+    std::cout << "Valid int: " << boolValidAnglesIntern.transpose() << "\n"; 
+    std::cout << "Valid ext: " << boolValidAnglesExtern.transpose() << "\n"; 
+    // std::cout << "multiplication tests: \n" << completedMask.cast<double>().array().colwise() * angleIntern.array().sign() << "\n";
+    std::cout << "angleFlex: " << angleFlex.transpose() << "\n"; 
+    std::cout << "Shape: " << rows << " x " << cols << std::endl; 
+
+    // Add the valid angles to a vector
+    std::vector<int> validAnglesIntern, validAnglesExtern;
+    for (int i=0; i<completedMask.cols(); i++){
+        if (boolValidAnglesIntern(i)==true) {
+            validAnglesIntern.push_back(allAngles(i));
+        }
+        if (boolValidAnglesExtern(i)==true) {
+            validAnglesExtern.push_back(allAngles(i));
+        }
+    }
+
+    return {validAnglesIntern, validAnglesExtern};
+}
+
+template <typename T>
+void printVector(const std::vector<T>& vector) {
+    for (int i=0; i<vector.size(); i++){
+        std::cout << vector[i] << "\t";
+    }
+    printf("\n");
 }
 
 // Function and classes needed for the Botasys sensor, from: https://gitlab.com/botasys/bota_serial_driver
@@ -313,7 +364,7 @@ int main(int argc, char** argv) {
     franka::Robot robot("192.168.1.11");
     // Set new end-effector
     double distance_sensEE = 0.235;
-    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.220, 1.0});
+    robot.setEE({1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.150, 1.0});
     setDefaultBehavior(robot);
     franka::Model model = robot.loadModel();
     franka::RobotState initial_state = robot.readOnce();
@@ -325,7 +376,7 @@ int main(int argc, char** argv) {
 
       // Time variables
     double time_global = 0.0; // Time the robot has been running for
-    double time_max = 5;      // Maximum runtime
+    double time_max = 25;      // Maximum runtime
     double dt = 0;            // Initialization of time variable of the loop
     double period_acc = 2;    // Time between old and new commanded position
     double period_dec = 0.5;  // time for decceleration, to stop abrubt braking
@@ -335,7 +386,7 @@ int main(int argc, char** argv) {
     double next_sampling_time = 0;      // Interval at which the debug loop is called
 
       // Set limitations to max speed
-    double vel_max = 0.13; // [rad/s]
+    double vel_max = 0.15; // [rad/s]
     double factor_vel = 0;
     double factor_tau = 0;
 
@@ -353,7 +404,7 @@ int main(int argc, char** argv) {
     Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
     Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
     // Varus-Valgus (Rotation around z in local CoSy) 
-    double angle_varus = 2*M_PI/9;
+    double angle_varus = 0*2*M_PI/9;
     Eigen::Vector3d axis_varus(0,1,0);
     Eigen::AngleAxisd angle_axis_varus(angle_varus, axis_varus);
     Eigen::Quaterniond quaternion_varus(angle_axis_varus);
@@ -382,8 +433,11 @@ int main(int argc, char** argv) {
     bool pos_reached = false; // state variable, set true when the desired position has been reached
     std::srand(std::time(nullptr)); // initialize random seed
     double max_flexion = -M_PI/5;    // Max possible flexion
-    double max_varus = M_PI/6;   // Max possible internal-external rotation
+    double max_varus = M_PI/9;   // Max possible internal-external rotation
     double range_varus = 2*max_varus; // Possible values (max_varus-min_varus)
+    // Guiding mode
+    char userInput = 'r';  // Initialize with 'r' for random mode
+    std::vector<double> validAnglesIntern, validAnglesExtern;
 
     // Random debug variables
     bool test = false; 
@@ -425,16 +479,38 @@ int main(int argc, char** argv) {
       if (new_pos==true){
           // Set new angles and compute new rotation
         // New flexion
-        angle_flexion = (std::rand()/(RAND_MAX/max_flexion)); 
-        Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
-        Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
-        // New internal rotation 
-        if (abs(angle_flexion) < M_PI/18) {
-          angle_varus = 0; // No internal rotation if the knee is extended
+        if (userInput=='r') {
+          angle_flexion = (std::rand()/(RAND_MAX/max_flexion)); 
+          Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
+          Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
+          // New internal rotation 
+          if (abs(angle_flexion) < M_PI/18) {
+            angle_varus = 0; // No internal rotation if the knee is extended
+          }
+          else {
+            angle_varus = (std::rand()/(RAND_MAX/range_varus))-max_varus;
+          }
         }
-        else {
-          angle_varus = (std::rand()/(RAND_MAX/range_varus))-max_varus;
+        if (userInput=='p') {
+          // get latest entry of quat stop and check if it was internal or external
+          std::array<double, 4> last_quat = quat_stop_data.back();
+          int lastFlexion = round(2*atan(last_quat[0]/last_quat[3]) *180/M_PI);
+          bool isInternal = (2*atan(last_quat[1]/last_quat[3]) *180/M_PI)<0;
+          // Check if it is in validAngle and remove the angles if it is
+          if (isInternal) {
+            auto it = std::find(validAnglesIntern.begin(), validAnglesIntern.end(), lastFlexion);
+          }
+          // Set new value for flexion and internal-external depending on which side the robot is on
+          if (!validAnglesIntern.empty()) {
+              // Select a random angle from the uncompleted angles
+              int randomIndex = std::rand() % validAnglesIntern.size();
+              angle_flexion = validAnglesIntern[randomIndex];
+          } else {
+              printf("No uncompleted angles available");
+              userInput = 'r';
+          }
         }
+        
         Eigen::AngleAxisd angle_axis_varus(angle_varus, axis_varus);
         Eigen::Quaterniond quaternion_varus(angle_axis_varus);
         // Combine the rotations
@@ -501,7 +577,7 @@ int main(int argc, char** argv) {
       // For debug: Print current wrench, time, and absolute positional error every "sampling_interval"
       if (time_global >= next_sampling_time) {
         std::cout << std::fixed << std::setprecision(3);
-        std::cout << "Time: " << time_global  << ", Acc factor: " << factor_vel << ", Error: \n" << error << "\n\n"; 
+        std::cout << "Time: " << time_global  << ", Acc factor: " << factor_vel << "\nError: " << error.transpose() << "\n\n"; 
         next_sampling_time += sampling_interval;
       }
 
@@ -531,6 +607,9 @@ int main(int argc, char** argv) {
       Eigen::Map<const Eigen::Matrix<double, 7,1>> q(robot_state.q.data());
       Eigen::Map<const Eigen::Matrix<double, 7,1>> q_d(robot_state.q_d.data());
       Eigen::Map<const Eigen::Matrix<double, 6,1>> F_ext(robot_state.K_F_ext_hat_K.data());
+      Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
+      Eigen::Quaterniond rotation(transform.linear());
+
       // Get sensor values
       alignas(alignof(float[6])) float aligned_forces[6]; // necessary cause otherwise i get the warning: taking address of packed member of ‘BotaForceTorqueSensorComm::AppOutput::<unnamed struct>’ may result in an unaligned pointer value
       if (sensor.readFrame() == BotaForceTorqueSensorComm::VALID_FRAME){
@@ -555,23 +634,29 @@ int main(int argc, char** argv) {
         // Deccelerate if forces to high, or set new pos if desired position reached or no joint movement present
       if (decceleration==false) { // only call when the robot is not already decelerating
         if (F_ext.tail(3).norm()>5) {   // Torque too high
-          Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation * rotation_init.inverse()).coeffs(); 
+          Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation_init.inverse() * rotation).coeffs(); 
           quat_stop_data.push_back(quat_stop_array);
           decceleration = true;
           t_dec = time_cycle;
           std::cout << "Torques too high; Time: " << time_global << ", wrench: \n" << F_ext << "\n";
         }
         else if (F_ext.head(3).norm()>15) {   // Force too high
+          Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation_init.inverse() * rotation).coeffs(); 
+          quat_stop_data.push_back(quat_stop_array);
           decceleration = true;
           t_dec = time_cycle;
           std::cout << "Forces too high; Time: " << time_global << ", wrench: \n" << F_ext << "\n";
         }
-        else if (error.tail(3).norm()<0.035 and pos_reached==false) { // Position reached & position not reached yet
+        else if (error.tail(3).norm()<0.035 and pos_reached==false) { // Position reached
+          Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation_init.inverse() * rotation).coeffs(); 
+          quat_stop_data.push_back(quat_stop_array);
           pos_reached = true;
           t_dec = time_cycle; 
           std::cout << "Desired rotation reached; Time: " << time_global << ", error: \n" << error << std::endl;
         }
         else if (dq.norm()<0.005 and time_cycle>period_acc and pos_reached==false) { // Standstill reached, robot should be moving & position not reached yet
+          Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation_init.inverse() * rotation).coeffs(); 
+          quat_stop_data.push_back(quat_stop_array);
           pos_reached = true;
           t_dec = time_cycle; 
           std::cout << "No joint movement present; Time: " << time_global << ", error: \n" << error << std::endl;
@@ -641,8 +726,59 @@ int main(int argc, char** argv) {
       
     };
 
-    // start control loop
-    robot.control(force_control_callback, cartesian_velocity_callback);
+    // // start control loop
+    // robot.control(force_control_callback, cartesian_velocity_callback);
+
+    while (true) {
+      // start control loop
+      robot.control(force_control_callback, cartesian_velocity_callback);
+
+        // Calculate the positions that where already checked: 
+      // Convert quat vector to eigen matrix for elementwise comparisons
+      Eigen::MatrixXd quat_stop_eigen(quat_stop_data.size(), 4);
+      for (size_t i = 0; i < quat_stop_data.size(); ++i) {
+        quat_stop_eigen(i, 0) = quat_stop_data[i][0];
+        quat_stop_eigen(i, 1) = quat_stop_data[i][1];
+        quat_stop_eigen(i, 2) = quat_stop_data[i][2];
+        quat_stop_eigen(i, 3) = quat_stop_data[i][3];
+      }
+
+      // Create missing angles vector
+      std::pair<std::vector<int>, std::vector<int>> result = generateValidAngles(quat_stop_eigen, -30, -15, 2);
+      std::vector<int> validAnglesExtern = result.first;
+      std::vector<int> validAnglesIntern = result.second;
+
+      printf("ValidExtern: ");
+      printVector(validAnglesExtern);
+      printf("ValidIntern: ");
+      printVector(validAnglesIntern);
+      printf("\n");
+
+      std::cout << "Input 'r' for random, 'p' for positions, and 'x' to stop; running=" << running << "\n";
+      std::cin >> userInput; 
+
+      if (userInput == 'x') { // Exit the loop if 'n' is entered
+        std::cout << "Exiting the loop." << std::endl;
+        thread_running = false; 
+        break;  
+      } 
+      else if (userInput == 'r') {
+        time = 0;
+        next_sampling_time = 0;
+        running = true;
+        std::cout << "Continuing with random mode, bool running: " << running << std::endl;
+      } 
+      else if (userInput == 'p') {
+        time = 0;
+        next_sampling_time = 0;
+        running = true;
+        std::cout << "Continuing with position mode, bool running: " << running << std::endl;
+      } 
+      else {
+        std::cout << "Invalid input. Please enter 'y' or 'n'." << std::endl;
+      }
+
+    }
 
     // Close thread 
     thread_running = false; 

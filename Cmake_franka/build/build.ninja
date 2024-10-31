@@ -104,6 +104,39 @@ build libsensor_botasys.a: CXX_STATIC_LIBRARY_LINKER__sensor_botasys_Debug CMake
   TARGET_PDB = sensor_botasys.a.dbg
 
 # =============================================================================
+# Object build statements for EXECUTABLE target trystuffCmake
+
+
+#############################################
+# Order-only phony target for trystuffCmake
+
+build cmake_object_order_depends_target_trystuffCmake: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+
+build CMakeFiles/trystuffCmake.dir/trystuffCmake.cpp.o: CXX_COMPILER__trystuffCmake_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/trystuffCmake.cpp || cmake_object_order_depends_target_trystuffCmake
+  DEP_FILE = CMakeFiles/trystuffCmake.dir/trystuffCmake.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/trystuffCmake.dir
+  OBJECT_FILE_DIR = CMakeFiles/trystuffCmake.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target trystuffCmake
+
+
+#############################################
+# Link the executable trystuffCmake
+
+build trystuffCmake: CXX_EXECUTABLE_LINKER__trystuffCmake_Debug CMakeFiles/trystuffCmake.dir/trystuffCmake.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/trystuffCmake.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = trystuffCmake
+  TARGET_PDB = trystuffCmake.dbg
+
+# =============================================================================
 # Object build statements for EXECUTABLE target GetPosition
 
 
@@ -546,7 +579,7 @@ build sensor_botasys: phony libsensor_botasys.a
 #############################################
 # Folder: /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
-build all: phony libexamples_common.a libsensor_botasys.a GetPosition Waypoints ReadForce HandMoveRobot ImpedanceCartesianControl First_ImpedanceVel ImpedanceJointVel_test InverseKin_test TrueImpedance_test OpSpace VelImpedance_test
+build all: phony libexamples_common.a libsensor_botasys.a trystuffCmake GetPosition Waypoints ReadForce HandMoveRobot ImpedanceCartesianControl First_ImpedanceVel ImpedanceJointVel_test InverseKin_test TrueImpedance_test OpSpace VelImpedance_test
 
 # =============================================================================
 # Built-in targets

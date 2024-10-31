@@ -1,1 +1,0 @@
-/usr/bin/g++ -g CMakeFiles/HalfCircle.dir/HalfCircle.cpp.o -o HalfCircle  libexamples_common.a /usr/lib/libfranka.so.0.10.0 

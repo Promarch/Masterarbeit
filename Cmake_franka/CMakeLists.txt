@@ -26,6 +26,7 @@ add_library(sensor_botasys STATIC
 target_link_libraries(examples_common PUBLIC Franka::Franka Eigen3::Eigen3)
 
 SET(PROGRAM_files
+  trystuffCmake
   GetPosition
   Waypoints
   ReadForce

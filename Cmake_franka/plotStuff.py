@@ -7,11 +7,62 @@ import pandas as pd
 import glob
 import os
 
+
+def readFile(path):
+    list_of_files = glob.glob(path)
+    filePath = max(list_of_files, key=os.path.getctime)
+    array = np.loadtxt(filePath, delimiter=",")
+    return array
+
+def generateMissingAngles(angle_flex, angle_intern, startRange = -30, endRange=-20, tolerance=1):
+    allAngles = np.linspace(startRange, endRange, endRange-startRange+1)
+    angleMatrix = angle_flex[:, np.newaxis] - allAngles
+    boolMatrix = np.abs(angleMatrix)<tolerance
+    boolMatrixFilter = (boolMatrix.transpose() * np.sign(angle_intern)).transpose()
+    boolValidAnglesExtern = ~np.any(boolMatrixFilter<0, axis=0)
+    boolValidAnglesIntern = ~np.any(boolMatrixFilter>0, axis=0)
+    validAnglesIntern = allAngles[boolValidAnglesIntern]
+    validAnglesExtern = allAngles[boolValidAnglesExtern]
+
+    return validAnglesIntern, validAnglesExtern
+
+folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
+np.set_printoptions(precision=3, suppress=True)
+
 #%%
+# quaternion takes w,x,y,z
+startRange = -30
+endRange=-20 
+tolerance=1
+array_rot = readFile(folder_path + "quat_stop*")[:,:4]
+array_rot = array_rot[:,[3,0,1,2]]
+angle_flex = 2*np.arctan(array_rot[:,1]/array_rot[:,0])*180/np.pi
+angle_intern = 2*np.arctan(array_rot[:,2]/array_rot[:,0])*180/np.pi
+test = np.array([angle_flex, angle_intern]).transpose()
+print(f"These are the x- and y-angles of the quaternion: \n{test}")
+generateMissingAngles(angle_flex, angle_intern, -36,-10,5)
+#%%
+# quat_rot = quaternion.from_float_array(array_rot)
+# quat_init = np.quaternion(0.0, 0.7071068, 0.7071068, 0.0)
+# quat_rot_base = quat_init.inverse() * quat_rot
+# array_rot_base = quaternion.as_float_array(quat_rot_base)
+array_rot = readFile(folder_path + "quat_stop*")[:,:4]
+array_rot = array_rot[:,[3,0,1,2]]
+array_rot_base = array_rot
+test_flex = np.arctan2(2*(array_rot_base[:,0]*array_rot_base[:,1]+array_rot_base[:,2]*array_rot_base[:,3]), 1-2*(array_rot_base[:,1]*array_rot_base[:,1]+array_rot_base[:,2]*array_rot_base[:,2]))*180/np.pi
+test_intern = np.arcsin(2*(array_rot_base[:,0]*array_rot_base[:,2]-array_rot_base[:,3]*array_rot_base[:,1]))*180/np.pi
+test_intern = np.arctan2(2*(array_rot_base[:,0]*array_rot_base[:,2]-array_rot_base[:,3]*array_rot_base[:,1]), np.sqrt(1-(2*(array_rot_base[:,0]*array_rot_base[:,2]+array_rot_base[:,3]*array_rot_base[:,1]))**2))*180/np.pi
+angle_flex = 2*np.arctan(array_rot_base[:,1]/array_rot_base[:,0])*180/np.pi
+angle_intern = 2*np.arctan(array_rot_base[:,2]/array_rot_base[:,0])*180/np.pi
+test = np.array([test_flex, angle_flex, test_intern, angle_intern]).transpose()
+np.set_printoptions(precision=3, suppress=True)
+print(f"These are the x- and y-angles of the quaternion: \n{test}")
+#%%
+# quaternion takes w,x,y,z
+quat_init = np.quaternion(0.0, 0.7071068, 0.7071068, 0.0)
 quat_15_0 = np.quaternion(0.9914449, 0.1305262, 0, 0)
 quat_0_15 = np.quaternion(0.9914449, 0, 0.1305262, 0)
 quat_robot = np.quaternion(0.9914449, 0, 0.1305262, 0)
-quat_init = np.quaternion(0.0, 0.7071068, 0.7071068, 0.0)
 quat_combined = quat_0_15 * quat_15_0
 quat_rel = quat_init * quat_combined * quat_init**-1
 quat_d = quat_rel * quat_init

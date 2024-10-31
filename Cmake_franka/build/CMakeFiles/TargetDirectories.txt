@@ -1,5 +1,6 @@
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/examples_common.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/sensor_botasys.dir
+/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/trystuffCmake.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/GetPosition.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/Waypoints.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/ReadForce.dir
