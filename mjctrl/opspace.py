@@ -103,7 +103,7 @@ def main() -> None:
     Mx = np.zeros((6, 6))
 
     # Debugging
-    debug:bool = True
+    debug:bool = False
     set_mocap_pos:bool = True
     t_debug = 0.05
     t_sample = t_debug
@@ -172,13 +172,14 @@ def main() -> None:
             # Calculate the direction of the angular velocity
             factor_speed = 60
             cart_vel[:3] = twist[:3]
+            # cart_vel[:3] = 0
             cart_vel[3:] = dt * factor_speed * twist[3:]/np.linalg.norm(twist[3:])
             # Ensure smooth acceleration
             if (time.time()-t_init)<time_acc:
                 factor_acc = (1 - np.cos(np.pi * (time.time()-t_init)/time_acc))/2
             else:
                 factor_acc = 1
-            tau = jac.T @ Mx @ (Kp * cart_vel - Kd * (jac @ data.qvel[dof_ids]))
+            tau = jac.T @ Mx @ (Kp * cart_vel - Kd * (jac @ data.qvel[dof_ids]))*factor_acc
 
 
             # # Add joint task in nullspace.

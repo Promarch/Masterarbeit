@@ -5,7 +5,8 @@
                 xyaxes="0.36 0.93 -0.03 -0.93 0.37 0.007"
                 diaginertia="59.960e-06 68.065e-06 68.942e-06" />
         <geom class="visual" mesh="sensor_ee_2" quat="0.9807853 0 0 0.1950903" type="mesh" rgba="0.2 0.2 0.2 0.5"/>
-        <!-- <site name="sensor_site" pos="0 0 0.0415" quat="0.9238795 0 0 -0.3826834"  quat="0.9807853 0 0 0.1950903" rgba="1 1 0 1" size="0.01" group="1"/> -->
+        <!-- <site name="sensor_site" pos="0 0 0.0415" rgba="1 1 0 1" size="0.01" group="1"/> -->
+<!-- quat="0.9238795 0 0 -0.3826834"  quat="0.9807853 0 0 0.1950903" quat="0.7071068 0.7071068 0.0 0.0"  -->
         <!-- Kugelgelenk -->
         <body name="Verbindung_Kniemodell" pos="0.0 0.0 0.052">
             <geom class="visual" mesh="Verbindung_Kniemodell" pos="0.0 0.0 0.016" quat="0.7071068 0.7071068 0.0 0.0" type="mesh" rgba="0.2 0.2 0.2 0.5"/>

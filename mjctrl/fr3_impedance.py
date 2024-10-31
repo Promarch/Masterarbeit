@@ -68,9 +68,9 @@ def main() -> None:
     mocap_id = model.body(mocap_name).mocapid[0]
 
     # Stiffness matrix and stuff
-    translation_stiffness = 300
-    rotation_stiffness = 100
-    K_p_values = np.array([translation_stiffness, translation_stiffness, translation_stiffness, rotation_stiffness, rotation_stiffness, rotation_stiffness])
+    translation_stiffness = 300 * np.ones(3)
+    rotation_stiffness = 30 * np.ones(3)
+    K_p_values = np.array([translation_stiffness, rotation_stiffness]).flatten()
     K_p = np.diag(K_p_values)
     K_d = np.diag(np.sqrt(K_p_values))
     factor_speed = 100
@@ -96,6 +96,7 @@ def main() -> None:
     pos_init = np.array([0.389, 0.00, 0.355]) # Kuka
     quat_init = [0, 0.7071068, 0.7071068, 0] #[ 0.6830127, -0.6830127, -0.1830127, -0.1830127 ]
     quat_d = np.array([0.1227878, 0.6963642, 0.6963642, 0.1227878]) # FR3
+    # quat_d = quat_init
     # quat_d = np.array([-0.1227878, 0.6963642, 0.6963642, -0.1227878])
 
     # Time variables
@@ -171,17 +172,16 @@ def main() -> None:
             # Calculate the direction of the angular velocity
             factor_speed = 5
             cart_vel[:3] = error[:3]
+            cart_vel[:3] = 0
+            # cart_vel[:3] = dt * factor_speed * error_pos/np.linalg.norm(error_pos)
             cart_vel[3:] = dt * factor_speed * error_ori/np.linalg.norm(error_ori)
             # Ensure smooth acceleration
             if (time.time()-t_init)<time_acc:
                 factor_acc = (1 - np.cos(np.pi * (time.time()-t_init)/time_acc))/2
             else:
                 factor_acc = 1
-            h_c = K_p @ cart_vel - K_d @ (jac @ data.qvel[dof_ids])
+            h_c = K_p @ cart_vel #- K_d @ (jac @ data.qvel[dof_ids])
             tau = jac.T @ h_c
-
-                # Damped least squares control
-            # tau = jac.T @ (np.linalg.solve(jac @ jac.T + diag, error))
 
             # Set the control signal and step the simulation.
             data.ctrl[actuator_ids] = tau[dof_ids]
@@ -189,8 +189,9 @@ def main() -> None:
 
                 # Debug loop
             if (time_current>t_debug) and (debug==True):
-                np.set_printoptions(suppress=True)
-                print(f"Time: {np.round(time_current,1)} \ntau = {np.round(tau.T,3)} \nh_c: {np.transpose(np.round(h_c,3))} \n")
+                np.set_printoptions(precision=3, suppress=True)
+                print(f"Time: {np.round(time_current,1)} \ntau = {tau.T}, Norm: {np.round(np.linalg.norm(tau.T),3)}")
+                print(f"cart_vel: {np.transpose(cart_vel)} \nh_c: {np.transpose(h_c)} \n")
                 t_debug += t_sample
             mujoco.mj_step(model, data)
 
