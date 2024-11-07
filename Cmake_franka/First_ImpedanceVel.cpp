@@ -116,7 +116,7 @@ std::pair<std::vector<int>,std::vector<int>> generateValidAngles(const Eigen::Ma
     Eigen::MatrixXd result = angleFlex.array().replicate(1, allAngles.size());
     // Check which angles have been reached
     Eigen::MatrixXd zwischen = (result.rowwise() - allAngles.cast<double>().transpose());
-    Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> completedMask = (result.rowwise() - allAngles.cast<double>().transpose()).cwiseAbs().array() < 1;
+    Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> completedMask = (result.rowwise() - allAngles.cast<double>().transpose()).cwiseAbs().array() < tolerance;
     // Multiply by the sign of the internal-external to know where the flexion was reached
     Eigen::MatrixXi boolMatrixFiltered = completedMask.cast<int>().array().colwise() * angleIntern.array().sign().cast<int>();
     // Get the index of the valid angles
@@ -126,7 +126,7 @@ std::pair<std::vector<int>,std::vector<int>> generateValidAngles(const Eigen::Ma
     int rows = result.rows();
     int cols = result.cols();
 
-    // std::cout << "Bool Matrix: \n" << boolMatrixFiltered << "\n"; 
+    std::cout << "Bool Matrix: \n" << boolMatrixFiltered << "\n"; 
     // std::cout << "Valid int: " << boolValidAnglesIntern.transpose() << "\n"; 
     // std::cout << "Valid ext: " << boolValidAnglesExtern.transpose() << "\n"; 
     // std::cout << "multiplication tests: \n" << completedMask.cast<double>().array().colwise() * angleIntern.array().sign() << "\n";
@@ -163,6 +163,7 @@ void deleteAngles(std::vector<int> &validAngles, const int &angle, const int &to
             toDelete.push_back(i);
         }
     }
+    printf("Current valid angles: "); printVector(validAngles);
     printf("Entries to delete: "); printVector(toDelete);
     if (!toDelete.empty()){
         validAngles.erase(validAngles.begin()+toDelete.front(), validAngles.begin()+toDelete.back()+1);
@@ -396,8 +397,8 @@ int main(int argc, char** argv) {
   }
 
   // Variables to store the torque or position of the robot during the movement
-  std::vector<std::array<double, 7>> tau_data, tau_filter_data, tau_desired_data, joint_position_data; // Stores joint torque 
-  std::vector<std::array<double, 6>> F_robot_data, force_tau_d_data; // Stores wrench acting on EE
+  std::vector<std::array<double, 7>> tau_data, tau_filter_data, tau_desired_data, joint_position_data, dq_d_data, q_d_data; // Stores joint torque 
+  std::vector<std::array<double, 6>> F_robot_data, force_tau_d_data, O_dP_EE_d_data; // Stores wrench acting on EE
   std::vector<std::array<float , 6>> F_sensor_data, F_sensor_total_data, F_knee_data; 
   std::vector<std::array<double, 5>> rotation_time_data; // stores the desired rotation with the current time
   std::vector<std::array<double, 16>> O_T_EE_data, F_T_EE_data; 
@@ -433,7 +434,7 @@ int main(int argc, char** argv) {
 
       // Time variables
     double time_global = 0.0; // Time the robot has been running for
-    double time_max = 10;      // Maximum runtime
+    double time_max = 30;      // Maximum runtime
     double dt = 0;            // Initialization of time variable of the loop
     double period_acc = 2;    // Time between old and new commanded position
     double period_dec = 0.5;  // time for decceleration, to stop abrubt braking
@@ -495,7 +496,7 @@ int main(int argc, char** argv) {
     // Guiding mode
     char userInput = 'r';  // Initialize with 'r' for random mode
     std::vector<int> validAnglesExtern, validAnglesIntern; // Is filled after the first full control loop but must be declared before
-    int tolerance = 3;
+    int tolerance = 2;
 
     // Random debug variables
     bool test = false; 
@@ -535,8 +536,28 @@ int main(int argc, char** argv) {
       // ----                   Set new position                        ----
       // -------------------------------------------------------------------
       if (new_pos==true){
-          // Set new angles and compute new rotation
-        // New flexion
+          // Calculate new intern/extern and flexion
+        // Select between guided or random mode
+        if (userInput=='p') { // Guided mode
+          printf("Guided mode\n");
+            // Remove latest checked flexion angles
+          std::array<double, 4> last_quat = quat_stop_data.back();
+          int lastFlexion = round(2*atan(last_quat[0]/last_quat[3]) *180/M_PI);
+          bool wasInternal = (2*atan(last_quat[1]/last_quat[3]) *180/M_PI)<0;
+          if (wasInternal) {
+            deleteAngles(validAnglesIntern, lastFlexion, tolerance);
+          }
+          else {
+            deleteAngles(validAnglesExtern, lastFlexion, tolerance);
+          }
+            // Calculate new angle, trying to alternate between internal and external rotation
+          bool isInternal = (2*atan((rotation_init.inverse() * rotation).y()/(rotation_init.inverse() * rotation).w()) *180/M_PI)<0;
+          std::cout << "Internal angle: " << (2*atan((rotation_init.inverse() * rotation).y()/(rotation_init.inverse() * rotation).w()) *180/M_PI) << ", is internal: " << isInternal << "\n";
+          std::cout << "Current quat: " << rotation << "\n"; 
+          std::pair<int,int> newAngles = calculateNewAngle(isInternal, userInput, validAnglesIntern, validAnglesExtern);
+          angle_flexion = newAngles.first*M_PI/180;
+          angle_varus = newAngles.second*M_PI/180;
+        }
         if (userInput=='r') { // If random position
           printf("Random position mode\n");
           angle_flexion = (std::rand()/(RAND_MAX/max_flexion)); 
@@ -548,29 +569,7 @@ int main(int argc, char** argv) {
             angle_varus = (std::rand()/(RAND_MAX/range_varus))-max_varus;
           }
         }
-        if (userInput=='p') { // Position mode
-          printf("Guided position mode\n");
-            // Remove latest checked flexion angles
-          std::array<double, 4> last_quat = quat_stop_data.back();
-          int lastFlexion = round(2*atan(last_quat[0]/last_quat[3]) *180/M_PI);
-          bool wasInternal = (2*atan(last_quat[1]/last_quat[3]) *180/M_PI)<0;
-          if (wasInternal) {
-            deleteAngles(validAnglesIntern, lastFlexion, tolerance);
-          }
-          else {
-            deleteAngles(validAnglesExtern, lastFlexion, tolerance);
-          }
 
-            // Calculate new angle, trying to alternate between internal and external rotation
-          bool isInternal = (2*atan((rotation_init.inverse() * rotation).y()/(rotation_init.inverse() * rotation).w()) *180/M_PI)<0;
-          std::cout << "Internal angle: " << (2*atan((rotation_init.inverse() * rotation).y()/(rotation_init.inverse() * rotation).w()) *180/M_PI) << ", is internal: " << isInternal << "\n";
-          std::cout << "Current quat: " << rotation << "\n"; 
-          std::pair<int,int> newAngles = calculateNewAngle(isInternal, userInput, validAnglesIntern, validAnglesExtern);
-          angle_flexion = newAngles.first*M_PI/180;
-          angle_varus = newAngles.second*M_PI/180;
-
-        }
-        
         Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
         Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
         Eigen::AngleAxisd angle_axis_varus(angle_varus, axis_varus);
@@ -647,7 +646,7 @@ int main(int argc, char** argv) {
       if (time_global >= time_max) {
         std::cout << std::fixed << std::setprecision(3);
         std::cout << "Time: " << time_global << ", Acc factor:" << factor_vel << ", Velocity_d: \n" << cart_vel; 
-        std::cout << "\n\nFinished motion, shutting down example" << std::endl;
+        std::cout << "\n\nFinished motion, stopping robot" << std::endl;
         running = false; // Pause thread
         return franka::MotionFinished(cart_vel_array);
       }
@@ -668,6 +667,8 @@ int main(int argc, char** argv) {
       Eigen::Map<const Eigen::Matrix<double, 7,1>> dq(robot_state.dq.data()); 
       Eigen::Map<const Eigen::Matrix<double, 7,1>> q(robot_state.q.data());
       Eigen::Map<const Eigen::Matrix<double, 7,1>> q_d(robot_state.q_d.data());
+      Eigen::Map<const Eigen::Matrix<double, 7,1>> dq_d(robot_state.dq_d.data());
+      Eigen::Map<const Eigen::Matrix<double, 6,1>> O_dP_EE_d(robot_state.O_dP_EE_d.data());
       Eigen::Map<const Eigen::Matrix<double, 6,1>> F_ext(robot_state.K_F_ext_hat_K.data());
       Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
       Eigen::Quaterniond rotation(transform.linear());
@@ -709,12 +710,15 @@ int main(int argc, char** argv) {
           t_dec = time_cycle;
           std::cout << "Forces too high; Time: " << time_global << ", wrench: \n" << F_ext << "\n";
         }
-        else if (error.tail(3).norm()<0.035 and pos_reached==false) { // Position reached
+        else if (error.tail(3).norm()<0.025 and pos_reached==false) { // Position reached
           Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation_init.inverse() * rotation).coeffs(); 
           quat_stop_data.push_back(quat_stop_array);
           pos_reached = true;
           t_dec = time_cycle; 
-          std::cout << "Desired rotation reached; Time: " << time_global << ", error: \n" << error << std::endl;
+          int lastFlexion = round(2*atan(quat_stop_array[0]/quat_stop_array[3]) *180/M_PI);
+          int lastInternal = round(2*atan(quat_stop_array[1]/quat_stop_array[3]) *180/M_PI);
+          std::cout << "Desired pos reached; Time: " << time_global << "; current flex: " << lastFlexion << ", and int/ext: " << lastInternal;
+          std::cout << "\nerror: " << error.transpose() << "\n\n";
         }
         else if (dq.norm()<0.005 and time_cycle>period_acc and pos_reached==false) { // Standstill reached, robot should be moving & position not reached yet
           Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation_init.inverse() * rotation).coeffs(); 
@@ -768,6 +772,9 @@ int main(int argc, char** argv) {
       joint_position_data.push_back(robot_state.q);
       O_T_EE_data.push_back(robot_state.O_T_EE);
       F_T_EE_data.push_back(robot_state.F_T_EE);
+      q_d_data.push_back(robot_state.q_d);
+      dq_d_data.push_back(robot_state.dq_d);
+      O_dP_EE_d_data.push_back(robot_state.O_dP_EE_d);
 
         // Update temp data to write if the thread is not locked for writing
       if (print_data.mutex.try_lock()) {
@@ -805,9 +812,9 @@ int main(int argc, char** argv) {
 
       // Create missing angles vector
       std::pair<std::vector<int>, std::vector<int>> result = generateValidAngles(quat_stop_eigen, -25, -15, tolerance);
-      validAnglesExtern = result.first;
-      validAnglesIntern = result.second;
-
+      validAnglesIntern = result.first;
+      validAnglesExtern = result.second;
+      std::cout << "Quat stop matrix: \n" << quat_stop_eigen << "\n";
       printf("ValidExtern: "); printVector(validAnglesExtern);
       printf("ValidIntern: "); printVector(validAnglesIntern);
       printf("\n");
@@ -855,7 +862,9 @@ int main(int argc, char** argv) {
     writeDataToFile(quat_stop_data);
     writeDataToFile(F_sensor_total_data);
     writeDataToFile(F_knee_data);
-
+    writeDataToFile(O_dP_EE_d_data);
+    writeDataToFile(dq_d_data);
+    writeDataToFile(q_d_data);
   }
   // Catches Exceptions caused within the execution of a program (I think)
   catch (const franka::ControlException& e) {
@@ -867,7 +876,11 @@ int main(int argc, char** argv) {
     writeDataToFile(O_T_EE_data);
     writeDataToFile(F_T_EE_data);
     writeDataToFile(rotation_time_data);
+    writeDataToFile(quat_stop_data);
     writeDataToFile(F_sensor_total_data);
+    writeDataToFile(O_dP_EE_d_data);
+    writeDataToFile(dq_d_data);
+    writeDataToFile(q_d_data);
     return -1;
   }
   // Catch general exceptions
