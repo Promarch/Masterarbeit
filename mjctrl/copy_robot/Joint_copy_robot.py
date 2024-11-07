@@ -34,7 +34,7 @@ max_angvel = 0.785
 #%%
 def main() -> None:
     assert mujoco.__version__ >= "3.1.0", "Please upgrade to mujoco 3.1.0 or later."
-
+    np.set_printoptions(precision=3, suppress=True)
     # ------------------------------------------------------------------------
     # -----------             Set Up Mujoco Simulation            ------------
     # ------------------------------------------------------------------------
@@ -84,7 +84,7 @@ def main() -> None:
 
     folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
     folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
-    folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_impedance_test/"
+    # folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_impedance_test/"
         # Joint positions
     path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_cartesian/joint_position_data_20240820_115946.txt"
     list_of_files_q = glob.glob(folder_path + 'joint_posi*')
@@ -98,6 +98,12 @@ def main() -> None:
     rot_time = np.array(rot_time_orig)
     rot_time[:,0] = rot_time_orig[:,3]
     rot_time[:,1:4] = rot_time_orig[:,0:3]
+    rot_time = rot_time_orig[:,[3,0,1,2,4]]
+    test = rot_time.copy()
+    for i in range(len(rot_time)-1):
+        if rot_time[i+1,-1]<rot_time[i,-1]:
+            test[i+1:,-1] += 30
+    rot_time = test
     n_pos = 1
     
     desired_angle = np.deg2rad(-20)

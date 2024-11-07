@@ -397,7 +397,7 @@ int main(int argc, char** argv) {
   }
 
   // Variables to store the torque or position of the robot during the movement
-  std::vector<std::array<double, 7>> tau_data, tau_filter_data, tau_desired_data, joint_position_data, dq_d_data, q_d_data; // Stores joint torque 
+  std::vector<std::array<double, 7>> tau_data, tau_filter_data, tau_desired_data, joint_position_data, dq_d_data, q_d_data, dq_c_data; // Stores joint torque 
   std::vector<std::array<double, 6>> F_robot_data, force_tau_d_data, O_dP_EE_d_data; // Stores wrench acting on EE
   std::vector<std::array<float , 6>> F_sensor_data, F_sensor_total_data, F_knee_data; 
   std::vector<std::array<double, 5>> rotation_time_data; // stores the desired rotation with the current time
@@ -428,13 +428,14 @@ int main(int argc, char** argv) {
     franka::RobotState initial_state = robot.readOnce();
 
       // Stiffness Damping on joint level
-    Eigen::VectorXd Kp(7), Kd(7);
-    Kp << 200.0, 200.0, 200.0, 200.0, 200.0, 200.0, 200.0;
-    Kd << 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0;
+    int K_P = 50;
+    int K_D = 7;
+    Eigen::VectorXd Kp = Eigen::VectorXd::Ones(7) * K_P;
+    Eigen::VectorXd Kd = Eigen::VectorXd::Ones(7) * K_D;
 
       // Time variables
     double time_global = 0.0; // Time the robot has been running for
-    double time_max = 30;      // Maximum runtime
+    double time_max = 15;      // Maximum runtime
     double dt = 0;            // Initialization of time variable of the loop
     double period_acc = 2;    // Time between old and new commanded position
     double period_dec = 0.5;  // time for decceleration, to stop abrubt braking
@@ -484,6 +485,7 @@ int main(int argc, char** argv) {
     // Decceleration
     bool decceleration = false; // if true, robot deccelerates, used to stop the motion before setting a new position
     bool acceleration = false; // set true when external wrench is too high, will cause the robot to slowly accelerate again after deceleration of the joint
+    bool reset_q_d = false; // set true when F_max is reached and q_d needs to be set equal to q
     double t_dec = 0;   // will be set the moment a deceleration is called
     double t_acc = 0;   // will be set the moment an acceleration is called
     // New position
@@ -503,12 +505,14 @@ int main(int argc, char** argv) {
 
     // Pre-allocate stuff
     std::array<double, 6> cart_vel_array{}; 
+    std::array<double, 7> dq_c_array{}; 
     std::array<double, 7> tau_d_array{}; 
     std::array<double, 4> quat_stop_array{};
     Eigen::Matrix<double, 6, 1> cart_vel; cart_vel.setZero();
     Eigen::Matrix<double, 6, 1> error; 
-    Eigen::Matrix<double, 7,1> tau_d;
+    Eigen::Matrix<double, 7, 1> tau_d, q_d_stop;
     std::array<float, 6> F_sensor_array, F_knee_array;
+    F_sensor_array = {0,0,0,0,0,0}; // Initializing here cause it gets mapped immediatly to the eigen vector that measures force limits
     std::array<float, 6> F_sensor_temp_array;
     Eigen::Quaterniond error_quaternion, rotation; // Declared here since it is needed in both loops
 
@@ -522,7 +526,7 @@ int main(int argc, char** argv) {
 // ----                                                                                    ----
 // --------------------------------------------------------------------------------------------
 
-    auto cartesian_velocity_callback = [&](const franka::RobotState& robot_state, franka::Duration period) -> franka::CartesianVelocities {
+    auto cartesian_velocity_callback = [&](const franka::RobotState& robot_state, franka::Duration period) -> franka::JointVelocities {
       dt = period.toSec();
       time_global += dt;
       time_cycle += dt;
@@ -531,6 +535,8 @@ int main(int argc, char** argv) {
       Eigen::Affine3d transform(Eigen::Matrix4d::Map(robot_state.O_T_EE.data()));
       Eigen::Vector3d position(transform.translation());
       Eigen::Quaterniond rotation(transform.linear());
+      Eigen::Map<const Eigen::Matrix<double, 7,1>> q(robot_state.q.data());
+      Eigen::Map<const Eigen::Matrix<double, 7,1>> q_d(robot_state.q_d.data());
 
       // -------------------------------------------------------------------
       // ----                   Set new position                        ----
@@ -597,11 +603,23 @@ int main(int argc, char** argv) {
       if ((time_global+period_dec)>time_max){ // Deccelerate if close to end time
         factor_vel = (1 + std::cos(M_PI * (time_global-(time_max-period_dec))/period_dec))/2 * factor_vel;
       }
-      else if (pos_reached==true or decceleration==true){  // Desired position (or limits) reached, slow down to 0 and then get new position
+      else if (decceleration==true) { // decceleration cause of high forces
         factor_vel = (1 + std::cos(M_PI * (time_cycle-t_dec)/period_dec))/2 * factor_vel;
-        if (factor_vel<0.001 and pos_reached==true) {
+        if (factor_vel<0.001 and factor_tau<0.001) { // factor tau needs to be small cause resetting time_cycle will cause problems elsewise
           factor_vel = 0.0;
-          new_pos = true;
+          factor_tau = 0.0;
+          reset_q_d = true;
+          decceleration = false;
+          time_cycle = 0.0;   // Set to 0 so that factor_vel can restart normally
+          std::cout << "q_d is beeing adjusted to q, time: " << time_global << "\n";
+        }
+      }
+      else if (pos_reached==true){  // Desired position reached, slow down to 0 and then get new position //  or decceleration==true
+        factor_vel = (1 + std::cos(M_PI * (time_cycle-t_dec)/period_dec))/2 * factor_vel;
+        if (factor_vel<0.001) { //  and pos_reached==true // I had pos_reached == True in there because this condition was dependent on decceleration
+          factor_vel = 0.0; 
+          new_pos = true; 
+          reset_q_d = false; 
           std::cout << "New position called, time: " << time_global << "\n";
         }
       }
@@ -631,6 +649,26 @@ int main(int argc, char** argv) {
       cart_vel.tail(3) << factor_vel * transform.rotation() * error.tail(3)/error.tail(3).norm() * vel_max;
       Eigen::VectorXd::Map(&cart_vel_array[0], 6) =  cart_vel;
 
+        // Calculate pseudoinverse of jacobian and joint velocities from cartesian velocities
+      std::array<double, 42> jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
+      Eigen::Map<const Eigen::Matrix<double, 6,7>> jacobian(jacobian_array.data());
+      Eigen::Matrix<double, 7,6> jac_pseudoInv = jacobian.transpose() * (jacobian * jacobian.transpose()).partialPivLu().inverse(); 
+      Eigen::Matrix<double, 7,1> dq_c = jac_pseudoInv*cart_vel;
+
+      if (reset_q_d==true) {
+        dq_c = factor_vel * (q-q_d) * 100;
+        if ((q-q_d).norm()<0.01 and pos_reached==false) {
+          pos_reached = true;
+          acceleration = true;
+          t_acc = time_global;
+          t_dec = time_cycle; 
+          std::cout << "Robot can reaccelerate and new position will be set, time: " << time_global << "\n";
+        }
+      }
+
+      Eigen::VectorXd::Map(&dq_c_array[0], 7) = dq_c;
+      dq_c_data.push_back(dq_c_array);
+
       // -------------------------------------------------------------------
       // ----             Print stuff and send velocity                 ----
       // -------------------------------------------------------------------
@@ -648,10 +686,11 @@ int main(int argc, char** argv) {
         std::cout << "Time: " << time_global << ", Acc factor:" << factor_vel << ", Velocity_d: \n" << cart_vel; 
         std::cout << "\n\nFinished motion, stopping robot" << std::endl;
         running = false; // Pause thread
-        return franka::MotionFinished(cart_vel_array);
+        franka::JointVelocities output = dq_c_array;
+        return franka::MotionFinished(output);
       }
       // Send desired pose.
-      return cart_vel_array;
+      return dq_c_array;
 
     };
 
@@ -686,9 +725,9 @@ int main(int argc, char** argv) {
         F_knee_array[3] = -F_sensor_array[3] - F_sensor_array[1] * distance_sensEE;
         F_knee_array[4] = -F_sensor_array[4] + F_sensor_array[0] * distance_sensEE;
         F_knee_array[5] = -F_sensor_array[5];
-        Eigen::Map<Eigen::Matrix<float, 6, 1>> F_sensor(F_sensor_array.data());
         F_sensor_data.push_back(F_sensor_array);
       }
+      Eigen::Map<Eigen::Matrix<float, 6, 1>> F_sensor(F_sensor_array.data());
 
       // -------------------------------------------------------------------
       // ----               Check if deceleration needed                ----
@@ -696,21 +735,21 @@ int main(int argc, char** argv) {
 
         // Deccelerate if forces to high, or set new pos if desired position reached or no joint movement present
       if (decceleration==false) { // only call when the robot is not already decelerating
-        if (F_ext.tail(3).norm()>5) {   // Torque too high
+        if (F_sensor.tail(3).norm()>2.7) {   // Torque too high
           Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation_init.inverse() * rotation).coeffs(); 
           quat_stop_data.push_back(quat_stop_array);
           decceleration = true;
           t_dec = time_cycle;
           std::cout << "Torques too high; Time: " << time_global << ", wrench: \n" << F_ext << "\n";
         }
-        else if (F_ext.head(3).norm()>15) {   // Force too high
+        else if (F_sensor.head(3).norm()>15) {   // Force too high
           Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation_init.inverse() * rotation).coeffs(); 
           quat_stop_data.push_back(quat_stop_array);
           decceleration = true;
           t_dec = time_cycle;
           std::cout << "Forces too high; Time: " << time_global << ", wrench: \n" << F_ext << "\n";
         }
-        else if (error.tail(3).norm()<0.025 and pos_reached==false) { // Position reached
+        else if (error.tail(3).norm()<0.025 and pos_reached==false and reset_q_d==false) { // Position is reached and q_d is not being reset
           Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation_init.inverse() * rotation).coeffs(); 
           quat_stop_data.push_back(quat_stop_array);
           pos_reached = true;
@@ -720,7 +759,7 @@ int main(int argc, char** argv) {
           std::cout << "Desired pos reached; Time: " << time_global << "; current flex: " << lastFlexion << ", and int/ext: " << lastInternal;
           std::cout << "\nerror: " << error.transpose() << "\n\n";
         }
-        else if (dq.norm()<0.005 and time_cycle>period_acc and pos_reached==false) { // Standstill reached, robot should be moving & position not reached yet
+        else if (dq.norm()<0.005 and time_cycle>period_acc and pos_reached==false and reset_q_d==false) { // Standstill reached, robot should be moving & position not reached yet
           Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation_init.inverse() * rotation).coeffs(); 
           quat_stop_data.push_back(quat_stop_array);
           pos_reached = true;
@@ -735,17 +774,21 @@ int main(int argc, char** argv) {
 
       if (decceleration==true){  // Decceleration called due to exceeded wrench
         factor_tau = (1 + std::cos(M_PI * (time_cycle-t_dec)/period_dec))/2 * factor_tau;
-        if (factor_tau<0.001 and (time_cycle-t_dec)>period_dec) { // Restart if no force on joints and deceleration period is over
+        if (factor_tau<0.001) { // Restart if no force on joints and deceleration period is over //  and (time_cycle-t_dec)>period_dec
           factor_tau = 0.0;
-          decceleration = false;
-          acceleration = true;
-          t_acc = time_global;
-          pos_reached = true;
-          std::cout << "New position to set, time: " << time_global << std::endl;
+          // decceleration = false;
+          // acceleration = true;
+          // t_acc = time_global;
+          // pos_reached = true;
+          // std::cout << "New position to set, time: " << time_global << std::endl;
         }
+      }
+      else if (reset_q_d == true) {
+        factor_tau = 0;
       }
       else if (acceleration == true){ // if decceleration was called because high wrench -> smoothly reaccelerate the joint torque
         factor_tau = (1 - std::cos(M_PI * (time_global-t_acc)/period_reacceleration))/2;
+        // factor_tau = 0;
         if (factor_tau>0.995){
           acceleration = false;
           std::cout << "\nFinished joint acceleration, time: " << time_global << "\n";
@@ -864,6 +907,7 @@ int main(int argc, char** argv) {
     writeDataToFile(F_knee_data);
     writeDataToFile(O_dP_EE_d_data);
     writeDataToFile(dq_d_data);
+    writeDataToFile(dq_c_data);
     writeDataToFile(q_d_data);
   }
   // Catches Exceptions caused within the execution of a program (I think)
@@ -880,6 +924,7 @@ int main(int argc, char** argv) {
     writeDataToFile(F_sensor_total_data);
     writeDataToFile(O_dP_EE_d_data);
     writeDataToFile(dq_d_data);
+    writeDataToFile(dq_c_data);
     writeDataToFile(q_d_data);
     return -1;
   }

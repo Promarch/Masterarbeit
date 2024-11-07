@@ -19,8 +19,8 @@ def generateMissingAngles(angle_flex, angle_intern, startRange = -30, endRange=-
     angleMatrix = angle_flex[:, np.newaxis] - allAngles
     boolMatrix = np.abs(angleMatrix)<tolerance
     boolMatrixFilter = (boolMatrix.transpose() * np.sign(angle_intern)).transpose()
-    boolValidAnglesExtern = ~np.any(boolMatrixFilter<0, axis=0)
-    boolValidAnglesIntern = ~np.any(boolMatrixFilter>0, axis=0)
+    boolValidAnglesIntern = ~np.any(boolMatrixFilter<0, axis=0)
+    boolValidAnglesExtern = ~np.any(boolMatrixFilter>0, axis=0)
     validAnglesIntern = allAngles[boolValidAnglesIntern]
     validAnglesExtern = allAngles[boolValidAnglesExtern]
 
@@ -31,16 +31,19 @@ np.set_printoptions(precision=3, suppress=True)
 
 #%%
 # quaternion takes w,x,y,z
-startRange = -30
-endRange=-20 
+startRange = -25
+endRange=-15 
 tolerance=1
 array_rot = readFile(folder_path + "quat_stop*")[:,:4]
+# array_rot = readFile("/home/alexandergerard/Documents/quat_stop_tests.txt")[:,:4]
 array_rot = array_rot[:,[3,0,1,2]]
 angle_flex = 2*np.arctan(array_rot[:,1]/array_rot[:,0])*180/np.pi
 angle_intern = 2*np.arctan(array_rot[:,2]/array_rot[:,0])*180/np.pi
 test = np.array([angle_flex, angle_intern]).transpose()
 print(f"These are the x- and y-angles of the quaternion: \n{test}")
-generateMissingAngles(angle_flex, angle_intern, -36,-10,5)
+validIntern, validExtern = generateMissingAngles(angle_flex, angle_intern, startRange,endRange,tolerance)
+print(f"Missing Intern: {validIntern.transpose()} \nMissing Extern: {validExtern.transpose()}")
+
 #%%
 # quat_rot = quaternion.from_float_array(array_rot)
 # quat_init = np.quaternion(0.0, 0.7071068, 0.7071068, 0.0)

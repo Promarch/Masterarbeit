@@ -18,6 +18,42 @@ def lowpassFilter(df, F_cutoff=10):
         df_filter.iloc[:,i] = data_filter
     return df_filter
 
+def plot7_twinAx(array1, array2, labels=["Array1", "Array2"]):
+    if len(array1)!=len(array2):
+        print("Arrays not the same length, exit")
+        return 0
+
+    x = np.arange(len(array1))/1000
+    # Get min and max of torque
+    min_1 = np.min(array1)
+    max_1 = np.max(array1)
+    max_1_abs = np.max([min_1, max_1])
+    buffer_1 = 0.2
+    factor1 = 1.1
+
+    min_2 = np.min(array2)
+    max_2 = np.max(array2)
+    max_2_abs = np.max([min_2, max_2])
+    buffer_2 = 0.1
+
+    fig, axs = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
+    for i in range(np.size(array1,1)):
+        axs[i].plot(x, array1[:,i], label = labels[0])
+        axs[i].set_ylabel(f"Joint {i+1}")
+        axs[i].set_ylim(-max_1_abs*factor1, max_1_abs*factor1)
+        axs[i].grid(True)
+        axs[i].legend(loc = "upper right")
+        
+        ax_twin = axs[i].twinx()
+        ax_twin.plot(x, array2[:,i], "r--", label = labels[1])
+        ax_twin.set_ylim(-max_2_abs*factor1, max_2_abs*factor1)
+        ax_twin.legend(loc = "lower right")
+
+    axs[i].set_xlabel("time [s]")
+    fig.suptitle("Torque of each joint")
+    # plt.tight_layout()
+    plt.show()
+
 # Function to create 7 Subplots from a dataframe
 def plot_torque(df_tau, df_filter, df_q, columns = None):
     if "time" in df_tau.columns:
@@ -218,17 +254,18 @@ def plot7(df_array, labels=[r"$\tau_{robotsensor}$", r"$\tau_{command}$"]):
     if num_df > 10:
         df_array = [df_array]
 
+    nSubplots = np.size(df_array[0],1)
     x = np.arange(0,len(df_array[0]))/1000
     # Get min and max of torque
     min_tau = np.min(df_array)
     max_tau = np.max(df_array)
-
-    fig, axs = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
-    for i in range(7):
+    buffer = 0.0
+    fig, axs = plt.subplots(nSubplots, 1, figsize=(10, 15), sharex=True)
+    for i in range(nSubplots):
         for j, df in enumerate(df_array):
             axs[i].plot(x, df[:,i], label = labels[j])
         axs[i].set_ylabel(f"Joint {i+1}")
-        axs[i].set_ylim(min_tau-.2, max_tau+.2)
+        axs[i].set_ylim(min_tau-buffer, max_tau+buffer)
         axs[i].grid(True)
         axs[i].legend(loc = "upper right")
     axs[i].set_xlabel("time [s]")
@@ -406,19 +443,29 @@ folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_j
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 # folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_impedance_test/"
 # folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_thesis/"
-
+np.set_printoptions(precision=3, suppress=True)
 # %%
 q = readFile(folder_path + "joint_posi*")
+q = q-q[0,:]
 q_d = readFile(folder_path + "q_d_dat*")
+q_d = q_d - q_d[0,:]
+diff_q = q_d-q
 dq_d = readFile(folder_path + "dq_d_dat*")
 dq_c = readFile(folder_path + "dq_c_dat*")[:-1,:]
-tau_d = readFile(folder_path + "tau_data*")
-q_diff = q_d-q
-sample = 100
-help1 = dq_c[::sample][:-1]*10
-help2 = np.diff(q[::sample],axis=0)*100
-plot7([10*dq_c, q_diff*100], [r"$\dot{q}_c$", r"$\Delta q$"])
-plot7([np.diff(q[::sample],axis=0)*1000, sample*dq_d[::sample][:-1], sample*dq_c[::sample][:-1]], [r"$\Delta q$", r"$\dot{q}_d$", r"$\dot{q}_c$"])
+diff_qd = dq_d - dq_c
+dPos = readFile(folder_path + "O_dP_EE*")
+tau_c = readFile(folder_path + "tau_data*")
+tau_sensor = readFile(folder_path + "tau_filter*")
+F_sensor = readFile(folder_path + "F_sensor_to*")
+F_robot = readFile(folder_path + "F_robot*")
+F_knee = readFile(folder_path + "F_knee*")
+
+# plot7_twinAx(tau_c, diff_q, labels=["tau_c", r"$\Delta q$"])
+# plt.plot(np.linalg.norm(F_robot[:,:3],axis=1), label = "F_robot")
+# plt.plot(np.linalg.norm(F_sensor[:,:3],axis=1), label = "F_sensor")
+# plt.plot(np.linalg.norm(F_knee[:,:3],axis=1), label = "F_knee")
+# plt.legend()
+# plt.show()
 #%%
 # Plot position and orientation
 list_of_files_O_T_EE = glob.glob(folder_path + 'O_T_EE*')
@@ -447,8 +494,8 @@ filePath_q = max(list_of_files_q, key=os.path.getctime)
 np_q = np.loadtxt(filePath_q, delimiter=",")
 dq = (np_q[:-1:100,:] - np_q[1::100,:])*1000
 
-# plot7([np_tau, np_tau_filter], labels=[r"$\tau_c$", r"$\tau_{sensor}$"]) #, labels=[r"$\tau_c$", r"$\tau_r$"]
-
+plot7([np_tau, np_tau_filter], labels=[r"$\tau_c$", r"$\tau_{sensor}$"]) #, labels=[r"$\tau_c$", r"$\tau_r$"]
+# plot7(np_tau, labels=[r"$\tau_{commanded}$"])
 #%%
 # Plot torques
 list_of_files_tau = glob.glob(folder_path + 'tau_da*')
@@ -467,7 +514,7 @@ df_orig_q = pd.read_csv(filePath_q, header=None)
 df_q = df_orig_q.copy()
 
 # plot7([df_tau, df_tau_filter], labels=[r"$\tau_{command}$", r"$\tau_{robotsensor}$"])
-# plot_torque(df_tau, df_tau_filter, df_q)
+plot_torque(df_tau, df_tau_filter, df_q)
 # %%
     # Get external force data
 list_of_files_F_ext = glob.glob(folder_path + 'F_robot_*')
@@ -484,7 +531,7 @@ df_F_lowpass = lowpassFilter(df_F_sensor)
 
     # Plot Force
 # plot_force_F_T(df_F_lowpass)
-# plot_force_tau_F(df_F_ext, df_F_lowpass, labels = [r"$F_{robot}$", r"$F_{sensor}$"])
+plot_force_tau_F(df_F_ext, df_F_lowpass, labels = [r"$F_{robot}$", r"$F_{sensor}$"])
 
 # %%
 # # Plot orientation error
@@ -511,3 +558,12 @@ df_F_lowpass = lowpassFilter(df_F_sensor)
 # df_error = df_orig_error.copy()
     # Plot Force
 # plot_force_error(df_error)
+#%%
+# q_diff = q_d-q
+# sample = 100
+# dq_c = readFile(folder_path + "dq_c_dat*")[:-1,:]
+# help1 = dq_c[::sample][:-1]*10
+# help2 = np.diff(q[::sample],axis=0)*100
+# plot7([10*dq_c, q_diff*100], [r"$\dot{q}_c$", r"$\Delta q$"])
+# plot7([np.diff(q[::sample],axis=0)*1000, sample*dq_d[::sample][:-1], sample*dq_c[::sample][:-1]], [r"$\Delta q$", r"$\dot{q}_d$", r"$\dot{q}_c$"])
+#%%
