@@ -178,7 +178,7 @@ std::pair<int, int> calculateNewAngle(bool &isInternal, char &userInput, std::ve
         if (!validAnglesExtern.empty()) {
             int randomIndex = std::rand() % validAnglesExtern.size();
             angle_flexion = validAnglesExtern[randomIndex];
-            angle_internExtern = 10;
+            angle_internExtern = 20;
         }
         else if (validAnglesIntern.empty()){
             printf("No values left at all, positions are set to random\n");
@@ -436,7 +436,7 @@ int main(int argc, char** argv) {
 
       // Time variables
     double time_global = 0.0; // Time the robot has been running for
-    double time_max = 30;      // Maximum runtime
+    double time_max = 5;      // Maximum runtime
     double dt = 0;            // Initialization of time variable of the loop
     double period_acc = 2;    // Time between old and new commanded position
     double period_dec = 0.5;  // time for decceleration, to stop abrubt braking
@@ -446,7 +446,9 @@ int main(int argc, char** argv) {
     double next_sampling_time = 0;      // Interval at which the debug loop is called
 
       // Set limitations to max speed
-    double vel_max = 0.15; // [rad/s]
+    double vel_max_rot = 0.15; // [rad/s]
+    double vel_max_pos = 1.3; // [m/s]
+    Eigen::VectorXd factor_vector = Eigen::VectorXd::Ones(6); 
     double factor_vel = 0;
     double factor_tau = 0;
 
@@ -459,7 +461,8 @@ int main(int argc, char** argv) {
 
       // Desired Rotation, created with quaternions
     // Flexion (Rotation around y in local CoSy) 
-    double angle_flexion = -2*M_PI/12;
+    double angle_flexion = -M_PI/9;
+    // double angle_flexion = -2*M_PI/12;
     Eigen::Vector3d axis_flexion(1,0,0);
     Eigen::AngleAxisd angle_axis_flexion(angle_flexion, axis_flexion);
     Eigen::Quaterniond quaternion_flexion(angle_axis_flexion);
@@ -506,7 +509,6 @@ int main(int argc, char** argv) {
     bool test = false; 
 
     // Pre-allocate stuff
-    std::array<double, 6> cart_vel_array{}; 
     std::array<double, 7> dq_c_array{}; 
     std::array<double, 7> tau_d_array{}; 
     std::array<double, 4> quat_stop_array{};
@@ -520,7 +522,7 @@ int main(int argc, char** argv) {
 
     std::cout << "Robot will start moving now \n"
               << "Press Enter to continue... \n";
-    std::cin.ignore();   
+    std::cin.ignore();
 
 // --------------------------------------------------------------------------------------------
 // ----                                                                                    ----
@@ -604,9 +606,11 @@ int main(int argc, char** argv) {
       // -------------------------------------------------------------------
       if ((time_global+period_dec)>time_max){ // Deccelerate if close to end time
         factor_vel = (1 + std::cos(M_PI * (time_global-(time_max-period_dec))/period_dec))/2 * factor_vel;
+        factor_vector = Eigen::VectorXd::Ones(6) * factor_vel;
       }
       else if (decceleration==true) { // decceleration cause of high forces
         factor_vel = (1 + std::cos(M_PI * (time_cycle-t_dec)/period_dec))/2 * factor_vel;
+        factor_vector = Eigen::VectorXd::Ones(6) * factor_vel;
         if (factor_vel<0.001 and factor_tau<0.001) { // only continue if velocity and torque are 0
           factor_vel = 0.0;
           factor_tau = 0.0;
@@ -618,44 +622,49 @@ int main(int argc, char** argv) {
       }
       else if (pos_reached==true){  // Desired position reached, slow down to 0 and then get new position 
         factor_vel = (1 + std::cos(M_PI * (time_cycle-t_dec)/period_dec))/2 * factor_vel;
+        factor_vector = Eigen::VectorXd::Ones(6) * factor_vel;
         if (factor_vel<0.001) {  
           factor_vel = 0.0; 
-          new_pos = true; 
+          // new_pos = true; 
           reset_q_d = false; 
-          std::cout << "New position called, time: " << time_global << "\n";
+          // std::cout << "New position called, time: " << time_global << "\n";
         }
       }
       else if (time_cycle<period_acc) {  // Normal start up
         factor_vel = (1 - std::cos(M_PI * time_cycle/period_acc))/2;
+        factor_vector = Eigen::VectorXd::Ones(6);
+        factor_vector.tail(3) = factor_vector.tail(3)*factor_vel; 
       }
       else {
         factor_vel = 1;
+        factor_vector = Eigen::VectorXd::Ones(6) * factor_vel;
       }
 
       // -------------------------------------------------------------------
       // ----                 Calculate trajectory                      ----
       // -------------------------------------------------------------------
 
-      // Positional error (nor used in calculations,only for debugging)
+        // Compute trajectory between current and desired orientation
+      // Positional error
       error.setZero();
       error.head(3) << position_init - position; 
       // Rotational error
       if (rot_d.coeffs().dot(rotation.coeffs()) < 0.0) {
         rotation.coeffs() << -rotation.coeffs();
       }
-      // "difference" quaternion
+      // Difference quaternion
       error_quaternion = rotation.inverse() * rot_d;
       error.tail(3) << error_quaternion.x(), error_quaternion.y(), error_quaternion.z();
 
       // Transform error to base frame and scale with max_speed
-      cart_vel.tail(3) << factor_vel * transform.rotation() * error.tail(3)/error.tail(3).norm() * vel_max;
-      Eigen::VectorXd::Map(&cart_vel_array[0], 6) =  cart_vel;
+      cart_vel.head(3) << (position_init - position) * vel_max_pos; 
+      cart_vel.tail(3) << transform.rotation() * error.tail(3)/error.tail(3).norm() * vel_max_rot;
 
         // Calculate pseudoinverse of jacobian and joint velocities from cartesian velocities
       std::array<double, 42> jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, robot_state);
       Eigen::Map<const Eigen::Matrix<double, 6,7>> jacobian(jacobian_array.data());
       Eigen::Matrix<double, 7,6> jac_pseudoInv = jacobian.transpose() * (jacobian * jacobian.transpose()).partialPivLu().inverse(); 
-      Eigen::Matrix<double, 7,1> dq_c = jac_pseudoInv*cart_vel;
+      Eigen::Matrix<double, 7,1> dq_c = jac_pseudoInv*factor_vector.cwiseProduct(cart_vel);
 
       if (reset_q_d==true) {
         dq_c = factor_vel * (q-q_d) * 100;
@@ -775,7 +784,7 @@ int main(int argc, char** argv) {
           }
           std::cout << "Forces too high; Time: " << time_global << ", wrench: \n" << F_sensor << "\n";
         }
-        else if (error.tail(3).norm()<0.02 and pos_reached==false and reset_q_d==false) { // Position is reached and q_d is not being reset
+        else if (error.tail(3).norm()<0.015 and pos_reached==false and reset_q_d==false) { // Position is reached and q_d is not being reset
           Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation_init.inverse() * rotation).coeffs(); 
           // quat_stop_data.push_back(quat_stop_array);
           pos_reached = true;
