@@ -436,7 +436,7 @@ int main(int argc, char** argv) {
 
       // Time variables
     double time_global = 0.0; // Time the robot has been running for
-    double time_max = 5;      // Maximum runtime
+    double time_max = 30;      // Maximum runtime
     double dt = 0;            // Initialization of time variable of the loop
     double period_acc = 2;    // Time between old and new commanded position
     double period_dec = 0.5;  // time for decceleration, to stop abrubt braking
@@ -597,7 +597,7 @@ int main(int argc, char** argv) {
         rotation_time << rot_d.coeffs(), time_global;
         Eigen::VectorXd::Map(&rotation_time_array[0], 5) = rotation_time;
         rotation_time_data.push_back(rotation_time_array);
-        std::cout << "New flexion: " << angle_flexion*180/M_PI << " and varus: " << angle_varus*180/M_PI << " and quaternion \n" << rot_d;
+        std::cout << "New flexion: " << angle_flexion*180/M_PI << " and varus: " << angle_varus*180/M_PI << "\nCorresponding quaternion: " << rot_d;
         std::cout << "\nCurrent acceleration factor: " << factor_vel << ", and time: " << time_global << "\n\n";  
       }
 
@@ -625,15 +625,21 @@ int main(int argc, char** argv) {
         factor_vector = Eigen::VectorXd::Ones(6) * factor_vel;
         if (factor_vel<0.001) {  
           factor_vel = 0.0; 
-          // new_pos = true; 
+          new_pos = true; 
           reset_q_d = false; 
-          // std::cout << "New position called, time: " << time_global << "\n";
+          std::cout << "New position called, time: " << time_global << "\n";
         }
       }
       else if (time_cycle<period_acc) {  // Normal start up
         factor_vel = (1 - std::cos(M_PI * time_cycle/period_acc))/2;
         factor_vector = Eigen::VectorXd::Ones(6);
-        factor_vector.tail(3) = factor_vector.tail(3)*factor_vel; 
+        factor_vector = Eigen::VectorXd::Ones(6) * factor_vel;
+/*        if (time_global<1) { // Activate the position control at the start since the EE has a tendency to drop slightly when first started
+          factor_vector.tail(3) = factor_vector.tail(3)*factor_vel; 
+        }
+        else {
+          factor_vector = factor_vector*factor_vel; 
+        }*/
       }
       else {
         factor_vel = 1;
@@ -739,14 +745,14 @@ int main(int argc, char** argv) {
         F_sensor_data.push_back(F_sensor_array);
       }
       Eigen::Map<Eigen::Matrix<float, 6, 1>> F_sensor(F_sensor_array.data());
-
+      Eigen::Map<Eigen::Matrix<float, 6, 1>> F_knee(F_knee_array.data());
       // -------------------------------------------------------------------
       // ----               Check if deceleration needed                ----
       // -------------------------------------------------------------------
 
         // Deccelerate if forces to high, or set new pos if desired position reached or no joint movement present
       if (decceleration==false) { // only call when the robot is not already decelerating
-        if (F_sensor.tail(3).norm()>2.7) {   // Torque too high
+        if (F_knee.tail(3).norm()>3) {   // Torque too high
           // Add stop position to orientation limits with time (i dont want to combine both and have to readjust the functions)
           quat_stop_time << (rotation_init.inverse() * rotation).coeffs(), time_global;
           Eigen::VectorXd::Map(&quat_stop_time_array[0], 5) = quat_stop_time;
@@ -765,9 +771,9 @@ int main(int argc, char** argv) {
           else {
             t_dec = time_cycle;
           }
-          std::cout << "Torques too high; Time: " << time_global << ", wrench: \n" << F_sensor << "\n";
+          std::cout << "Torques too high; Time: " << time_global << ", wrench: \n" << F_knee << "\n";
         }
-        else if (F_sensor.head(3).norm()>15) {   // Force too high
+        else if (F_knee.head(3).norm()>15) {   // Force too high
           // Add stop position to orientation limits
           Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation_init.inverse() * rotation).coeffs(); 
           quat_stop_data.push_back(quat_stop_array);
@@ -782,7 +788,7 @@ int main(int argc, char** argv) {
           else {
             t_dec = time_cycle;
           }
-          std::cout << "Forces too high; Time: " << time_global << ", wrench: \n" << F_sensor << "\n";
+          std::cout << "Forces too high; Time: " << time_global << ", wrench: \n" << F_knee << "\n";
         }
         else if (error.tail(3).norm()<0.015 and pos_reached==false and reset_q_d==false) { // Position is reached and q_d is not being reset
           Eigen::VectorXd::Map(&quat_stop_array[0], 4) = (rotation_init.inverse() * rotation).coeffs(); 
