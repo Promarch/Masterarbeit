@@ -12,6 +12,8 @@
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/TrueImpedance_test.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/OpSpace.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/VelImpedance_test.dir
+/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/ImpedanceControl.dir
+/home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/ImpedanceVelControl.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/edit_cache.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/rebuild_cache.dir
 /home/alexandergerard/Masterarbeit/Cmake_franka/build/CMakeFiles/list_install_components.dir

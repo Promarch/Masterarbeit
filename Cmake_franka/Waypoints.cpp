@@ -36,9 +36,10 @@ int main(int argc, char** argv) {
     std::array<double, 7> start_position = robot.readOnce().q_d;
     // std::array<double, 7> pos1 = {{-0.19, -0.12, -0.06, -2.09, -0.04, 1.98, -1.02}}; // above the fake knee
     std::array<double, 7> pos1 = {{-0.0, -0.12, -0.00, -2.09, -0.00, 1.98, -0.3827}}; // Position for orientation testing of the EE
+    std::array<double, 7> pos2 = {{0.013, -0.204, -0.042, -2.106, -0.038,  1.919, -0.450}}; // Other position so that the joints are not always in the same config 
     std::array<double, 7> deltaPos;
     // Substract the initial position from the second position
-    std::transform(pos1.begin(), pos1.end(), start_position.begin(), deltaPos.begin(), std::minus<double>() );
+    std::transform(pos2.begin(), pos2.end(), start_position.begin(), deltaPos.begin(), std::minus<double>() );
     // Time 
     double time = 0.0;
     double time_max = 3.5;
@@ -48,7 +49,7 @@ int main(int argc, char** argv) {
     std::vector<std::array<double, 6>> force_torque_data;
     
     
-    robot.control([&initial_position, &pos1, &time, &time_max, &next_sampling_time, &force_torque_data, &dq_d_values, &deltaPos]
+    robot.control([&initial_position, &pos2, &time, &time_max, &next_sampling_time, &force_torque_data, &dq_d_values, &deltaPos]
                                 (const franka::RobotState& robot_state, franka::Duration period) -> franka::JointPositions {
       time += period.toSec();
       if (time == 0.0) {

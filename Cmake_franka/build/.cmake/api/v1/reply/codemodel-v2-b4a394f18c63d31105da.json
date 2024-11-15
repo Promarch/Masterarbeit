@@ -1,0 +1,195 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "FrankaCmake",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "First_ImpedanceVel::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-First_ImpedanceVel-Debug-02e8028d27ea12d8dd9a.json",
+					"name" : "First_ImpedanceVel",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "GetPosition::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-GetPosition-Debug-c2c773ec23655f709be7.json",
+					"name" : "GetPosition",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "HandMoveRobot::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-HandMoveRobot-Debug-79ee981e0b1604b60ca0.json",
+					"name" : "HandMoveRobot",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ImpedanceCartesianControl::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ImpedanceCartesianControl-Debug-7b7b0db22f54888cc5cc.json",
+					"name" : "ImpedanceCartesianControl",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ImpedanceControl::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ImpedanceControl-Debug-af526f8e2d518cac6ce5.json",
+					"name" : "ImpedanceControl",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ImpedanceJointVel_test::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ImpedanceJointVel_test-Debug-f22155f60cacc3f8751d.json",
+					"name" : "ImpedanceJointVel_test",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ImpedanceVelControl::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ImpedanceVelControl-Debug-826ea93dc30e40445276.json",
+					"name" : "ImpedanceVelControl",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "InverseKin_test::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-InverseKin_test-Debug-6d62dd3bc471049b6ca2.json",
+					"name" : "InverseKin_test",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "OpSpace::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-OpSpace-Debug-58a2f39a9c6489038449.json",
+					"name" : "OpSpace",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ReadForce::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ReadForce-Debug-b3d5004d54a603010c0a.json",
+					"name" : "ReadForce",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "TrueImpedance_test::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-TrueImpedance_test-Debug-02afe798ec1e4825df4a.json",
+					"name" : "TrueImpedance_test",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "VelImpedance_test::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-VelImpedance_test-Debug-be2791f7c7d3c12a5a02.json",
+					"name" : "VelImpedance_test",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "Waypoints::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-Waypoints-Debug-b04dc3be2b28bfefffac.json",
+					"name" : "Waypoints",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "examples_common::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-examples_common-Debug-157ba51fabd5d8ffd113.json",
+					"name" : "examples_common",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "sensor_botasys::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-sensor_botasys-Debug-7373ef3e04f0dbc0efd8.json",
+					"name" : "sensor_botasys",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "trystuffCmake::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-trystuffCmake-Debug-b0675dd83d9f34f84789.json",
+					"name" : "trystuffCmake",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+		"source" : "/home/alexandergerard/Masterarbeit/Cmake_franka"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

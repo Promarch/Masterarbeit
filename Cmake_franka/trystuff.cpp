@@ -4,6 +4,8 @@
 #include <vector>
 #include <array>
 #include <string>
+#include <utility> // for std::pair
+#include <algorithm> // for remove if
 
 std::vector<std::array<double, 4>> readFileToVector(const std::string& filename) {
     std::vector<std::array<double, 4>> data;
@@ -35,17 +37,38 @@ std::vector<std::array<double, 4>> readFileToVector(const std::string& filename)
     return data;
 }
 
-int main() {
-    std::string filename = "build/data_output_knee/quat_stop_data_20241028_220631.txt";
-    std::vector<std::array<double, 4>> data = readFileToVector(filename);
-
-    // Output the data to verify
-    for (const auto& row : data) {
-        for (const double value : row) {
-            std::cout << value << " ";
-        }
-        std::cout << std::endl;
+template <typename T>
+void printVector(const std::vector<T>& vector) {
+    for (int i=0; i<vector.size(); i++){
+        std::cout << vector[i] << "\t";
     }
+    printf("\n");
+}
+
+std::pair<int, int> getTwoInts() {
+    int a = 10;
+    int b = 20;
+    return std::make_pair(a, b);
+}
+
+
+int main() {
+    auto [first, second] = getTwoInts();
+    int test = first;
+    std::cout << "First: " << test << ", Second: " << second << '\n';
+
+    std::vector<int> vec = {0,1,2,3,4};
+    std::vector<int> v_erase = {0,1,1,0,0};
+
+    // Erase elements from `vec` where the corresponding value in `v_erase` is 1
+    auto it = std::remove_if(vec.begin(), vec.end(),
+        [&v_erase, i = 0](int) mutable { 
+            return v_erase[i++] == 1; 
+        });
+
+    // Remove the elements (actually shrinking the vector)
+    vec.erase(it, vec.end());
+    printf("Chat GPT: "); printVector(vec);
 
     return 0;
 }

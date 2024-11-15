@@ -84,7 +84,7 @@ def main() -> None:
 
     folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
     folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
-    # folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_impedance_test/"
+    folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_impedance_test/"
         # Joint positions
     path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_cartesian/joint_position_data_20240820_115946.txt"
     list_of_files_q = glob.glob(folder_path + 'joint_posi*')
@@ -96,8 +96,10 @@ def main() -> None:
     rot_time_orig = np.loadtxt(filePath_rot_time, delimiter=",")
     # rearrange the array so that it fits mujoco notation (normal/eigen notation is x,y,z,w; Mjc is w,x,y,z)
     rot_time = np.array(rot_time_orig)
-    rot_time[:,0] = rot_time_orig[:,3]
-    rot_time[:,1:4] = rot_time_orig[:,0:3]
+    try:
+        rot_time[:,0] = rot_time_orig[:,3]
+    except:
+        rot_time_orig = np.array([rot_time_orig, rot_time_orig])
     rot_time = rot_time_orig[:,[3,0,1,2,4]]
     test = rot_time.copy()
     for i in range(len(rot_time)-1):
@@ -108,7 +110,7 @@ def main() -> None:
     
     desired_angle = np.deg2rad(-20)
     rotation_axis = np.array([1,0,0])
-
+    pos_EE = np.array([0,0,0])
     # ------------------------------------------------------------------------
     # -----------          Debug and runtime variables            ------------
     # ------------------------------------------------------------------------
@@ -118,7 +120,7 @@ def main() -> None:
     step_start = 0
     set_mocap_pos = True
     # Debug
-    time_debug = 0.1
+    time_debug = 0.5
     time_sample = time_debug
     end_of_file = False
     # Framerate
@@ -146,10 +148,8 @@ def main() -> None:
 
         # Set initial position of the robot
         data.qpos = q[0,:]
-
+        t_init = time.time()
         while viewer.is_running(): 
-            if step_start==0:
-                t_init = time.time()
             step_start = time.time()
             time_current = time.time()-t_init
 
@@ -172,15 +172,16 @@ def main() -> None:
                     print(f"Time now is {time_current}")
                     n_pos += 1
 
-            # # Loop that gets called every time_debug seconds
-            # step_current = round(data.time/model.opt.timestep)
-            # if (time.time()-t_init)>time_debug:
-            #     time_pc = round(1000*(time.time()-t_init))
-            #     time_data = round(1000*data.time)
-            #     print(f"Position of the target: {model.body('target').pos}")
-            #     # print(f"Current step: {step_current}; Time wall: {time_pc}ms; Time data:{time_data}")
-            #     time_debug += time_sample
+            # Loop that gets called every time_debug seconds
+            step_current = round(data.time/model.opt.timestep)
+            if (time.time()-t_init)>time_debug:
+                time_pc = round(1000*(time.time()-t_init))
+                time_data = round(1000*data.time)
+                # print(f"Position of the target: {model.body('target').pos}")
+                print(f"Current step: {step_current}; Time wall: {time_pc}ms; Time data:{time_data}")
+                time_debug += time_sample
 
+            pos_EE = np.vstack([pos_EE, data.site("attachment_site").xpos])
             # Set the control signal and step the simulation.
             if time_current>time_next_frame:
                 time_now = round((time.time()-t_init)*1000)
@@ -195,6 +196,7 @@ def main() -> None:
                 viewer.sync()
                 time_next_frame += time_between_frames
 
+    # np.savetxt('output.txt', pos_EE[5:,:], delimiter=',', fmt='%.3f')
         # print(f"Time wall: {(time.time()-t_init)}ms; Time data:{time_max}")
 
 if __name__ == "__main__":

@@ -68,5 +68,15 @@
   "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
   "command": "/usr/bin/c++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/VelImpedance_test.dir/VelImpedance_test.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/VelImpedance_test.cpp",
   "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/VelImpedance_test.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/c++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceControl.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceControl.cpp"
+},
+{
+  "directory": "/home/alexandergerard/Masterarbeit/Cmake_franka/build",
+  "command": "/usr/bin/c++ -isystem /usr/include/eigen3 -g -std=gnu++14 -o CMakeFiles/ImpedanceVelControl.dir/ImpedanceVelControl.cpp.o -c /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceVelControl.cpp",
+  "file": "/home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceVelControl.cpp"
 }
 ]

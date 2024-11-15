@@ -13,6 +13,7 @@
 // Function to read in quaternion file
 Eigen::MatrixXd readFileToMatrix(const std::string& filename) {
     std::vector<std::array<double, 4>> data;
+    data.reserve(20);
     std::ifstream file(filename);
 
     if (!file) {
@@ -50,36 +51,72 @@ Eigen::MatrixXd readFileToMatrix(const std::string& filename) {
     return matrix;
 }
 
-// Function to convert quaternions to angle around x-axis using Eigen
-Eigen::VectorXd convertQuaternionsToXAngles(const Eigen::MatrixXd& quat_matrix) {
-    // Calculate the angle around the x-axis in one call
-    return 2 * (quat_matrix.col(0).array() / quat_matrix.col(3).array()).atan() *180/M_PI;
+std::vector<std::array<double, 4>> readFileToVector(const std::string& filename) {
+    std::vector<std::array<double, 4>> data;
+    data.reserve(20);
+    std::ifstream file(filename);
+
+    if (!file) {
+        std::cerr << "Error: Unable to open file " << filename << std::endl;
+        return data; // Return an empty matrix if the file cannot be opened
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream lineStream(line);
+        std::array<double, 4> row;
+        char comma;
+
+        // Parse each line assuming it contains exactly four comma-separated double values
+        for (double& value : row) {
+            if (!(lineStream >> value)) {
+                std::cerr << "Error: Failed to parse a value in the line." << std::endl;
+                break;
+            }
+            lineStream >> comma; // Skip the comma
+        }
+        data.push_back(row);
+    }
+
+    file.close();
+
+    return data;
 }
 
-// Function to convert quaternions to angle around x-axis using Eigen
-Eigen::VectorXd convertQuaternionsToYAngles(const Eigen::MatrixXd& quat_matrix) {
-    // Calculate the angle around the x-axis in one call
-    return 2 * (quat_matrix.col(1).array() / quat_matrix.col(3).array()).atan() *180/M_PI;
-}
+/*
+// Function to generate a random angle
+std::pair<std::vector<std::array<int, 2>>,std::vector<std::array<int, 2>>> generateValidAngles_slow(const Eigen::MatrixXd &quat_stop, int angleRangeStart, int angleRangeEnd, int tolerance) {
+    // Create evenly spaced possible angles
+    Eigen::VectorXi allAngles = Eigen::VectorXi::LinSpaced(angleRangeEnd - angleRangeStart + 1, angleRangeStart, angleRangeEnd);
+ 
+    // Calculate flexion and internal from quaternion
+    Eigen::VectorXd angleFlex = 2 * (quat_stop.col(0).array() / quat_stop.col(3).array()).atan() *180/M_PI;
+    Eigen::VectorXd angleIntern = 2 * (quat_stop.col(1).array() / quat_stop.col(3).array()).atan() *180/M_PI;
+
+    for (size_t i=0; i<angleFlex.size(); i++) {
+
+    }
+}*/
 
 // Function to generate a random angle
-std::pair<std::vector<int>,std::vector<int>> generateValidAngles(const Eigen::MatrixXd &quat_stop, int angleRangeStart, int angleRangeEnd, int tolerance) {
-    // Create evenly spaces possible angles
+std::pair<std::vector<std::array<int, 2>>,std::vector<std::array<int, 2>>> generateValidAngles(const Eigen::MatrixXd &quat_stop, int angleRangeStart, int angleRangeEnd, int tolerance) {
+    // Create evenly spaced possible angles
     Eigen::VectorXi allAngles = Eigen::VectorXi::LinSpaced(angleRangeEnd - angleRangeStart + 1, angleRangeStart, angleRangeEnd);
  
     // Create meshgrid of flexion angles and allAngles
-    Eigen::VectorXd angleFlex = convertQuaternionsToXAngles(quat_stop);
-    Eigen::VectorXd angleIntern = convertQuaternionsToYAngles(quat_stop);
+    Eigen::VectorXd angleFlex = 2 * (quat_stop.col(0).array() / quat_stop.col(3).array()).atan() *180/M_PI;
+    Eigen::VectorXd angleIntern = 2 * (quat_stop.col(1).array() / quat_stop.col(3).array()).atan() *180/M_PI;
     Eigen::MatrixXd result = angleFlex.array().replicate(1, allAngles.size());
     // Check which angles have been reached
     Eigen::MatrixXd zwischen = (result.rowwise() - allAngles.cast<double>().transpose());
-    Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> completedMask = (result.rowwise() - allAngles.cast<double>().transpose()).cwiseAbs().array() < 1;
+    Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> completedMask = (result.rowwise() - allAngles.cast<double>().transpose()).cwiseAbs().array() < tolerance;
     // Multiply by the sign of the internal-external to know where the flexion was reached
     Eigen::MatrixXi boolMatrixFiltered = completedMask.cast<int>().array().colwise() * angleIntern.array().sign().cast<int>();
     // Get the index of the valid angles
     Eigen::Vector<bool, Eigen::Dynamic> boolValidAnglesIntern = !(boolMatrixFiltered.array()<0).colwise().any();
     Eigen::Vector<bool, Eigen::Dynamic> boolValidAnglesExtern = !(boolMatrixFiltered.array()>0).colwise().any();
 
+    // This is only here for debugging
     int rows = result.rows();
     int cols = result.cols();
 
@@ -88,16 +125,27 @@ std::pair<std::vector<int>,std::vector<int>> generateValidAngles(const Eigen::Ma
     std::cout << "Valid ext: " << boolValidAnglesExtern.transpose() << "\n"; 
     // std::cout << "multiplication tests: \n" << completedMask.cast<double>().array().colwise() * angleIntern.array().sign() << "\n";
     std::cout << "angleFlex: " << angleFlex.transpose() << "\n"; 
-    std::cout << "Shape: " << rows << " x " << cols << std::endl; 
+    std::cout << "angleInt : " << angleIntern.transpose() << "\n"; 
+    std::cout << "Shape: " << rows << " x " << cols << "\n\n"; 
 
     // Add the valid angles to a vector
-    std::vector<int> validAnglesIntern, validAnglesExtern;
+    std::vector<std::array<int, 2>> validAnglesIntern, validAnglesExtern;
     for (int i=0; i<completedMask.cols(); i++){
         if (boolValidAnglesIntern(i)==true) {
-            validAnglesIntern.push_back(allAngles(i));
+            auto it = std::find(completedMask.col(i).array().begin(), completedMask.col(i).array().begin(), -1);
+            // Calculate the index of the element pointed to by the iterator
+            size_t index = std::distance(completedMask.col(i).array().begin(), it);
+            int help = round(angleIntern(index));  // Access the corresponding element in angleIntern
+            std::array<int, 2> validTemp = {help, allAngles[i]};
+            validAnglesIntern.push_back(validTemp);
         }
         if (boolValidAnglesExtern(i)==true) {
-            validAnglesExtern.push_back(allAngles(i));
+            auto it = std::find(completedMask.col(i).array().begin(), completedMask.col(i).array().begin(), 1);
+            // Calculate the index of the element pointed to by the iterator
+            size_t index = std::distance(completedMask.col(i).array().begin(), it);
+            int help = round(angleIntern(index));  // Access the corresponding element in angleIntern
+            std::array<int, 2> validTemp = {help, allAngles[i]};
+            validAnglesExtern.push_back(validTemp);
         }
     }
 
@@ -112,97 +160,44 @@ void printVector(const std::vector<T>& vector) {
     printf("\n");
 }
 
+
+void printArray(const std::vector<std::array<int, 2>>& vec) {
+    for (const auto& elem : vec) {
+        std::cout << "(" << elem[0] << ", " << elem[1] << ")" << std::endl;
+    }
+    printf("\n");
+}
+
+
 int main() {
     // Seed the random number generator
     std::srand(std::time(nullptr)); // initialize random seed
     std::cout << std::fixed << std::setprecision(3);
+
+
     // Get vector
-    std::string filename = "/home/alexandergerard/Documents/quat_stop_tests.txt";
-    // std::string filename = "build/data_output_knee/quat_stop_data_20241028_220631.txt";
+    std::string filename = "/home/alexandergerard/Documents/quat_stop_tests3.txt";
+    // std::string filename = "build/data_output_knee/quat_stop_data_20241107_112356.txt";
+    std::vector<std::array<double, 4>> quat_stop_data = readFileToVector(filename);
     Eigen::MatrixXd quat_stop = readFileToMatrix(filename);
 
-    std::pair<std::vector<int>, std::vector<int>> result = generateValidAngles(quat_stop, -30, -15, 2);
-    std::vector<int> validAnglesExtern = result.first;
-    std::vector<int> validAnglesIntern = result.second;
-    printf("ValidExtern: ");
-    printVector(validAnglesExtern);
+    // Generate valid flexion angles for subsequent internal and external rotation
+    int tolerance = 2;
+    std::pair<std::vector<std::array<int, 2>>, std::vector<std::array<int, 2>>> result = generateValidAngles(quat_stop, -30, -10, 2);
+    std::vector<std::array<int, 2>> validAnglesIntern = result.first;
+    std::vector<std::array<int, 2>> validAnglesExtern = result.second;
+    // Print these angles
     printf("ValidIntern: ");
-    printVector(validAnglesIntern);
-    std::array<double, 4> test = {1,2,3,4};
-    int testangle = round(2*atan(test[0]/test[3])*180/M_PI)<0;
-    std::cout << "testangle" << testangle << "\n";
-    // Convert quaternions to angles around the x-axis
-    Eigen::VectorXd angleFlex = convertQuaternionsToXAngles(quat_stop);
-    Eigen::VectorXd angleIntern = convertQuaternionsToYAngles(quat_stop);
-
-
-/*
-    // Print out the calculated angles
-    // for (int i = 0; i < angleFlex.size(); ++i) {
-    //     std::cout << "Quaternion " << quat_stop.row(i) << " -> x_angle: " << angleFlex[i] << "°" << std::endl;
-    // }
-    // printf("\n");
-    // Generate new angles
-    int angleRangeStart = -28;
-    int angleRangeEnd  = -22;
-    int tolerance = 1;
-    Eigen::VectorXd allAngles = Eigen::VectorXd::LinSpaced(angleRangeEnd - angleRangeStart + 1, angleRangeStart, angleRangeEnd);
-    // std::cout << "All angles: \n" << allAngles << "\n";
-    // Create a boolean mask for completed angles
-    // Checking the size
-    Eigen::MatrixXd result = angleFlex.array().replicate(1, allAngles.size());
-    Eigen::MatrixXd zwischen = (result.rowwise() - allAngles.transpose());
-    Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> completedMask = (result.rowwise() - allAngles.transpose()).cwiseAbs().array() < 1;
-    Eigen::MatrixXd boolMatrixFiltered = completedMask.cast<double>().array().colwise() * angleIntern.array().sign();
-    Eigen::Vector<bool, Eigen::Dynamic> boolValidAnglesIntern = !(boolMatrixFiltered.array()<0).colwise().any();
-    Eigen::Vector<bool, Eigen::Dynamic> boolValidAnglesExtern = !(boolMatrixFiltered.array()>0).colwise().any();
-    Eigen::Vector<bool, Eigen::Dynamic> boolValidAngles = completedMask.colwise().any();
-
-    int rows = result.rows();
-    int cols = result.cols();
-
-    std::cout << "Bool Matrix: \n" << boolMatrixFiltered << "\n"; 
-    std::cout << "Valid int: " << boolValidAnglesIntern.transpose() << "\n"; 
-    std::cout << "Valid ext: " << boolValidAnglesExtern.transpose() << "\n"; 
-    // std::cout << "multiplication tests: \n" << completedMask.cast<double>().array().colwise() * angleIntern.array().sign() << "\n";
-    std::cout << "angleFlex: " << angleFlex.transpose() << "\n"; 
-    std::cout << "Shape: " << rows << " x " << cols << std::endl; 
-
-    // Find uncompleted angles
-    std::vector<double> validAnglesExtern, validAnglesIntern;
-    for (int i=0; i<completedMask.cols(); i++){
-        if (boolValidAnglesExtern(i)==true) {
-            validAnglesExtern.push_back(allAngles(i));
-        }
-        if (boolValidAnglesIntern(i)==true) {
-            validAnglesIntern.push_back(allAngles(i));
-        }
-    }
+    printArray(validAnglesIntern);
     printf("ValidExtern: ");
-    printVector(validAnglesExtern);
-    printf("ValidIntern: ");
-    printVector(validAnglesIntern);
-    // Check if there are uncompleted angles left
-    double newAngle; 
-    if (!validAnglesExtern.empty()) {
-        // Select a random angle from the uncompleted angles
-        int randomIndex = std::rand() % validAnglesExtern.size();
-        newAngle = validAnglesExtern[randomIndex];
-    } else {
-        printf("No uncompleted angles available");
-    }
-    std::cout << "New angle is: " << newAngle << std::endl; 
-*/
-/*    std::vector<int> completedAngles = {10, 15, 25, 30};  // Example completed angles
-    int tolerance = 5;  // Degrees of tolerance
+    printArray(validAnglesExtern);
 
-    int newAngle = generateRandomAngle(completedAngles, tolerance, 0, 40);
-    
-    if (newAngle != -1) {
-        std::cout << "New random angle: " << newAngle << std::endl;
-    } else {
-        std::cout << "No uncompleted angles available." << std::endl;
-    }
-*/
+    // Simulate choosing a new entry
+    // std::array<double, 4> last_quat = quat_stop_data.back();
+    std::array<double, 4> last_quat = {-0.189, -0.137, 0.0266, 0.9721};
+    int lastFlexion = round(2*atan(last_quat[0]/last_quat[3]) *180/M_PI);
+    bool isInternal = (2*atan(last_quat[1]/last_quat[3]) *180/M_PI)<0;
+    std::cout << "Last flexion: " << lastFlexion << ", is internal? " << isInternal << "\n";
+
     return 0;
 }

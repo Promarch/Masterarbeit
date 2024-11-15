@@ -38,6 +38,8 @@ SET(PROGRAM_files
   TrueImpedance_test
   OpSpace
   VelImpedance_test
+  ImpedanceControl
+  ImpedanceVelControl
 )
 
 foreach(singleFile ${PROGRAM_files})
