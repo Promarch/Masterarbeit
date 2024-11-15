@@ -1,1 +1,0 @@
-/usr/bin/g++ -g CMakeFiles/CircleExplore.dir/CircleExplore.cpp.o -o CircleExplore  libexamples_common.a /usr/lib/libfranka.so.0.10.0 

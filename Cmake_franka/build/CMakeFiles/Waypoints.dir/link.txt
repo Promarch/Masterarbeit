@@ -1,1 +1,0 @@
-/usr/bin/g++ -g CMakeFiles/Waypoints.dir/Waypoints.cpp.o -o Waypoints  libexamples_common.a /usr/lib/libfranka.so.0.10.0 

@@ -38,9 +38,12 @@ int main() {
     Eigen::Map<const Eigen::Matrix<double, 7,1>> q_init(initial_state.q.data());
     Eigen::Affine3d transform_init(Eigen::Matrix4d::Map(initial_state.O_T_EE.data()));
     Eigen::Vector3d position_init(transform_init.translation());
-    // Eigen::Quaterniond rotation_init(transform_init.linear());
-    Eigen::Quaterniond rotation_init(0.0, 0.7071068, 0.7071068, 0.0);
+    Eigen::Quaterniond quat_curent(transform_init.linear());
+    Eigen::Quaterniond quat_init(0.0, 0.7071068, 0.7071068, 0.0);
+    Eigen::Quaterniond quat_local(quat_init.inverse() * quat_curent);
     Eigen::Matrix3d rot_matrix(transform_init.rotation());
+    int angleFlexion = round(2*atan(quat_local.x()/quat_local.w()) *180/M_PI);
+    int angleInternal = round(2*atan(quat_local.y()/quat_local.w()) *180/M_PI);
     
       // Desired Rotation, created with quaternions
     // Flexion (Rotation around y in local CoSy) 
@@ -54,20 +57,23 @@ int main() {
     Eigen::AngleAxisd angle_axis_varus(angle_varus, axis_varus);
     Eigen::Quaterniond quaternion_varus(angle_axis_varus);
     // Combine the rotations
-    Eigen::Quaterniond quaternion_combined = quaternion_varus * quaternion_flexion;
+    Eigen::Quaterniond quaternion_combined = quaternion_flexion * quaternion_varus;
     // Translate the desired rotation into local coordinate system (rotation in EE-CoSy instead of base CoSy)
-    Eigen::Quaterniond rot_quaternion_rel = rotation_init * quaternion_combined * rotation_init.inverse();
+    Eigen::Quaterniond rot_quaternion_rel = quat_init * quaternion_combined * quat_init.inverse();
     // Add rotation to initial orientation
-    Eigen::Quaterniond rot_d = rot_quaternion_rel * rotation_init; 
-    Eigen::Quaterniond error_quat = rotation_init.inverse() * rot_d;
+    Eigen::Quaterniond rot_d = rot_quaternion_rel * quat_init; 
+    Eigen::Quaterniond error_quat = quat_init.inverse() * rot_d;
     Eigen::Vector3d error(error_quat.x(), error_quat.y(), error_quat.z());
 
-    std::cout << "Desired Rotation in local CoSy: " << quaternion_combined;
+    std::cout << "Angle flexion: " << angleFlexion << ", angle int/ext: " << angleInternal << "\n";
+    std::cout<<"\nCurrent Rotation in local CoSy: " << (quat_init.inverse() * quat_curent).coeffs().transpose();
+    std::cout<<"\nDesired Rotation in local CoSy: " << quaternion_combined;
     std::cout<<"\nDesired Rotation in base  CoSy: " << rot_quaternion_rel;
     std::cout<<"\nDesired Rotatio added to local: " << rot_d;
-    std::cout<<"\nOther Calculation             : " << rotation_init * quaternion_flexion * quaternion_varus;
+    std::cout<<"\nOther Calculation             : " << quat_init * quaternion_flexion * quaternion_varus;
+    std::cout<<"\nCalculate back                : " << quat_init.inverse() * (quat_init * quaternion_flexion * quaternion_varus);
     std::cout<<"\nDifference quaternion         : " << error_quat;
-    std::cout<<"\nDifference quat in base Cosy  : " << ((-rotation_init.toRotationMatrix() * error)*180/M_PI).transpose() << std::endl;
+    std::cout<<"\nDifference quat in base Cosy  : " << ((-quat_init.toRotationMatrix() * error)*180/M_PI).transpose() << std::endl;
       // Other variables
     //Jacobian
     std::array<double, 42> zero_jacobian_array = model.zeroJacobian(franka::Frame::kEndEffector, initial_state);

@@ -18,6 +18,42 @@ def lowpassFilter(df, F_cutoff=10):
         df_filter.iloc[:,i] = data_filter
     return df_filter
 
+def plot7_twinAx(array1, array2, labels=["Array1", "Array2"]):
+    if len(array1)!=len(array2):
+        print("Arrays not the same length, exit")
+        return 0
+
+    x = np.arange(len(array1))/1000
+    # Get min and max of torque
+    min_1 = np.min(array1)
+    max_1 = np.max(array1)
+    max_1_abs = np.max([min_1, max_1])
+    buffer_1 = 0.2
+    factor1 = 1.1
+
+    min_2 = np.min(array2)
+    max_2 = np.max(array2)
+    max_2_abs = np.max([min_2, max_2])
+    buffer_2 = 0.1
+
+    fig, axs = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
+    for i in range(np.size(array1,1)):
+        axs[i].plot(x, array1[:,i], label = labels[0])
+        axs[i].set_ylabel(f"Joint {i+1}")
+        axs[i].set_ylim(-max_1_abs*factor1, max_1_abs*factor1)
+        axs[i].grid(True)
+        axs[i].legend(loc = "upper right")
+        
+        ax_twin = axs[i].twinx()
+        ax_twin.plot(x, array2[:,i], "r--", label = labels[1])
+        ax_twin.set_ylim(-max_2_abs*factor1, max_2_abs*factor1)
+        ax_twin.legend(loc = "lower right")
+
+    axs[i].set_xlabel("time [s]")
+    fig.suptitle("Torque of each joint")
+    # plt.tight_layout()
+    plt.show()
+
 # Function to create 7 Subplots from a dataframe
 def plot_torque(df_tau, df_filter, df_q, columns = None):
     if "time" in df_tau.columns:
@@ -152,25 +188,29 @@ def plot_orientation_error(df_pos, df_rot):
 
     plt.show()
 
-def plot_force_F_T(df_force):
+def plot_force_F_T(F_array):
+    x = np.arange(len(F_array))/1000
     fig, ax = plt.subplots(2, 1, figsize=(8,8), sharex=True)
         # Plot Forces
-    ax[0].plot(df_force.iloc[:,0].to_numpy(), 'r', label="$F_x$")
-    ax[0].plot(df_force.iloc[:,1].to_numpy(), 'g', label="$F_y$")
-    ax[0].plot(df_force.iloc[:,2].to_numpy(), 'b', label="$F_z$")
+    ax[0].plot(x, F_array[:,0], 'r', label="$F_x$")
+    ax[0].plot(x, F_array[:,1], 'g', label="$F_y$")
+    ax[0].plot(x, F_array[:,2], 'b', label="$F_z$")
     ax[0].legend(loc = "upper right")
-    ax[0].set_title("Forces [N]")
+    ax[0].set_ylabel("Forces [N]")
+    ax[0].grid(True)
         # Plot torque
-    ax[1].plot(df_force.iloc[:,3].to_numpy(), 'r', label=r"$\tau _x$")
-    ax[1].plot(df_force.iloc[:,4].to_numpy(), 'g', label=r"$\tau _y$")
-    ax[1].plot(df_force.iloc[:,5].to_numpy(), 'b', label=r"$\tau _z$")
+    ax[1].plot(x, F_array[:,3], 'r', label=r"$\tau_x$")
+    ax[1].plot(x, F_array[:,4], 'g', label=r"$\tau_y$")
+    ax[1].plot(x, F_array[:,5], 'b', label=r"$\tau_z$")
     ax[1].legend(loc = "upper right")
-    ax[1].set_title("Torques [Nm]")
+    ax[1].set_ylabel("Torques [Nm]")
+    ax[1].set_xlabel("Time [s]")
+    ax[1].grid(True)
 
-    # Add grid to all plots
-    for a in ax.flat:
-        a.grid(True)
-    plt.suptitle("Forces from sensor")
+    # # Add grid to all plots
+    # for a in ax.flat:
+    #     a.grid(True)
+    plt.suptitle("Sensor measurements during the trajectory")
     plt.show()
 
 def plot_force_tau_F(df_F_ext, df_force_tau, labels=["F Robot", "Tau+Jacobi"]):
@@ -218,17 +258,18 @@ def plot7(df_array, labels=[r"$\tau_{robotsensor}$", r"$\tau_{command}$"]):
     if num_df > 10:
         df_array = [df_array]
 
+    nSubplots = np.size(df_array[0],1)
     x = np.arange(0,len(df_array[0]))/1000
     # Get min and max of torque
     min_tau = np.min(df_array)
     max_tau = np.max(df_array)
-
-    fig, axs = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
-    for i in range(7):
+    buffer = 0.0
+    fig, axs = plt.subplots(nSubplots, 1, figsize=(10, 15), sharex=True)
+    for i in range(nSubplots):
         for j, df in enumerate(df_array):
             axs[i].plot(x, df[:,i], label = labels[j])
         axs[i].set_ylabel(f"Joint {i+1}")
-        axs[i].set_ylim(min_tau-.2, max_tau+.2)
+        axs[i].set_ylim(min_tau-buffer, max_tau+buffer)
         axs[i].grid(True)
         axs[i].legend(loc = "upper right")
     axs[i].set_xlabel("time [s]")
@@ -364,11 +405,31 @@ def plot_ForcePos(O_T_EE, F_T_EE, F_sensor, n_colors = 6):
 
     plt.show()
 
-def plot_PosError(O_T_EE):
-    pos = np.array([O_T_EE[:,12], O_T_EE[:,13], O_T_EE[:,14]])
-    pos_abs = np.linalg.norm(pos.transpose()-pos[:,0], axis=1)*1000
-    plt.plot(pos_abs)
-    plt.xlabel("Time [ms]")
+def plot_PosError(O_T_EE_full, labels = ["pos_robot", "pos_sim"]):
+
+    num_array = len(O_T_EE_full)
+    if num_array > 10:
+        O_T_EE_full = [O_T_EE_full]
+    elif len(O_T_EE_full[0])>len(O_T_EE_full[1]):
+        size_pos_full = len(O_T_EE_full[0])
+        size_pos_small = len(O_T_EE_full[1])
+        indices_small = np.arange(size_pos_small)
+        indices_full = np.linspace(0,size_pos_small-1, size_pos_full)
+        O_T_EE_interpol = np.zeros((size_pos_full, 16))
+        O_T_EE_interpol[:,12] = np.interp(indices_full, indices_small, O_T_EE_full[1][:,12])
+        O_T_EE_interpol[:,13] = np.interp(indices_full, indices_small, O_T_EE_full[1][:,13])
+        O_T_EE_interpol[:,14] = np.interp(indices_full, indices_small, O_T_EE_full[1][:,14])
+        O_T_EE_full[1] = O_T_EE_interpol
+
+    x = np.arange(len(O_T_EE_full[0]))/1000
+    fig, ax = plt.subplots(1,1,figsize=(6,3))
+    for i, O_T_EE in enumerate(O_T_EE_full):
+        pos = np.array([O_T_EE[:,12], O_T_EE[:,13], O_T_EE[:,14]])
+        pos_abs = np.linalg.norm(pos.transpose()-pos[:,0], axis=1)*1000
+        ax.plot(x, pos_abs, label = labels[i])
+    plt.grid(True)
+    plt.legend()
+    plt.xlabel("Time [s]")
     plt.ylabel("Position error [mm]")
     plt.title("Absolute positional error during the trajectory")
     plt.show()
@@ -406,21 +467,9 @@ folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_j
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 # folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_impedance_test/"
 # folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_thesis/"
+np.set_printoptions(precision=3, suppress=True)
 
-# %%
-q = readFile(folder_path + "joint_posi*")
-q_d = readFile(folder_path + "q_d_dat*")
-dq_d = readFile(folder_path + "dq_d_dat*")
-dq_c = readFile(folder_path + "dq_c_dat*")[:-1,:]
-tau_d = readFile(folder_path + "tau_data*")
-q_diff = q_d-q
-sample = 100
-help1 = dq_c[::sample][:-1]*10
-help2 = np.diff(q[::sample],axis=0)*100
-plot7([10*dq_c, q_diff*100], [r"$\dot{q}_c$", r"$\Delta q$"])
-plot7([np.diff(q[::sample],axis=0)*1000, sample*dq_d[::sample][:-1], sample*dq_c[::sample][:-1]], [r"$\Delta q$", r"$\dot{q}_d$", r"$\dot{q}_c$"])
-#%%
-# Plot position and orientation
+#%% Plot position and orientation
 list_of_files_O_T_EE = glob.glob(folder_path + 'O_T_EE*')
 filePath_O_T_EE = max(list_of_files_O_T_EE, key=os.path.getctime)
 O_T_EE_orig = np.loadtxt(filePath_O_T_EE, delimiter=",")
@@ -431,6 +480,93 @@ F_T_EE_orig = np.loadtxt(filePath_F_T_EE, delimiter=",")
 
 plot_PosOri(O_T_EE_orig, F_T_EE_orig)
 # plot_PosError(O_T_EE_orig)
+
+#%% Plot rotation error
+
+def matrix2euler(rot_matrix):
+    # Ensure that the input is a valid 3x3 rotation matrix
+    assert rot_matrix.shape[1:] == (3, 3), "Each matrix must be a 3x3 rotation matrix."    
+
+    # Extract the relevant elements from the rotation matrix
+    R32 = rot_matrix[:, 2, 1]  
+    R33 = rot_matrix[:, 2, 2]  
+    R31 = rot_matrix[:, 2, 0]  
+    R21 = rot_matrix[:, 1, 0]  
+    R11 = rot_matrix[:, 0, 0]  
+    
+    # Compute Euler angles (roll, pitch, yaw) using vectorized operations
+    rot_x = np.arctan2(R32, R33)  # rotation around the x-axis
+    rot_y = np.arctan2(-R31, np.sqrt(R32**2 + R33**2))  # rotation around the y-axis
+    rot_z = np.arctan2(R21, R11)  # rotation around the z-axis
+    
+    # Stack the Euler angles into a single array with shape (n, 3)
+    euler_angles = np.stack((rot_x, rot_y, rot_z), axis=1)*180/np.pi
+
+    return euler_angles
+
+# Read in files
+filePath_sim = "/home/alexandergerard/Masterarbeit/mjctrl/O_T_EE.txt"
+O_T_EE_robot = readFile(folder_path + "O_T_EE*")
+O_T_EE_sim = np.loadtxt(filePath_sim, delimiter=",")
+# Transform to array of transformation matrices
+size_robot = len(O_T_EE_robot)
+O_T_EE_mat_robot = np.transpose(O_T_EE_robot.reshape(size_robot,4,4), axes=(0,2,1))
+size_sim = len(O_T_EE_sim)
+O_T_EE_mat_sim = np.transpose(O_T_EE_sim.reshape(size_sim,4,4), axes=(0,2,1))
+# Transform from base CoSy to sensor CoSy
+rotation_O_local = np.array([[0,1,0,0], [1,0,0,0], [0,0,-1,0], [0,0,0,1]])
+local_T_EE_robot = np.linalg.inv(rotation_O_local)@O_T_EE_mat_robot
+local_T_EE_sim = np.linalg.inv(rotation_O_local)@O_T_EE_mat_sim
+# Get euler angles from transformation matrix
+euler_angles_robot = matrix2euler(local_T_EE_robot[:,:3,:3])
+euler_angles_sim = matrix2euler(local_T_EE_sim[:,:3,:3])
+
+# Interpolate sim variables since the sampling rate is only ~250Hz 
+indices_sim = np.arange(size_sim)
+indices_full = np.linspace(0, size_sim - 1, size_robot)
+euler_sim_interpol = np.zeros((size_robot, 3))
+for i in range(euler_angles_sim.shape[1]):
+    euler_sim_interpol[:, i] = np.interp(indices_full, indices_sim, euler_angles_sim[:, i])
+
+# plot_PosError([O_T_EE_robot, O_T_EE_sim])
+
+fig, axs = plt.subplots(3, 1, figsize=(10, 15), sharex=True)
+x = np.arange(size_robot)/1000
+axs[0].plot(x, euler_angles_robot[:,0], label="rot_x_robot")
+axs[0].plot(x, euler_sim_interpol[:,0], label="rot_x_sim")
+axs[0].legend()
+axs[1].plot(x, euler_angles_robot[:,1], label="rot_y_robot")
+axs[1].plot(x, euler_sim_interpol[:,1], label="rot_y_sim")
+axs[2].plot(x, euler_angles_robot[:,2], label="rot_z_robot")
+axs[2].plot(x, euler_sim_interpol[:,2], label="rot_z_sim")
+axs[2].set_xlabel("Time [s]")
+fig.tight_layout()
+# plt.show()
+
+
+# %% Daten bezüglich kräfte und gelenktrajektorien einlesen
+# q = readFile(folder_path + "joint_posi*")
+# q = q-q[0,:]
+# q_d = readFile(folder_path + "q_d_dat*")
+# q_d = q_d - q_d[0,:]
+# diff_q = q_d-q
+# dq_d = readFile(folder_path + "dq_d_dat*")
+# dq_c = readFile(folder_path + "dq_c_dat*")[:-1,:]
+# diff_qd = dq_d - dq_c
+# dPos = readFile(folder_path + "O_dP_EE*")
+# tau_c = readFile(folder_path + "tau_data*")
+# tau_sensor = readFile(folder_path + "tau_filter*")
+# F_sensor = readFile(folder_path + "F_sensor_to*")
+# F_robot = readFile(folder_path + "F_robot*")
+# F_knee = readFile(folder_path + "F_knee*")
+
+# plot7_twinAx(tau_c, diff_q, labels=["tau_c", r"$\Delta q$"])
+# plt.plot(np.linalg.norm(F_robot[:,:3],axis=1), label = "F_robot")
+# plt.plot(np.linalg.norm(F_sensor[:,:3],axis=1), label = "F_sensor")
+# plt.plot(np.linalg.norm(F_knee[:,:3],axis=1), label = "F_knee")
+# plt.legend()
+# plt.show()
+
 
 #%%
     # Import torque with numpy
@@ -448,7 +584,7 @@ np_q = np.loadtxt(filePath_q, delimiter=",")
 dq = (np_q[:-1:100,:] - np_q[1::100,:])*1000
 
 # plot7([np_tau, np_tau_filter], labels=[r"$\tau_c$", r"$\tau_{sensor}$"]) #, labels=[r"$\tau_c$", r"$\tau_r$"]
-
+# plot7(np_tau, labels=[r"$\tau_{commanded}$"])
 #%%
 # Plot torques
 list_of_files_tau = glob.glob(folder_path + 'tau_da*')
@@ -511,3 +647,11 @@ df_F_lowpass = lowpassFilter(df_F_sensor)
 # df_error = df_orig_error.copy()
     # Plot Force
 # plot_force_error(df_error)
+#%%
+# q_diff = q_d-q
+# sample = 100
+# dq_c = readFile(folder_path + "dq_c_dat*")[:-1,:]
+# help1 = dq_c[::sample][:-1]*10
+# help2 = np.diff(q[::sample],axis=0)*100
+# plot7([10*dq_c, q_diff*100], [r"$\dot{q}_c$", r"$\Delta q$"])
+# plot7([np.diff(q[::sample],axis=0)*1000, sample*dq_d[::sample][:-1], sample*dq_c[::sample][:-1]], [r"$\Delta q$", r"$\dot{q}_d$", r"$\dot{q}_c$"])

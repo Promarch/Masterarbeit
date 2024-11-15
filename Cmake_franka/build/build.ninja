@@ -104,6 +104,39 @@ build libsensor_botasys.a: CXX_STATIC_LIBRARY_LINKER__sensor_botasys_Debug CMake
   TARGET_PDB = sensor_botasys.a.dbg
 
 # =============================================================================
+# Object build statements for EXECUTABLE target trystuffCmake
+
+
+#############################################
+# Order-only phony target for trystuffCmake
+
+build cmake_object_order_depends_target_trystuffCmake: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+
+build CMakeFiles/trystuffCmake.dir/trystuffCmake.cpp.o: CXX_COMPILER__trystuffCmake_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/trystuffCmake.cpp || cmake_object_order_depends_target_trystuffCmake
+  DEP_FILE = CMakeFiles/trystuffCmake.dir/trystuffCmake.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/trystuffCmake.dir
+  OBJECT_FILE_DIR = CMakeFiles/trystuffCmake.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target trystuffCmake
+
+
+#############################################
+# Link the executable trystuffCmake
+
+build trystuffCmake: CXX_EXECUTABLE_LINKER__trystuffCmake_Debug CMakeFiles/trystuffCmake.dir/trystuffCmake.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/trystuffCmake.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = trystuffCmake
+  TARGET_PDB = trystuffCmake.dbg
+
+# =============================================================================
 # Object build statements for EXECUTABLE target GetPosition
 
 
@@ -466,6 +499,72 @@ build VelImpedance_test: CXX_EXECUTABLE_LINKER__VelImpedance_test_Debug CMakeFil
   TARGET_FILE = VelImpedance_test
   TARGET_PDB = VelImpedance_test.dbg
 
+# =============================================================================
+# Object build statements for EXECUTABLE target ImpedanceControl
+
+
+#############################################
+# Order-only phony target for ImpedanceControl
+
+build cmake_object_order_depends_target_ImpedanceControl: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+
+build CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o: CXX_COMPILER__ImpedanceControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceControl.cpp || cmake_object_order_depends_target_ImpedanceControl
+  DEP_FILE = CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/ImpedanceControl.dir
+  OBJECT_FILE_DIR = CMakeFiles/ImpedanceControl.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target ImpedanceControl
+
+
+#############################################
+# Link the executable ImpedanceControl
+
+build ImpedanceControl: CXX_EXECUTABLE_LINKER__ImpedanceControl_Debug CMakeFiles/ImpedanceControl.dir/ImpedanceControl.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/ImpedanceControl.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = ImpedanceControl
+  TARGET_PDB = ImpedanceControl.dbg
+
+# =============================================================================
+# Object build statements for EXECUTABLE target ImpedanceVelControl
+
+
+#############################################
+# Order-only phony target for ImpedanceVelControl
+
+build cmake_object_order_depends_target_ImpedanceVelControl: phony || cmake_object_order_depends_target_examples_common cmake_object_order_depends_target_sensor_botasys
+
+build CMakeFiles/ImpedanceVelControl.dir/ImpedanceVelControl.cpp.o: CXX_COMPILER__ImpedanceVelControl_Debug /home/alexandergerard/Masterarbeit/Cmake_franka/ImpedanceVelControl.cpp || cmake_object_order_depends_target_ImpedanceVelControl
+  DEP_FILE = CMakeFiles/ImpedanceVelControl.dir/ImpedanceVelControl.cpp.o.d
+  FLAGS = -g -std=gnu++14
+  INCLUDES = -isystem /usr/include/eigen3
+  OBJECT_DIR = CMakeFiles/ImpedanceVelControl.dir
+  OBJECT_FILE_DIR = CMakeFiles/ImpedanceVelControl.dir
+
+
+# =============================================================================
+# Link build statements for EXECUTABLE target ImpedanceVelControl
+
+
+#############################################
+# Link the executable ImpedanceVelControl
+
+build ImpedanceVelControl: CXX_EXECUTABLE_LINKER__ImpedanceVelControl_Debug CMakeFiles/ImpedanceVelControl.dir/ImpedanceVelControl.cpp.o | libexamples_common.a libsensor_botasys.a /usr/lib/libfranka.so.0.10.0 || libexamples_common.a libsensor_botasys.a
+  FLAGS = -g
+  LINK_LIBRARIES = libexamples_common.a  libsensor_botasys.a  /usr/lib/libfranka.so.0.10.0
+  OBJECT_DIR = CMakeFiles/ImpedanceVelControl.dir
+  POST_BUILD = :
+  PRE_LINK = :
+  TARGET_FILE = ImpedanceVelControl
+  TARGET_PDB = ImpedanceVelControl.dbg
+
 
 #############################################
 # Utility command for edit_cache
@@ -546,7 +645,7 @@ build sensor_botasys: phony libsensor_botasys.a
 #############################################
 # Folder: /home/alexandergerard/Masterarbeit/Cmake_franka/build
 
-build all: phony libexamples_common.a libsensor_botasys.a GetPosition Waypoints ReadForce HandMoveRobot ImpedanceCartesianControl First_ImpedanceVel ImpedanceJointVel_test InverseKin_test TrueImpedance_test OpSpace VelImpedance_test
+build all: phony libexamples_common.a libsensor_botasys.a trystuffCmake GetPosition Waypoints ReadForce HandMoveRobot ImpedanceCartesianControl First_ImpedanceVel ImpedanceJointVel_test InverseKin_test TrueImpedance_test OpSpace VelImpedance_test ImpedanceControl ImpedanceVelControl
 
 # =============================================================================
 # Built-in targets

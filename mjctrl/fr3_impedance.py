@@ -68,9 +68,9 @@ def main() -> None:
     mocap_id = model.body(mocap_name).mocapid[0]
 
     # Stiffness matrix and stuff
-    translation_stiffness = 300
-    rotation_stiffness = 100
-    K_p_values = np.array([translation_stiffness, translation_stiffness, translation_stiffness, rotation_stiffness, rotation_stiffness, rotation_stiffness])
+    translation_stiffness = 300 * np.ones(3)
+    rotation_stiffness = 30 * np.ones(3)
+    K_p_values = np.array([translation_stiffness, rotation_stiffness]).flatten()
     K_p = np.diag(K_p_values)
     K_d = np.diag(np.sqrt(K_p_values))
     factor_speed = 100
@@ -84,6 +84,9 @@ def main() -> None:
     cart_vel = np.zeros(6)
     cart_vel_pos = cart_vel[:3]
     cart_vel_ori = cart_vel[3:]
+    O_T_F_full = np.zeros((1,16))
+    O_T_EE_full = np.zeros((1,16))
+    rotation_O_local = np.array([[0,1,0], [1,0,0], [0,0,-1]])
 
     site_quat = np.zeros(4)
     site_quat_conj = np.zeros(4)
@@ -96,10 +99,11 @@ def main() -> None:
     pos_init = np.array([0.389, 0.00, 0.355]) # Kuka
     quat_init = [0, 0.7071068, 0.7071068, 0] #[ 0.6830127, -0.6830127, -0.1830127, -0.1830127 ]
     quat_d = np.array([0.1227878, 0.6963642, 0.6963642, 0.1227878]) # FR3
+    # quat_d = quat_init
     # quat_d = np.array([-0.1227878, 0.6963642, 0.6963642, -0.1227878])
 
     # Time variables
-    time_acc = 2
+    time_acc = 3
     step_start = 0
 
     # Debugging
@@ -126,7 +130,7 @@ def main() -> None:
         # Time debugging
         t_init = time.time()
         time_current = 0
-        while viewer.is_running():
+        while viewer.is_running(): # and time.time()-t_init<6
             time_current = np.round(time.time()-t_init,3)
             time_ms = round(time_current*1000)
             step_start = time.time()
@@ -148,7 +152,7 @@ def main() -> None:
             mujoco.mju_negQuat(site_quat_conj, site_quat)
             mujoco.mju_mulQuat(error_quat, data.mocap_quat[mocap_id], site_quat_conj)
             mujoco.mju_quat2Vel(error_ori, error_quat, 1.0)
-
+            error_ori /= 2
             # Jacobian.
             mujoco.mj_jacSite(model, data, jac[:3], jac[3:], site_id)
 
@@ -169,36 +173,52 @@ def main() -> None:
             
                 # Experiment with velocity based impedance control
             # Calculate the direction of the angular velocity
-            factor_speed = 5
+            factor_speed = 0.05
             cart_vel[:3] = error[:3]
-            cart_vel[3:] = dt * factor_speed * error_ori/np.linalg.norm(error_ori)
+            # cart_vel[:3] = 0
+            # cart_vel[:3] = factor_speed * error_pos/np.linalg.norm(error_pos)
+            cart_vel[3:] = factor_speed * error_ori/np.linalg.norm(error_ori)
             # Ensure smooth acceleration
             if (time.time()-t_init)<time_acc:
                 factor_acc = (1 - np.cos(np.pi * (time.time()-t_init)/time_acc))/2
             else:
                 factor_acc = 1
             h_c = K_p @ cart_vel - K_d @ (jac @ data.qvel[dof_ids])
-            tau = jac.T @ h_c
-
-                # Damped least squares control
-            # tau = jac.T @ (np.linalg.solve(jac @ jac.T + diag, error))
-
+            tau = jac.T @ (factor_filter*h_c)
+            
+            O_T_F = np.zeros((4,4))
+            pos_F = data.site("site_flange").xpos
+            rot_F = data.site("site_flange").xmat
+            O_T_EE = np.zeros((4,4))
+            pos_EE = data.site("attachment_site").xpos
+            rot_EE = data.site("attachment_site").xmat
+            # O_T_F[:3,:3] = np.linalg.inv(rotation_O_local)@rot_F.reshape(3,3)
+            O_T_F[:3,:3] = rot_F.reshape(3,3)
+            O_T_F[:,-1] = np.append(pos_F, 1)
+            O_T_F_full = np.vstack([O_T_F_full, O_T_F.flatten(order='F')])
+            # O_T_EE[:3,:3] = np.linalg.inv(rotation_O_local)@rot_EE.reshape(3,3)
+            O_T_EE[:3,:3] = rot_EE.reshape(3,3)
+            O_T_EE[:,-1] = np.append(pos_EE, 1)
+            O_T_EE_full = np.vstack([O_T_EE_full, O_T_EE.flatten(order='F')])
+            
             # Set the control signal and step the simulation.
             data.ctrl[actuator_ids] = tau[dof_ids]
             mujoco.mj_step(model, data)
 
                 # Debug loop
-            if (time_current>t_debug) and (debug==True):
-                np.set_printoptions(suppress=True)
-                print(f"Time: {np.round(time_current,1)} \ntau = {np.round(tau.T,3)} \nh_c: {np.transpose(np.round(h_c,3))} \n")
-                t_debug += t_sample
+            # if (time_current>t_debug) and (debug==True):
+            #     np.set_printoptions(precision=3, suppress=True)
+            #     print(f"Time: {np.round(time_current,1)} \ntau = {tau.T}, Norm: {np.round(np.linalg.norm(tau.T),3)}")
+            #     print(f"cart_vel: {np.transpose(cart_vel)} \nh_c: {np.transpose(h_c)} \nerror :{error.transpose()}\n")
+            #     t_debug += t_sample
             mujoco.mj_step(model, data)
 
             viewer.sync()
             time_until_next_step = dt - (time.time() - step_start)
             if time_until_next_step > 0:
                 time.sleep(time_until_next_step)
-
+    # np.savetxt('O_T_EE.txt', O_T_EE_full[5:,:], delimiter=',', fmt='%.4f')
+    # np.savetxt('O_T_F.txt', O_T_F_full[5:,:], delimiter=',', fmt='%.4f')
 
 if __name__ == "__main__":
     main()

@@ -26,6 +26,7 @@ add_library(sensor_botasys STATIC
 target_link_libraries(examples_common PUBLIC Franka::Franka Eigen3::Eigen3)
 
 SET(PROGRAM_files
+  trystuffCmake
   GetPosition
   Waypoints
   ReadForce
@@ -37,6 +38,8 @@ SET(PROGRAM_files
   TrueImpedance_test
   OpSpace
   VelImpedance_test
+  ImpedanceControl
+  ImpedanceVelControl
 )
 
 foreach(singleFile ${PROGRAM_files})

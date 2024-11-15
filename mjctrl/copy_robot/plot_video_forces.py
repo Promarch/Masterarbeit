@@ -55,9 +55,9 @@ print(f"Extracted {frame_count} frames")
 # Force data from sensor
 # path =  "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output/force_data_20240809_154101.txt"
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
-list_of_files_wrench = glob.glob(folder_path + 'F_sensor_tot*')
 folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
 list_of_files_wrench = glob.glob(folder_path + 'F_sensor_tot*')
+# list_of_files_wrench = glob.glob(folder_path + 'F_robot**')
 filePath_wrench = max(list_of_files_wrench, key=os.path.getctime)
 wrench_orig = np.loadtxt(filePath_wrench, delimiter=",")
 wrench = lowpassFilter(wrench_orig, F_cutoff=5)
@@ -70,9 +70,9 @@ img = ax_img.imshow(frames[0])
 
 # plot force
 x = np.arange(len(wrench))/1000
-ax_force.plot(x, wrench[:,3], "r", label=r"Filter $\tau_x$")
-ax_force.plot(x, wrench[:,4], "g", label=r"Filter $\tau_y$")
-ax_force.plot(x, wrench[:,5], "b", label=r"Filter $\tau_z$")
+ax_force.plot(x, wrench[:,3], "r", label=r"$\tau_x$")
+ax_force.plot(x, wrench[:,4], "g", label=r"$\tau_y$")
+ax_force.plot(x, wrench[:,5], "b", label=r"$\tau_z$")
 
 vert_line = ax_force.axvline(x=0, color = "r")
 

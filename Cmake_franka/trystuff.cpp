@@ -1,94 +1,74 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <array>
-#include <thread>
-#include <queue>
-#include <mutex>
-#include <condition_variable>
-#include <chrono>
+#include <string>
+#include <utility> // for std::pair
+#include <algorithm> // for remove if
 
-// Thread-safe queue to store vectors
-std::queue<std::vector<std::array<int, 3>>> dataQueue;
-std::mutex mtx;
-std::condition_variable cv;
-bool stopWriting = false;
+std::vector<std::array<double, 4>> readFileToVector(const std::string& filename) {
+    std::vector<std::array<double, 4>> data;
+    std::ifstream file(filename);
 
-template <typename T, std::size_t N>
-void writeVectorsToFile() {
-    std::ofstream outFile("output.txt");
-    if (!outFile.is_open()) {
-        std::cerr << "Failed to open file!" << std::endl;
-        return;
+    if (!file) {
+        std::cerr << "Error: Unable to open file " << filename << std::endl;
+        return data; // Return an empty vector if the file cannot be opened
     }
 
-    while (true) {
-        std::vector<std::array<T, N>> data;
-        
-        // Lock and wait for data or stop signal
-        {
-            std::unique_lock<std::mutex> lock(mtx);
-            cv.wait(lock, [] { return !dataQueue.empty() || stopWriting; });
-            if (stopWriting && dataQueue.empty()) {
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream lineStream(line);
+        std::array<double, 4> row;
+        char comma;
+
+        // Parse each line assuming it contains exactly four comma-separated double values
+        for (double& value : row) {
+            if (!(lineStream >> value)) {
+                std::cerr << "Error: Failed to parse a value in the line." << std::endl;
                 break;
             }
-            data = dataQueue.front();
-            dataQueue.pop();
+            lineStream >> comma; // Skip the comma
         }
-
-        // Write the data to the file (outside of the critical section)
-        for (const auto& arr : data) {
-            for (const auto& element : arr) {
-                outFile << element << " ";
-            }
-            outFile << std::endl;
-        }
+        data.push_back(row);
     }
-    
-    outFile.close();
+
+    file.close();
+    return data;
 }
 
+template <typename T>
+void printVector(const std::vector<T>& vector) {
+    for (int i=0; i<vector.size(); i++){
+        std::cout << vector[i] << "\t";
+    }
+    printf("\n");
+}
+
+std::pair<int, int> getTwoInts() {
+    int a = 10;
+    int b = 20;
+    return std::make_pair(a, b);
+}
+
+
 int main() {
-    // Start the file writing thread
-    std::thread writerThread(writeVectorsToFile<int, 3>);
-    
-    // Simulate a control loop that runs every 1ms
-    for (int i = 0; i < 1000; ++i) {
-        auto start = std::chrono::high_resolution_clock::now();
-        
-        // Simulate control loop operation
-        std::this_thread::sleep_for(std::chrono::microseconds(500));
-        
-        // Generate some data
-        std::vector<std::array<int, 3>> vec = {
-            {i, i+1, i+2},
-            {i+3, i+4, i+5}
-        };
+    auto [first, second] = getTwoInts();
+    int test = first;
+    std::cout << "First: " << test << ", Second: " << second << '\n';
 
-        // Push data to the queue in a thread-safe manner
-        {
-            std::lock_guard<std::mutex> lock(mtx);
-            dataQueue.push(vec);
-        }
-        
-        // Notify the writer thread that new data is available
-        cv.notify_one();
-        
-        // Control loop time management to stay under 1ms
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = end - start;
-        if (elapsed.count() < 0.001) {
-            std::this_thread::sleep_for(std::chrono::duration<double>(0.001 - elapsed.count()));
-        }
-    }
+    std::vector<int> vec = {0,1,2,3,4};
+    std::vector<int> v_erase = {0,1,1,0,0};
 
-    // Signal to stop writing and join the thread
-    {
-        std::lock_guard<std::mutex> lock(mtx);
-        stopWriting = true;
-    }
-    cv.notify_one();
-    writerThread.join();
+    // Erase elements from `vec` where the corresponding value in `v_erase` is 1
+    auto it = std::remove_if(vec.begin(), vec.end(),
+        [&v_erase, i = 0](int) mutable { 
+            return v_erase[i++] == 1; 
+        });
+
+    // Remove the elements (actually shrinking the vector)
+    vec.erase(it, vec.end());
+    printf("Chat GPT: "); printVector(vec);
 
     return 0;
 }
