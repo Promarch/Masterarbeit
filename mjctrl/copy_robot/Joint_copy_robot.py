@@ -84,7 +84,7 @@ def main() -> None:
 
     folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_ball_joint/"
     folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_knee/"
-    folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_impedance_test/"
+    # folder_path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_impedance_test/"
         # Joint positions
     path = "/home/alexandergerard/Masterarbeit/Cmake_franka/build/data_output_cartesian/joint_position_data_20240820_115946.txt"
     list_of_files_q = glob.glob(folder_path + 'joint_posi*')
